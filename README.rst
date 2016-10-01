@@ -1,4 +1,4 @@
-ESP32 e-ink test for SHA2017Badge
+ESP32 AMEPD test for SHA2017Badge
 =================================
 
 Read `project 

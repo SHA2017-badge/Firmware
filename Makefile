@@ -3,7 +3,7 @@
 # project subdirectory.
 #
 
-PROJECT_NAME := esp32-eink
+PROJECT_NAME := esp32-amepd
 
 include $(IDF_PATH)/make/project.mk
 
