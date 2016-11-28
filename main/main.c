@@ -11,10 +11,9 @@ esp_err_t event_handler(void *ctx, system_event_t *event)
     return ESP_OK;
 }
 
-int app_main(void)
+void app_main(void)
 {
     nvs_flash_init();
-    system_init();
     tcpip_adapter_init();
     ESP_ERROR_CHECK( esp_event_loop_init(event_handler, NULL) );
     wifi_init_config_t cfg = WIFI_INIT_CONFIG_DEFAULT();
@@ -39,7 +38,5 @@ int app_main(void)
         level = !level;
         vTaskDelay(300 / portTICK_PERIOD_MS);
     }
-
-    return 0;
 }
 
