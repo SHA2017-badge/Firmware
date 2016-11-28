@@ -22,3 +22,6 @@ Copyright (C) 2016 Espressif Systems, licensed under the Apache License 2.0 as d
         make flash
 
 TODO: More documentation
+
+.. image:: https://travis-ci.org/annejan/esp-eink.png?branch=master  
+    :target: https://travis-ci.org/annejan/esp-eink

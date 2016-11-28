@@ -8,6 +8,7 @@ addons:
   apt:
     packages:
       - gperf 
+      - python-serial 
 script:
   - cd ..
   - git clone https://github.com/espressif/esp-idf.git
