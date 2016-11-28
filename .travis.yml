@@ -4,6 +4,10 @@ os:
   - linux
 compiler:
   - gcc
+addons:
+  apt:
+    packages:
+      - git wget make libncurses-dev flex bison gperf python python-serial 
 script:
   - cd ..
   - git clone https://github.com/espressif/esp-idf.git
