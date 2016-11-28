@@ -7,7 +7,7 @@ compiler:
 addons:
   apt:
     packages:
-      - git wget make libncurses-dev flex bison gperf python python-serial 
+      - gperf 
 script:
   - cd ..
   - git clone https://github.com/espressif/esp-idf.git
