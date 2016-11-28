@@ -33,11 +33,11 @@ void app_main(void) {
   while (true) {
     vTaskDelay((faster ? 300 : 2000) / portTICK_PERIOD_MS);
     for (unsigned int picture = 1; picture < NUM_PICTURES; picture++) {
-      displayImage(pictures[picture], faster);
+      displayImage(pictures[picture], false);
       vTaskDelay((faster ? 300 : 2000) / portTICK_PERIOD_MS);
     }
     faster = !faster;
     initDisplay(faster);
-    displayImage(pictures[0], faster);
+    displayImage(pictures[0], false);
   }
 }

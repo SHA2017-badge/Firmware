@@ -2001,7 +2001,6 @@ const unsigned char gImage_test[4736] = {
 #define NUM_PICTURES 5
 
 const unsigned char *pictures[NUM_PICTURES] = {
-    gImage_sha, gImage_menu, gImage_nick, gImage_weather, gImage_test
-};
+    gImage_sha, gImage_menu, gImage_nick, gImage_weather, gImage_test};
 
 #endif

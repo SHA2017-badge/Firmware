@@ -18,8 +18,4 @@ void writeRam(void);
 void powerOff(void);
 void powerOn(void);
 
-const unsigned char LUTDefault_part[30]; 
-
-const unsigned char LUTDefault_full[30]; 
-
 #endif
