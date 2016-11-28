@@ -10,4 +10,9 @@ Copyright (C) 2016 Espressif Systems, licensed under the Apache License 2.0 as d
 
 .. _Espressif IoT Development Framework: https://github.com/espressif/esp-idf
 
+``cd ..``
+``git clone https://github.com/espressif/esp-idf.git``
+``wget https://dl.espressif.com/dl/xtensa-esp32-elf-linux64-1.22.0-59.tar.gz``
+``tar xzvf xtensa-esp32-elf-linux64-1.22.0-59.tar.gz``
+``cd -``
 
