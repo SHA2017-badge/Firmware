@@ -2,6 +2,8 @@
 #define EPD_GDE_DRIVER_H
 #define GDEH029A1
 
+#include <stdbool.h>
+
 void writeLUT(bool fast);
 void initDisplay(bool fast);
 void displayImage(const unsigned char *picture, bool partial);
