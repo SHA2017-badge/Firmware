@@ -15,4 +15,5 @@ script:
   - tar xzvf xtensa-esp32-elf-linux64-1.22.0-59.tar.gz
   - cd -
   - source ./set_env.sh
-  - make
+  - make defconfig
+  - make  
