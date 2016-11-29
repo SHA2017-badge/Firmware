@@ -1,6 +1,12 @@
 ESP32 AMEPD test for SHA2017Badge
 =================================
 
+.. image:: https://travis-ci.org/annejan/esp-eink.png?branch=master
+    :target: https://travis-ci.org/annejan/esp-eink
+    
+Moved to: https://github.com/SHA2017-badge/Firmware
+---------------------------------------------------
+
 Read `project 
 documentation <https://orga.sha2017.org/index.php/Projects:Badge>`__ and
 get involved.
@@ -10,18 +16,6 @@ Copyright (C) 2016 Espressif Systems, licensed under the Apache License 2.0 as d
 
 .. _Espressif IoT Development Framework: https://github.com/espressif/esp-idf
 
-::
-
-        cd ..
-        git clone https://github.com/espressif/esp-idf.git
-        wget https://dl.espressif.com/dl/xtensa-esp32-elf-linux64-1.22.0-59.tar.gz
-        tar xzvf xtensa-esp32-elf-linux64-1.22.0-59.tar.gz
-        cd -
-        make menuconfig
-        make
-        make flash
-
-TODO: More documentation
-
+New repo
 .. image:: https://travis-ci.org/SHA2017-badge/Firmware.png?branch=master
     :target: https://travis-ci.org/SHA2017-badge/Firmware
