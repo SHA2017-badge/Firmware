@@ -1,12 +1,6 @@
 ESP32 AMEPD test for SHA2017Badge
 =================================
 
-.. image:: https://travis-ci.org/annejan/esp-eink.png?branch=master
-    :target: https://travis-ci.org/annejan/esp-eink
-    
-Moved to: https://github.com/SHA2017-badge/Firmware
----------------------------------------------------
-
 Read `project 
 documentation <https://orga.sha2017.org/index.php/Projects:Badge>`__ and
 get involved.
