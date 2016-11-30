@@ -32,14 +32,21 @@ void app_main(void) {
 
   bool faster = false;
 
+  int blink = 0;
+  gpio_set_direction(GPIO_NUM_22, GPIO_MODE_OUTPUT);
+
   while (true) {
     vTaskDelay((faster ? 300 : 2000) / portTICK_PERIOD_MS);
     for (unsigned int picture = 1; picture < NUM_PICTURES; picture++) {
       displayImage(pictures[picture], false);
+      gpio_set_level(GPIO_NUM_22, blink);
+      blink = !blink;
       vTaskDelay((faster ? 300 : 2000) / portTICK_PERIOD_MS);
     }
     faster = !faster;
     initDisplay(faster);
     displayImage(pictures[0], false);
+    gpio_set_level(GPIO_NUM_22, blink);
+    blink = !blink;
   }
 }

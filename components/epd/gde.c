@@ -1,4 +1,6 @@
+#include "gde.h"
 #include "driver/gpio.h"
+#include "pins.h"
 #include "rom/ets_sys.h"
 #include "rom/gpio.h"
 #include "sdkconfig.h"
@@ -7,8 +9,6 @@
 #include "soc/gpio_struct.h"
 #include <stdio.h>
 #include <string.h>
-#include "gde.h"
-#include "pins.h"
 
 void resetDisplay() {
   gpio_set_level(PIN_NUM_RESET, 0);
@@ -128,11 +128,11 @@ void initSPI() {
   gpio_set_direction(PIN_NUM_RESET, GPIO_MODE_OUTPUT);
   gpio_set_direction(PIN_NUM_BUSY, GPIO_MODE_INPUT);
 
-  spi_t *spi = spiStartBus(VSPI, 1000000, SPI_MODE0, SPI_MSBFIRST);
+  spi = spiStartBus(VSPI, 1000000, SPI_MODE0, SPI_MSBFIRST);
   spiAttachSCK(spi, PIN_NUM_CLK);
-  // spiAttachMISO(spi, misoPin);
+  // spiAttachMISO(spi, PIN_NUM_MISO);
   spiAttachMOSI(spi, PIN_NUM_MOSI);
-  spiAttachSS(spi, 0, PIN_NUM_CS);   // if you want hardware SS
-  spiEnableSSPins(spi, 1 << 0); // activate SS for CS0
+  spiAttachSS(spi, 0, PIN_NUM_CS); // if you want hardware SS
+  spiEnableSSPins(spi, 1 << 0);    // activate SS for CS0
   spiSSEnable(spi);
 }

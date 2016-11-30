@@ -27,35 +27,35 @@ extern "C" {
 #endif
 
 #define ESP_REG(addr) *((volatile uint32_t *)(addr))
-#define NOP() asm volatile ("nop")
+#define NOP() asm volatile("nop")
 
-#define LOW               0x0
-#define HIGH              0x1
+#define LOW 0x0
+#define HIGH 0x1
 
-//GPIO FUNCTIONS
-#define INPUT             0x01
-#define OUTPUT            0x02
-#define PULLUP            0x04
-#define INPUT_PULLUP      0x05
-#define PULLDOWN          0x08
-#define INPUT_PULLDOWN    0x09
-#define OPEN_DRAIN        0x10
+// GPIO FUNCTIONS
+#define INPUT 0x01
+#define OUTPUT 0x02
+#define PULLUP 0x04
+#define INPUT_PULLUP 0x05
+#define PULLDOWN 0x08
+#define INPUT_PULLDOWN 0x09
+#define OPEN_DRAIN 0x10
 #define OUTPUT_OPEN_DRAIN 0x12
-#define SPECIAL           0xF0
-#define FUNCTION_0        0x00
-#define FUNCTION_1        0x20
-#define FUNCTION_2        0x40
-#define FUNCTION_3        0x70
-#define FUNCTION_4        0x80
+#define SPECIAL 0xF0
+#define FUNCTION_0 0x00
+#define FUNCTION_1 0x20
+#define FUNCTION_2 0x40
+#define FUNCTION_3 0x70
+#define FUNCTION_4 0x80
 
-//Interrupt Modes
-#define DISABLED  0x00
-#define RISING    0x01
-#define FALLING   0x02
-#define CHANGE    0x03
-#define ONLOW     0x04
-#define ONHIGH    0x05
-#define ONLOW_WE  0x0C
+// Interrupt Modes
+#define DISABLED 0x00
+#define RISING 0x01
+#define FALLING 0x02
+#define CHANGE 0x03
+#define ONLOW 0x04
+#define ONHIGH 0x05
+#define ONLOW_WE 0x0C
 #define ONHIGH_WE 0x0D
 
 void pinMode(uint8_t pin, uint8_t mode);
