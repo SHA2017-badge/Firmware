@@ -5,6 +5,7 @@
 #include "esp_wifi.h"
 #include "freertos/FreeRTOS.h"
 #include "nvs_flash.h"
+#include <gde.h>
 #include <gdeh029a1.h>
 #include <pictures.h>
 
@@ -25,6 +26,7 @@ void app_main(void) {
   ESP_ERROR_CHECK(esp_wifi_start());
   ESP_ERROR_CHECK(esp_wifi_connect());
 
+  initSPI();
   initDisplay(false);
   displayImage(pictures[0], false);
 

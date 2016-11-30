@@ -1,6 +1,7 @@
 #ifndef EPD_GDE_H
 #define EPD_GDE_H
 
+void initSPI();
 void resetDisplay();
 void writeCommand(unsigned char command);
 void writeData(unsigned char data);
@@ -12,4 +13,5 @@ void writeDispRam(unsigned char xSize, unsigned int ySize,
                   const unsigned char *dispdata);
 void writeDispRamMono(unsigned char xSize, unsigned int ySize,
                       unsigned char dispdata);
+
 #endif
