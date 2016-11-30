@@ -5,22 +5,10 @@
 #include "soc/gpio_reg.h"
 #include "soc/gpio_sig_map.h"
 #include "soc/gpio_struct.h"
-#include "soc/io_mux_reg.h"
-#include "soc/spi_reg.h"
 #include <stdio.h>
 #include <string.h>
-
 #include "gde.h"
 #include "pins.h"
-
-static void spi_write_byte(const uint8_t data) {
-  SET_PERI_REG_BITS(SPI_MOSI_DLEN_REG(SPI_NUM), SPI_USR_MOSI_DBITLEN, 0x7,
-                    SPI_USR_MOSI_DBITLEN_S);
-  WRITE_PERI_REG((SPI_W0_REG(SPI_NUM)), data);
-  SET_PERI_REG_MASK(SPI_CMD_REG(SPI_NUM), SPI_USR);
-  while (READ_PERI_REG(SPI_CMD_REG(SPI_NUM)) & SPI_USR)
-    ;
-}
 
 void resetDisplay() {
   gpio_set_level(PIN_NUM_RESET, 0);
@@ -32,7 +20,7 @@ void resetDisplay() {
 void writeCommand(unsigned char command) {
   gpio_set_level(PIN_NUM_CS, 1);
   gpio_set_level(PIN_NUM_CS, 0);
-  spi_write_byte(command);
+  spiWriteByte(spi, command);
   gpio_set_level(PIN_NUM_CS, 1);
 }
 
@@ -40,7 +28,7 @@ void writeData(unsigned char data) {
   gpio_set_level(PIN_NUM_CS, 1);
   gpio_set_level(PIN_NUM_CS, 0);
   gpio_set_level(PIN_NUM_DATA, 1);
-  spi_write_byte(data);
+  spiWriteByte(spi, data);
   gpio_set_level(PIN_NUM_CS, 1);
   gpio_set_level(PIN_NUM_DATA, 0);
 }
@@ -48,9 +36,9 @@ void writeData(unsigned char data) {
 void writeCMD_p1(unsigned char command, unsigned char para) {
   gpio_set_level(PIN_NUM_CS, 1);
   gpio_set_level(PIN_NUM_CS, 0);
-  spi_write_byte(command);
+  spiWriteByte(spi, command);
   gpio_set_level(PIN_NUM_DATA, 1);
-  spi_write_byte(para);
+  spiWriteByte(spi, para);
   gpio_set_level(PIN_NUM_CS, 1);
   gpio_set_level(PIN_NUM_DATA, 0);
 }
@@ -59,10 +47,10 @@ void writeCMD_p2(unsigned char command, unsigned char para1,
                  unsigned char para2) {
   gpio_set_level(PIN_NUM_CS, 1);
   gpio_set_level(PIN_NUM_CS, 0);
-  spi_write_byte(command);
+  spiWriteByte(spi, command);
   gpio_set_level(PIN_NUM_DATA, 1);
-  spi_write_byte(para1);
-  spi_write_byte(para2);
+  spiWriteByte(spi, para1);
+  spiWriteByte(spi, para2);
   gpio_set_level(PIN_NUM_CS, 1);
   gpio_set_level(PIN_NUM_DATA, 0);
 }
@@ -74,12 +62,12 @@ void writeStream(unsigned char *value, unsigned char datalen) {
   ptemp = value;
   gpio_set_level(PIN_NUM_CS, 1);
   gpio_set_level(PIN_NUM_CS, 0);
-  spi_write_byte(*ptemp);
+  spiWriteByte(spi, *ptemp);
   ptemp++;
   gpio_set_level(PIN_NUM_DATA, 1);
   for (i = 0; i < datalen - 1; i++) // sub the command
   {
-    spi_write_byte(*ptemp);
+    spiWriteByte(spi, *ptemp);
     ptemp++;
   }
   gpio_set_level(PIN_NUM_CS, 1);
@@ -98,13 +86,13 @@ void writeDispRam(unsigned char xSize, unsigned int ySize,
 
   gpio_set_level(PIN_NUM_CS, 1);
   gpio_set_level(PIN_NUM_CS, 0);
-  spi_write_byte(0x24);
+  spiWriteByte(spi, 0x24);
 
   gpio_set_level(PIN_NUM_DATA, 1);
   for (i = 0; i < ySize; i++) {
     for (j = 0; j < xSize; j++) {
       data = dispdata[c];
-      spi_write_byte(~data);
+      spiWriteByte(spi, ~data);
       c++;
     }
   }
@@ -122,12 +110,12 @@ void writeDispRamMono(unsigned char xSize, unsigned int ySize,
 
   gpio_set_level(PIN_NUM_CS, 1);
   gpio_set_level(PIN_NUM_CS, 0);
-  spi_write_byte(0x24);
+  spiWriteByte(spi, 0x24);
 
   gpio_set_level(PIN_NUM_DATA, 1);
   for (i = 0; i < ySize; i++) {
     for (j = 0; j < xSize; j++) {
-      spi_write_byte(dispdata);
+      spiWriteByte(spi, dispdata);
     }
   }
   gpio_set_level(PIN_NUM_CS, 1);
@@ -140,40 +128,11 @@ void initSPI() {
   gpio_set_direction(PIN_NUM_RESET, GPIO_MODE_OUTPUT);
   gpio_set_direction(PIN_NUM_BUSY, GPIO_MODE_INPUT);
 
-  PIN_FUNC_SELECT(PERIPHS_IO_MUX_GPIO5_U, SPI_NUM);
-  PIN_FUNC_SELECT(PERIPHS_IO_MUX_GPIO17_U, SPI_NUM);
-  PIN_FUNC_SELECT(PERIPHS_IO_MUX_GPIO18_U, SPI_NUM);
-
-  CLEAR_PERI_REG_MASK(SPI_SLAVE_REG(SPI_NUM), SPI_TRANS_DONE << 5);
-  SET_PERI_REG_MASK(SPI_USER_REG(SPI_NUM), SPI_CS_SETUP);
-  CLEAR_PERI_REG_MASK(SPI_PIN_REG(SPI_NUM), SPI_CK_IDLE_EDGE);
-  CLEAR_PERI_REG_MASK(SPI_USER_REG(SPI_NUM), SPI_CK_OUT_EDGE);
-  CLEAR_PERI_REG_MASK(SPI_CTRL_REG(SPI_NUM), SPI_WR_BIT_ORDER);
-  CLEAR_PERI_REG_MASK(SPI_CTRL_REG(SPI_NUM), SPI_RD_BIT_ORDER);
-  CLEAR_PERI_REG_MASK(SPI_USER_REG(SPI_NUM), SPI_DOUTDIN);
-  WRITE_PERI_REG(SPI_USER1_REG(SPI_NUM), 0);
-  SET_PERI_REG_BITS(SPI_CTRL2_REG(SPI_NUM), SPI_MISO_DELAY_MODE, 0,
-                    SPI_MISO_DELAY_MODE_S);
-  CLEAR_PERI_REG_MASK(SPI_SLAVE_REG(SPI_NUM), SPI_SLAVE_MODE);
-
-  WRITE_PERI_REG(SPI_CLOCK_REG(SPI_NUM),
-                 (1 << SPI_CLKCNT_N_S) | (1 << SPI_CLKCNT_L_S)); // 40MHz
-  // WRITE_PERI_REG(SPI_CLOCK_REG(SPI_NUM), SPI_CLK_EQU_SYSCLK); // 80Mhz
-
-  SET_PERI_REG_MASK(SPI_USER_REG(SPI_NUM),
-                    SPI_CS_SETUP | SPI_CS_HOLD | SPI_USR_MOSI);
-  SET_PERI_REG_MASK(SPI_CTRL2_REG(SPI_NUM),
-                    ((0x4 & SPI_MISO_DELAY_NUM) << SPI_MISO_DELAY_NUM_S));
-  CLEAR_PERI_REG_MASK(SPI_USER_REG(SPI_NUM), SPI_USR_COMMAND);
-  SET_PERI_REG_BITS(SPI_USER2_REG(SPI_NUM), SPI_USR_COMMAND_BITLEN, 0,
-                    SPI_USR_COMMAND_BITLEN_S);
-  CLEAR_PERI_REG_MASK(SPI_USER_REG(SPI_NUM), SPI_USR_ADDR);
-  SET_PERI_REG_BITS(SPI_USER1_REG(SPI_NUM), SPI_USR_ADDR_BITLEN, 0,
-                    SPI_USR_ADDR_BITLEN_S);
-  CLEAR_PERI_REG_MASK(SPI_USER_REG(SPI_NUM), SPI_USR_MISO);
-  SET_PERI_REG_MASK(SPI_USER_REG(SPI_NUM), SPI_USR_MOSI);
-  char i;
-  for (i = 0; i < 16; ++i) {
-    WRITE_PERI_REG((SPI_W0_REG(SPI_NUM) + (i << 2)), 0);
-  }
+  spi_t *spi = spiStartBus(VSPI, 1000000, SPI_MODE0, SPI_MSBFIRST);
+  spiAttachSCK(spi, PIN_NUM_CLK);
+  // spiAttachMISO(spi, misoPin);
+  spiAttachMOSI(spi, PIN_NUM_MOSI);
+  spiAttachSS(spi, 0, PIN_NUM_CS);   // if you want hardware SS
+  spiEnableSSPins(spi, 1 << 0); // activate SS for CS0
+  spiSSEnable(spi);
 }

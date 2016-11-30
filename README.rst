@@ -3,8 +3,8 @@ ESP32 AMEPD test for SHA2017Badge
 
 Read `project documentation <https://orga.sha2017.org/index.php/Projects:Badge>`__ and get involved.
 
-This firmware is working
-------------------------
+This firmware is tentative
+--------------------------
 
 This should display some images on the e-ink screen of the SHA Badge prototype 0.0.1
 

@@ -1,6 +1,9 @@
 #ifndef EPD_GDE_H
 #define EPD_GDE_H
 
+#include "esp32-hal-spi.h"
+
+spi_t *spi;
 void initSPI();
 void resetDisplay();
 void writeCommand(unsigned char command);
