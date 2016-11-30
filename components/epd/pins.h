@@ -8,6 +8,4 @@
 #define PIN_NUM_RESET 20
 #define PIN_NUM_BUSY 21
 
-#define SPI_NUM 0x3
-
 #endif
