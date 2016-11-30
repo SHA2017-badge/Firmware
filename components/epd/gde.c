@@ -10,49 +10,52 @@
 #include <stdio.h>
 #include <string.h>
 
+#define LOW 0
+#define HIGH 1
+
 void resetDisplay() {
-  gpio_set_level(PIN_NUM_RESET, 0);
+  gpio_set_level(PIN_NUM_RESET, LOW);
   ets_delay_us(1000);
-  gpio_set_level(PIN_NUM_RESET, 1);
+  gpio_set_level(PIN_NUM_RESET, HIGH);
   ets_delay_us(1000);
 }
 
 void writeCommand(unsigned char command) {
-  gpio_set_level(PIN_NUM_CS, 1);
-  gpio_set_level(PIN_NUM_CS, 0);
+  gpio_set_level(PIN_NUM_CS, HIGH);
+  gpio_set_level(PIN_NUM_CS, LOW);
   spiWriteByte(spi, command);
-  gpio_set_level(PIN_NUM_CS, 1);
+  gpio_set_level(PIN_NUM_CS, HIGH);
 }
 
 void writeData(unsigned char data) {
-  gpio_set_level(PIN_NUM_CS, 1);
-  gpio_set_level(PIN_NUM_CS, 0);
-  gpio_set_level(PIN_NUM_DATA, 1);
+  gpio_set_level(PIN_NUM_CS, HIGH);
+  gpio_set_level(PIN_NUM_CS, LOW);
+  gpio_set_level(PIN_NUM_DATA, HIGH);
   spiWriteByte(spi, data);
-  gpio_set_level(PIN_NUM_CS, 1);
-  gpio_set_level(PIN_NUM_DATA, 0);
+  gpio_set_level(PIN_NUM_CS, HIGH);
+  gpio_set_level(PIN_NUM_DATA, LOW);
 }
 
 void writeCMD_p1(unsigned char command, unsigned char para) {
-  gpio_set_level(PIN_NUM_CS, 1);
-  gpio_set_level(PIN_NUM_CS, 0);
+  gpio_set_level(PIN_NUM_CS, HIGH);
+  gpio_set_level(PIN_NUM_CS, LOW);
   spiWriteByte(spi, command);
-  gpio_set_level(PIN_NUM_DATA, 1);
+  gpio_set_level(PIN_NUM_DATA, HIGH);
   spiWriteByte(spi, para);
-  gpio_set_level(PIN_NUM_CS, 1);
-  gpio_set_level(PIN_NUM_DATA, 0);
+  gpio_set_level(PIN_NUM_CS, HIGH);
+  gpio_set_level(PIN_NUM_DATA, LOW);
 }
 
 void writeCMD_p2(unsigned char command, unsigned char para1,
                  unsigned char para2) {
-  gpio_set_level(PIN_NUM_CS, 1);
-  gpio_set_level(PIN_NUM_CS, 0);
+  gpio_set_level(PIN_NUM_CS, HIGH);
+  gpio_set_level(PIN_NUM_CS, LOW);
   spiWriteByte(spi, command);
-  gpio_set_level(PIN_NUM_DATA, 1);
+  gpio_set_level(PIN_NUM_DATA, HIGH);
   spiWriteByte(spi, para1);
   spiWriteByte(spi, para2);
-  gpio_set_level(PIN_NUM_CS, 1);
-  gpio_set_level(PIN_NUM_DATA, 0);
+  gpio_set_level(PIN_NUM_CS, HIGH);
+  gpio_set_level(PIN_NUM_DATA, LOW);
 }
 
 void writeStream(unsigned char *value, unsigned char datalen) {
@@ -60,18 +63,18 @@ void writeStream(unsigned char *value, unsigned char datalen) {
   unsigned char *ptemp;
 
   ptemp = value;
-  gpio_set_level(PIN_NUM_CS, 1);
-  gpio_set_level(PIN_NUM_CS, 0);
+  gpio_set_level(PIN_NUM_CS, HIGH);
+  gpio_set_level(PIN_NUM_CS, LOW);
   spiWriteByte(spi, *ptemp);
   ptemp++;
-  gpio_set_level(PIN_NUM_DATA, 1);
+  gpio_set_level(PIN_NUM_DATA, HIGH);
   for (i = 0; i < datalen - 1; i++) // sub the command
   {
     spiWriteByte(spi, *ptemp);
     ptemp++;
   }
-  gpio_set_level(PIN_NUM_CS, 1);
-  gpio_set_level(PIN_NUM_DATA, 0);
+  gpio_set_level(PIN_NUM_CS, HIGH);
+  gpio_set_level(PIN_NUM_DATA, LOW);
 }
 
 void writeDispRam(unsigned char xSize, unsigned int ySize,
@@ -84,11 +87,11 @@ void writeDispRam(unsigned char xSize, unsigned int ySize,
   }
   xSize = xSize / 8;
 
-  gpio_set_level(PIN_NUM_CS, 1);
-  gpio_set_level(PIN_NUM_CS, 0);
+  gpio_set_level(PIN_NUM_CS, HIGH);
+  gpio_set_level(PIN_NUM_CS, LOW);
   spiWriteByte(spi, 0x24);
 
-  gpio_set_level(PIN_NUM_DATA, 1);
+  gpio_set_level(PIN_NUM_DATA, HIGH);
   for (i = 0; i < ySize; i++) {
     for (j = 0; j < xSize; j++) {
       data = dispdata[c];
@@ -96,8 +99,8 @@ void writeDispRam(unsigned char xSize, unsigned int ySize,
       c++;
     }
   }
-  gpio_set_level(PIN_NUM_CS, 1);
-  gpio_set_level(PIN_NUM_DATA, 0);
+  gpio_set_level(PIN_NUM_CS, HIGH);
+  gpio_set_level(PIN_NUM_DATA, LOW);
 }
 
 void writeDispRamMono(unsigned char xSize, unsigned int ySize,
@@ -108,18 +111,18 @@ void writeDispRamMono(unsigned char xSize, unsigned int ySize,
   }
   xSize = xSize / 8;
 
-  gpio_set_level(PIN_NUM_CS, 1);
-  gpio_set_level(PIN_NUM_CS, 0);
+  gpio_set_level(PIN_NUM_CS, HIGH);
+  gpio_set_level(PIN_NUM_CS, LOW);
   spiWriteByte(spi, 0x24);
 
-  gpio_set_level(PIN_NUM_DATA, 1);
+  gpio_set_level(PIN_NUM_DATA, HIGH);
   for (i = 0; i < ySize; i++) {
     for (j = 0; j < xSize; j++) {
       spiWriteByte(spi, dispdata);
     }
   }
-  gpio_set_level(PIN_NUM_CS, 1);
-  gpio_set_level(PIN_NUM_DATA, 0);
+  gpio_set_level(PIN_NUM_CS, HIGH);
+  gpio_set_level(PIN_NUM_DATA, LOW);
 }
 
 void initSPI() {
