@@ -9,11 +9,12 @@ This firmware is tentative
 Unfortunately on SHA Rev0.0.1 Dev pin 20 has to be connected to 23 (solder bridge).
 The screen reset pin is currently attached to IO20 (in practice NC?)
 
+SPI code seems to work etc . . http://defeestboek.nl/n/src/148063247423.png
+
+See saleae Logic dump: https://annejan.com/media/logicdata.zip 
+
 Currently debugging options:
 
-- Is pin 20 pulled down/up ?
-- Check voltages . .
-- Are all pins firing as they should?
 - Can we get the "old" screen breakout to work with this firmware?
 - Can we get the screen to work by feeding it data from Arduino?
 
