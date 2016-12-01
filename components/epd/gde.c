@@ -10,14 +10,18 @@
 #include <stdio.h>
 #include <string.h>
 
+#ifndef LOW
 #define LOW 0
+#endif
+#ifndef HIGH
 #define HIGH 1
+#endif
 
 void resetDisplay() {
   gpio_set_level(PIN_NUM_RESET, LOW);
-  ets_delay_us(1000);
+  ets_delay_us(100000);
   gpio_set_level(PIN_NUM_RESET, HIGH);
-  ets_delay_us(1000);
+  ets_delay_us(100000);
 }
 
 void writeCommand(unsigned char command) {
@@ -133,7 +137,7 @@ void initSPI() {
 
   spi = spiStartBus(VSPI, 1000000, SPI_MODE0, SPI_MSBFIRST);
   spiAttachSCK(spi, PIN_NUM_CLK);
-  // spiAttachMISO(spi, PIN_NUM_MISO);
+  spiAttachMISO(spi, 34); // just cause . .
   spiAttachMOSI(spi, PIN_NUM_MOSI);
   spiAttachSS(spi, 0, PIN_NUM_CS); // if you want hardware SS
   spiEnableSSPins(spi, 1 << 0);    // activate SS for CS0
