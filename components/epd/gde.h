@@ -1,9 +1,8 @@
 #ifndef EPD_GDE_H
 #define EPD_GDE_H
 
-#include "esp32-hal-spi.h"
+#include <stdint.h>
 
-spi_t *spi;
 void initSPI();
 void resetDisplay();
 void writeCommand(unsigned char command);
@@ -16,5 +15,7 @@ void writeDispRam(unsigned char xSize, unsigned int ySize,
                   const unsigned char *dispdata);
 void writeDispRamMono(unsigned char xSize, unsigned int ySize,
                       unsigned char dispdata);
+
+void spiWriteByte(const uint8_t data);
 
 #endif
