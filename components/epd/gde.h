@@ -3,6 +3,13 @@
 
 #include <stdint.h>
 
+#ifndef LOW
+#define LOW 0
+#endif
+#ifndef HIGH
+#define HIGH 1
+#endif
+
 void initSPI();
 void resetDisplay();
 void writeCommand(unsigned char command);

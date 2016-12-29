@@ -19,5 +19,7 @@ void updateDisplayPartial(void);
 void writeRam(void);
 void powerOff(void);
 void powerOn(void);
-
+void menuImage(const unsigned char *picture, unsigned int menuItem);
+void writeDispRamMenu(unsigned char xSize, unsigned int ySize,
+                      const unsigned char *dispdata, unsigned int menuItem);
 #endif

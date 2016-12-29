@@ -135,6 +135,57 @@ void partialDisplay(unsigned char RAM_XST, unsigned char RAM_XEND,
   setRamPointer(RAM_XST, RAM_YST, RAM_YST1); /*set orginal*/
 }
 
+void writeDispRamMenu(unsigned char xSize, unsigned int ySize,
+                      const unsigned char *dispdata, unsigned int menuItem) {
+  unsigned int i = 0, j = 0, c = 0;
+  char data;
+
+  if (xSize % 8 != 0) {
+    xSize = xSize + (8 - xSize % 8);
+  }
+  xSize = xSize / 8;
+
+  gpio_set_level(PIN_NUM_CS, HIGH);
+  gpio_set_level(PIN_NUM_CS, LOW);
+  writeData(0x24);
+
+  gpio_set_level(PIN_NUM_DATA, HIGH);
+  for (i = 0; i < ySize; i++) {
+    for (j = 0; j < xSize; j++) {
+      data = dispdata[c];
+
+      if (menuItem == 1) {
+        if (i > 8 && i < 140 && j > 2 && j < 8) {
+          data = ~data;
+        }
+      } else if (menuItem == 2) {
+        if (i > 8 && i < 140 && j > 8 && j < 14) {
+          data = ~data;
+        }
+      } else if (menuItem == 3) {
+        if (i > 156 && i < 288 && j > 2 && j < 8) {
+          data = ~data;
+        }
+      } else if (menuItem == 4) {
+        if (i > 156 && i < 288 && j > 8 && j < 14) {
+          data = ~data;
+        }
+      }
+
+      writeData(data);
+      c++;
+    }
+  }
+  gpio_set_level(PIN_NUM_CS, HIGH);
+  gpio_set_level(PIN_NUM_DATA, LOW);
+}
+
+void menuImage(const unsigned char *picture, unsigned int menuItem) {
+  setRamPointer(0x00, 0x27, 0x01); // set ram
+  writeDispRamMenu(128, 296, picture, menuItem);
+  updateDisplay();
+}
+
 // Currently unused functions
 
 void writeRam(void) { writeCommand(0x24); }
