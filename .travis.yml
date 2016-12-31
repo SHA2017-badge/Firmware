@@ -40,3 +40,6 @@ script:
   - make defconfig
   # Build project from the git repository
   - make
+
+notifications:
+  irc: "chat.freenode.net#sha2017-badge"
