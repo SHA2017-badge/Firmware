@@ -6,7 +6,7 @@
 #
 # SDK tool configuration
 #
-CONFIG_TOOLPREFIX="xtensa-esp32-elf"
+CONFIG_TOOLPREFIX="xtensa-esp32-elf-"
 CONFIG_PYTHON="python"
 
 #
