@@ -14,3 +14,8 @@ Copyright (C) 2016 Espressif Systems, licensed under the Apache License 2.0 as d
 
 .. image:: https://travis-ci.org/SHA2017-badge/Firmware.png?branch=master
     :target: https://travis-ci.org/SHA2017-badge/Firmware
+
+Ubuntu Prerequisites
+--------------------
+
+sudo apt-get install libncurses5-dev flex bison gperf
