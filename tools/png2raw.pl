@@ -2,26 +2,56 @@
 
 use strict;
 use Image::Magick;
+use Getopt::Std;
 
-die "Usage: $0 <file-in> <file-out>\n" unless @ARGV == 2;
+sub VERSION_MESSAGE { }
+sub HELP_MESSAGE {
+	die "Usage: $0 [-r] [-I] [-i <input>] [-o <output>]\n".
+		"\n".
+		"  -r  rotate image 180 degrees\n".
+		"  -I  invert black/white\n";
+}
 
-my $file_in = shift;
-my $file_out = shift;
+my %opts;
+$Getopt::Std::STANDARD_HELP_VERSION = 1;
+getopts('rIi:o:', \%opts);
+
+my $file_in = $opts{i};
+my $file_out = $opts{o};
 
 my $bin = "\x00" x (296 * 128 / 8);
 
 my $p = Image::Magick->new;
-$p->Read($file_in);
+$p->Read($file_in // '/dev/stdin');
+
+# FIXME: check dimensions of image
 
 for (my $y=0; $y<296; $y++) {
 	for (my $x=0; $x<128; $x++) {
 		my @pix = $p->GetPixel(x => $y, y => $x);
-		if ($pix[0] <= 0.5) {
+		if ($pix[0] > 0.5) {
 			vec($bin, ($x + $y * 128)^7, 1) = 1;
 		}
 	}
 }
 
-open F, '>', $file_out or die;
-print F $bin;
-close F;
+# rotate
+if ($opts{r}) {
+	my $orig = $bin;
+	for (my $i=0; $i<length($bin)*8; $i++) {
+		vec($bin, $i, 1) = vec($orig, length($bin)*8-1-$i, 1);
+	}
+}
+# invert
+if ($opts{I}) {
+	$bin ^= "\xff" x length($bin);
+}
+
+if (defined $file_out) {
+	open F, '>', $file_out or die;
+	print F $bin;
+	close F;
+} else {
+	die "not printing raw data to terminal.\n" if -t STDOUT;
+	print $bin;
+}

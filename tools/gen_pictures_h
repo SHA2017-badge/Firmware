@@ -1,0 +1,31 @@
+#!/bin/bash
+
+(
+	echo '#ifndef EPD_PICTURES_H'
+	echo '#define EPD_PICTURES_H'
+	echo
+	echo '#include <stdint.h>'
+	echo
+	echo '// GDE029'
+	./png2raw.pl -r -i ../pictures/pic_1.png | ./raw2h.pl -v gImage_sha
+	echo
+	./png2raw.pl -r -i ../pictures/pic_2.png | ./raw2h.pl -v gImage_menu
+	echo
+	./png2raw.pl -r -i ../pictures/pic_3.png | ./raw2h.pl -v gImage_nick
+	echo
+	./png2raw.pl -r -i ../pictures/pic_4.png | ./raw2h.pl -v gImage_weather
+	echo
+	./png2raw.pl -r -i ../pictures/pic_5.png | ./raw2h.pl -v gImage_test
+	echo
+	echo '#define NUM_PICTURES 5'
+	echo
+	echo 'const uint8_t *pictures[NUM_PICTURES] = {'
+	echo '  gImage_sha,'
+	echo '  gImage_menu,'
+	echo '  gImage_nick,'
+	echo '  gImage_weather,'
+	echo '  gImage_test,'
+	echo '};'
+	echo
+	echo '#endif'
+) > ../components/epd/pictures.h

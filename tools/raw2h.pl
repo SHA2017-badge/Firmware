@@ -1,40 +1,43 @@
 #!/usr/bin/perl -w
 
 use strict;
+use Getopt::Std;
 
-die "Usage: $0 <file-in> <file-out> <name>\n" unless @ARGV == 3;
-
-# FIXME: convert to cmdline options
-my $invert_xy = 1;
-my $invert_bw = 1;
-
-my $file_in = shift;
-my $file_out = shift;
-my $name = shift;
-
-open F, '<', $file_in or die;
-my $bin = do { local $/; <F> };
-close F;
-
-# invert (x, y)
-if ($invert_xy) {
-	my $orig = $bin;
-	for (my $i=0; $i<length($bin)*8; $i++) {
-		vec($bin, $i, 1) = vec($orig, length($bin)*8-1-$i, 1);
-	}
+sub VERSION_MESSAGE { }
+sub HELP_MESSAGE {
+	die "Usage: $0 [-i <input>] [-o <output>] [-v <variable-name>] [-w <bytes-per-line>]\n";
 }
-# invert (color)
-if ($invert_bw) {
-	$bin ^= "\xff" x length($bin);
+
+my %opts;
+$Getopt::Std::STANDARD_HELP_VERSION = 1;
+getopts('i:o:v:w:', \%opts);
+
+my $file_in = $opts{i};
+my $file_out = $opts{o};
+my $varname = $opts{v} // die "Variable name not set.\n";
+my $num = $opts{w} // 16;
+die "bytes per line is not a positive integer.\n" unless $num =~ /\A[1-9]\d*\z/;
+
+my $bin;
+if (defined $file_in) {
+	open F, '<', $file_in or die;
+	$bin = do { local $/; <F> };
+	close F;
+} else {
+	$bin = do { local $/; <STDIN> };
 }
 
 my $out = '';
-$out .= "const uint8_t $name\[".length($bin)."\] = {\n";
+$out .= "const uint8_t $varname\[".length($bin)."\] = {\n";
 while ($bin ne '') {
-	$out .= "    ".join('', map { "0x$_," } unpack '(H2)*', substr($bin, 0, 16, ''))."\n";
+	$out .= "    ".join('', map { "0x$_," } unpack '(H2)*', substr($bin, 0, $num, ''))."\n";
 }
 $out .= "};\n";
 
-open F, '>', $file_out or die;
-print F $out;
-close F;
+if (defined $file_out) {
+	open F, '>', $file_out or die;
+	print F $out;
+	close F;
+} else {
+	print $out;
+}
