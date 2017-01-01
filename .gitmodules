@@ -1,0 +1,6 @@
+[submodule "esp-idf"]
+	path = esp-idf
+	url = https://github.com/espressif/esp-idf
+[submodule "nodemcu-prebuilt-toolchains"]
+	path = nodemcu-prebuilt-toolchains
+	url = https://github.com/jmattsson/nodemcu-prebuilt-toolchains
