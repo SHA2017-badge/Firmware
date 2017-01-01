@@ -21,7 +21,7 @@ install:
   # Get required packages - already done above, see addons: apt: packages:
   # - sudo apt-get install git wget make libncurses-dev flex bison gperf python python-serial
   # Prepare directory for the toolchain
-  git submodule --init --recursive
+  git submodule update --init --recursive
 
 script:
   # Update configuration so that kconfig doesn't start interactive mode
