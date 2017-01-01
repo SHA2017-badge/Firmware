@@ -102,7 +102,7 @@ void writeDispRam(unsigned char xSize, unsigned int ySize,
   for (i = 0; i < ySize; i++) {
     for (j = 0; j < xSize; j++) {
       data = dispdata[c];
-      spiWriteByte(~data);
+      spiWriteByte(data);
       c++;
     }
   }
