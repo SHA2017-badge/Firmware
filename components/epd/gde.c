@@ -65,9 +65,9 @@ void writeCMD_p2(unsigned char command, unsigned char para1,
   gpio_set_level(PIN_NUM_DATA, LOW);
 }
 
-void writeStream(unsigned char *value, unsigned char datalen) {
+void writeStream(const unsigned char *value, unsigned char datalen) {
   unsigned char i = 0;
-  unsigned char *ptemp;
+  const unsigned char *ptemp;
 
   ptemp = value;
   gpio_set_level(PIN_NUM_CS, HIGH);
