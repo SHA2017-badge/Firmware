@@ -7,13 +7,11 @@
 void writeLUT(bool fast);
 void initDisplay(bool fast);
 void displayImage(const unsigned char *picture, bool partial);
-void setRamArea(unsigned char Xstart, unsigned char Xend, unsigned char Ystart,
-                unsigned char Ystart1, unsigned char Yend, unsigned char Yend1);
-void setRamPointer(unsigned char addrX, unsigned char addrY,
-                   unsigned char addrY1);
+void setRamArea(unsigned char Xstart, unsigned char Xend,
+                unsigned short Ystart, unsigned short Yend);
+void setRamPointer(unsigned char addrX, unsigned short addrY);
 void partialDisplay(unsigned char RAM_XST, unsigned char RAM_XEND,
-                    unsigned char RAM_YST, unsigned char RAM_YST1,
-                    unsigned char RAM_YEND, unsigned char RAM_YEND1);
+                    unsigned short RAM_YST, unsigned short RAM_YEND);
 void updateDisplay(void);
 void updateDisplayPartial(void);
 void writeRam(void);
