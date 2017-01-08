@@ -19,3 +19,10 @@ Ubuntu Prerequisites
 --------------------
 
 sudo apt-get install libncurses5-dev flex bison gperf
+
+Compiling and flashing
+----------------------
+
+git submodule update -i -r
+make defconfig
+make flash
