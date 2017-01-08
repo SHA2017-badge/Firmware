@@ -18,11 +18,15 @@ Copyright (C) 2016 Espressif Systems, licensed under the Apache License 2.0 as d
 Ubuntu Prerequisites
 --------------------
 
-sudo apt-get install libncurses5-dev flex bison gperf
+prequisites::
+    sudo apt-get install libncurses5-dev flex bison gperf
 
 Compiling and flashing
 ----------------------
 
-git submodule update -i -r
-make defconfig
-make flash
+compiling::
+    git submodule update -i -r
+    make defconfig
+    make
+flashing::
+    make flash
