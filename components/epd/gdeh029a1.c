@@ -7,12 +7,8 @@
 // GDEH029A1
 // SSD1608
 
-#define DISP_SIZE_X 128
-#define DISP_SIZE_Y 296
-
-#define DISP_SIZE_X_B ((DISP_SIZE_X + 7) >> 3)
-
 #include "font_8px.h"
+#include "font_16px.h"
 
 /* LUT data without the last 2 bytes */
 const uint8_t LUTDefault_part[30] = {
@@ -86,15 +82,39 @@ drawImage(const uint8_t *picture)
 }
 
 int
-drawText(int x, int y, int y_len, const char *text, bool invert, bool fill)
+drawText(int x, int y, int y_len, const char *text, uint8_t flags)
 {
+	// select font definitions
+	const uint8_t *font_data;
+	const uint8_t *font_width;
+	int font_FIRST, font_LAST, font_WIDTH, font_HEIGHT;
+
+	if (flags & FONT_16PX)
+	{
+		font_data = font_16px_data;
+		font_width = font_16px_width;
+		font_FIRST = FONT_16PX_FIRST;
+		font_LAST = FONT_16PX_LAST;
+		font_WIDTH = FONT_16PX_WIDTH;
+		font_HEIGHT = FONT_16PX_HEIGHT;
+	}
+	else
+	{
+		font_data = font_8px_data;
+		font_width = font_8px_width;
+		font_FIRST = FONT_8PX_FIRST;
+		font_LAST = FONT_8PX_LAST;
+		font_WIDTH = FONT_8PX_WIDTH;
+		font_HEIGHT = FONT_8PX_HEIGHT;
+	}
+
 	if (x < 0)
-		x = 0;
-	if (x >= DISP_SIZE_X_B)
+		return 0;
+	if (x > DISP_SIZE_X_B-font_HEIGHT)
 		return 0;
 
 	if (y < 0)
-		y = 0;
+		return 0;
 	if (y >= DISP_SIZE_Y)
 		return 0;
 
@@ -106,30 +126,46 @@ drawText(int x, int y, int y_len, const char *text, bool invert, bool fill)
 		y_len = DISP_SIZE_Y - y;
 
 	int y_max = y_len + y;
-	setRamArea(15-x, 15-x, y, y_max-1);
-	setRamPointer(15-x, y);
+	setRamArea(x, x+font_HEIGHT-1, y, y_max-1);
+	setRamPointer(x, y);
 
 	gdeWriteCommandInit(0x24); // write RAM
 
 	int numChars = 0;
 	while (*text != 0 && y < y_max)
 	{
-		char ch = *text;
-		if (ch < 32 || ch > 126)
-			ch = 32;
-		unsigned int f_index = font_8px[ch - 32];
-		unsigned int ch_width = f_index >> 12;
-		f_index &= 0xfff;
+		int ch = *text;
+		if (ch < font_FIRST || ch > font_LAST)
+			ch = 0;
+		else
+			ch -= font_FIRST;
+
+		uint8_t ch_width;
+		unsigned int f_index = ch * (font_WIDTH*font_HEIGHT);
+		if (flags & FONT_MONOSPACE)
+		{
+			ch_width = font_WIDTH;
+		}
+		else
+		{
+			ch_width = font_width[ch];
+			f_index += (ch_width >> 4) * font_HEIGHT;
+			ch_width &= 0x0f;
+		}
 
 		if (y + ch_width >= y_max)
 			break; // not enough space for full character
 
 		while (ch_width > 0 && y < y_max)
 		{
-			uint8_t ch = font_8px_data[f_index++];
-			if (invert)
-				ch = ~ch;
-			gdeWriteByte(ch);
+			int ch_x;
+			for (ch_x=0; ch_x < font_HEIGHT; ch_x++)
+			{
+				uint8_t ch = font_data[f_index++];
+				if (flags & FONT_INVERT)
+					ch = ~ch;
+				gdeWriteByte(ch);
+			}
 			y++;
 			ch_width--;
 		}
@@ -137,14 +173,16 @@ drawText(int x, int y, int y_len, const char *text, bool invert, bool fill)
 		numChars++;
 	}
 
-	if (fill)
+	if (flags & FONT_FULL_WIDTH)
 	{
+		uint8_t ch = 0;
+		if (flags & FONT_INVERT)
+			ch = ~ch;
 		while (y < y_max)
 		{
-			uint8_t ch = 0;
-			if (invert)
-				ch = ~ch;
-			gdeWriteByte(ch);
+			int ch_x;
+			for (ch_x=0; ch_x < font_HEIGHT; ch_x++)
+				gdeWriteByte(ch);
 			y++;
 		}
 	}
@@ -176,8 +214,10 @@ setRamPointer(uint8_t addrX, uint16_t addrY)
 void
 updateDisplay(void)
 {
+	// enforce full screen update
 	gdeWriteCommand_p3(0x01, (DISP_SIZE_Y-1) & 0xff, (DISP_SIZE_Y-1) >> 8, 0x00);
 	gdeWriteCommand_p2(0x0f, 0, 0);
+
 //	gdeWriteCommand_p1(0x22, 0xc7);
 	gdeWriteCommand_p1(0x22, 0xc7);
 //	gdeWriteCommand_p1(0x22, 0xff);
@@ -195,7 +235,8 @@ updateDisplay(void)
 void
 updateDisplayPartial(uint16_t yStart, uint16_t yEnd)
 {
-	/* FIXME: doesn't work yet.. */
+	// NOTE: partial screen updates work, but you need the full
+	//       LUT waveform. but still a lot of ghosting..
 	uint16_t yLen = yEnd - yStart;
 	gdeWriteCommand_p3(0x01, yLen & 0xff, yLen >> 8, 0x00);
 	gdeWriteCommand_p2(0x0f, yStart & 0xff, yStart >> 8);

@@ -6,53 +6,112 @@ use Getopt::Std;
 
 sub VERSION_MESSAGE { }
 sub HELP_MESSAGE {
-	die "Usage: $0 [-r] [-I] [-i <input>] [-o <output>]\n".
-		"\n".
-		"  -r  rotate image 180 degrees\n".
-		"  -I  invert black/white\n";
+	die "Usage: $0 [-h <height>] [-w <width>] [-v <varname>] [-d <defname>] <input> <output>\n"
 }
 
 my %opts;
 $Getopt::Std::STANDARD_HELP_VERSION = 1;
-getopts('rIi:o:', \%opts);
+getopts('d:h:w:v:', \%opts);
 
-my $file_in = $opts{i};
-my $file_out = $opts{o};
+my $height = $opts{h} // 8;
+my $width = $opts{w} // $height;
+my $varname = $opts{v} // "font_".$height."px";
+my $defname = $opts{d} // uc($varname);
+
+my $file_in = shift // HELP_MESSAGE();
+my $file_out = shift // HELP_MESSAGE();
+@ARGV && HELP_MESSAGE();
+
+my $file_h;
+if ($file_out ne '-') {
+	$file_h = $file_out;
+	$file_h =~ s/\A.*\///s;
+	$file_h .= '.h';
+}
+
+my $height_b = ($height+7) >> 3;
+my $ch_first = 32;
+my $ch_last = 126;
 
 my $p = Image::Magick->new;
-$p->Read($file_in // '/dev/stdin');
+$p->Read($file_in eq '-' ? '/dev/stdin' : $file_in);
 
-my $xbox = 8;
-my $ybox = 10;
+my $xbox = $p->Get('width') / 16; # 8;
+my $ybox = $p->Get('height') / 6; # 10;
 
 my $cpos = 0;
 my @chars;
-print "const unsigned char font_8px_data[] = {\n";
-for (my $ch=32; $ch<127; $ch++) {
+
+my $out_h = '';
+$out_h .= "#ifndef ".$defname."_H\n";
+$out_h .= "#define ".$defname."_H\n";
+$out_h .= "\n";
+$out_h .= "#include <stdint.h>\n";
+$out_h .= "\n";
+$out_h .= "#define ".$defname."_FIRST $ch_first\n";
+$out_h .= "#define ".$defname."_LAST $ch_last\n";
+$out_h .= "#define ".$defname."_WIDTH $width\n";
+$out_h .= "#define ".$defname."_HEIGHT $height_b\n";
+$out_h .= "\n";
+
+my $out_c = '';
+$out_c .= "#include <stdint.h>\n";
+$out_c .= "\n#include \"$file_h\"\n" if defined $file_h;
+$out_c .= "\n";
+$out_c .= "const uint8_t ".$varname."_data[".($width*$height_b*($ch_last+1-$ch_first))."] = {\n";
+$out_h .= "extern const uint8_t ".$varname."_data[".($width*$height_b*($ch_last+1-$ch_first))."];\n";
+for (my $ch=$ch_first; $ch<=$ch_last; $ch++) {
 	my $pos_x = ($ch & 15) * $xbox;
 	my $pos_y = (($ch >> 4)-2) * $ybox;
 
 	my @n;
-	for (my $x=0; $x<8; $x++) {
+	my $x;
+	for ($x=0; $x<=$width; $x++) {
 		my @pix = $p->GetPixel(x => ($pos_x+$x), y => ($pos_y));
 		last if $pix[1] == 0;
 		my $n=0;
-		for (my $y=7; $y>=0; $y--) {
+		for (my $y=$height-1; $y>=0; $y--) {
 			@pix = $p->GetPixel(x => ($pos_x+$x), y => ($pos_y+$y));
 			$n *= 2;
 			$n += $pix[0];
 		}
-		push @n, sprintf('0x%02x', $n);
+		my @nn;
+		for (my $i=0; $i<$height_b; $i++) {
+			push @nn, sprintf('0x%02x', $n & 0xff);
+			$n >>= 8;
+		}
+		push @n, reverse @nn;
 	}
-	print "\t".join(', ', @n).",\n";
-	push @chars, [ $cpos, scalar(@n) ];
-	$cpos += @n;
+	die "character $ch too wide.\n" if @n > $width*$height_b;
+	push @chars, [ $x ];
+	while (@n < $width*$height_b) { push @n, '0x00' }
+	$out_c .= "\t".join(', ', @n).",\n";
 }
-print "};\n";
-print "\n";
-print "const unsigned short font_8px[127-32] = {\n";
+$out_c .= "};\n";
+$out_c .= "\n";
+$out_c .= "const uint8_t ".$varname."_width[".($ch_last+1-$ch_first)."] = {\n";
+$out_h .= "extern const uint8_t ".$varname."_width[".($ch_last+1-$ch_first)."];\n";
+my @n;
 foreach my $c (@chars) {
-	my ($cpos, $clen) = @$c;
-	print "\t$cpos + ($clen << 12),\n";
+	my ($clen) = @$c;
+	push @n, sprintf('%2u', $clen);
+	if (@n >= 16) {
+		$out_c .= "\t".join(', ', @n).",\n";
+		splice @n, 0, 16;
+	}
 }
-print "};\n";
+$out_c .= "\t".join(', ', @n).",\n" if @n;
+$out_c .= "};\n";
+$out_h .= "\n";
+$out_h .= "#endif // ".$defname."_H\n";
+
+if ($file_out eq '-') {
+	print $out_c;
+} else {
+	open F, '>', $file_out.'.c' or die;
+	print F $out_c;
+	close F;
+	open F, '>', $file_out.'.h' or die;
+	print F $out_h;
+	close F;
+}

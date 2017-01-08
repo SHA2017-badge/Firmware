@@ -122,13 +122,14 @@ void app_main(void) {
 	updateDisplay();
 	gdeBusyWait();
 
-	writeLUT(true); // configure fast LUT
+	bool enable_fast_waveform = true;
+	writeLUT(enable_fast_waveform); // configure fast LUT
 
 	while (1) {
 		uint32_t buttons_down;
 		if (xQueueReceive(evt_queue, &buttons_down, portMAX_DELAY)) {
 			if (buttons_down & (1 << 0)) {
-				ets_printf("Button A handled\n");
+				ets_printf("Button A handling\n");
 				if (picture_id + 1 < NUM_PICTURES) {
 					picture_id++;
 					drawImage(pictures[picture_id]);
@@ -137,7 +138,7 @@ void app_main(void) {
 				}
 			}
 			if (buttons_down & (1 << 1)) {
-				ets_printf("Button B handled\n");
+				ets_printf("Button B handling\n");
 				if (picture_id > 0) {
 					picture_id--;
 					drawImage(pictures[picture_id]);
@@ -146,41 +147,48 @@ void app_main(void) {
 				}
 			}
 			if (buttons_down & (1 << 2)) {
-				ets_printf("Button MID handled\n");
+				ets_printf("Button MID handling\n");
 				drawImage(pictures[picture_id]);
 				const char *line_1 = "esp-idf supports compiling multiple files in parallel, so all of the above commands can be run as `make -jN` where `N` is the number of parallel make processes to run (generally N should be equal to or one more than the number of CPU cores in your system.)";
 
 				int pos = 0;
-				int row = 1;
+				int row = 14;
 				while (line_1[pos]) {
-					pos += drawText(row, 16, -16, &line_1[pos], true, true);
-					row++;
+					int num = drawText(row, 16, -16, &line_1[pos], FONT_16PX|FONT_INVERT|FONT_FULL_WIDTH);
+					if (num == 0)
+						break;
+					pos += num;
+					row -= 2;
 				}
-				drawText(row++, 16, -16, "", true, true);
-
+				drawText(row, 16, -16, "", FONT_16PX|FONT_INVERT|FONT_FULL_WIDTH);
+				row -= 2;
+/*
 				const char *line_2 = "Multiple make functions can be combined into one. For example: to build the app & bootloader using 5 jobs in parallel, then flash everything, and then display serial output from the ESP32 run:";
 				pos = 0;
 				while (line_2[pos]) {
-					pos += drawText(row, 16, -16, &line_2[pos], true, true);
-					row++;
+					int num = drawText(row, 16, -16, &line_2[pos], FONT_16PX|FONT_INVERT|FONT_FULL_WIDTH);
+					if (num == 0)
+						break;
+					pos += num;
+					row -= 2;
 				}
+*/
 
-
-				drawText(15,0,0," Just a status line. Wifi status: not connected",false,true);
+				drawText(0,0,0," Just a status line. Wifi status: not connected",FONT_FULL_WIDTH|FONT_MONOSPACE);
 
 				updateDisplay();
 				gdeBusyWait();
 			}
 			if (buttons_down & (1 << 3)) {
-				ets_printf("Button UP handled\n");
+				ets_printf("Button UP handling\n");
 				writeLUT(false);
 				drawImage(pictures[picture_id]);
 				updateDisplay();
 				gdeBusyWait();
-				writeLUT(true);
+				writeLUT(enable_fast_waveform);
 			}
 			if (buttons_down & (1 << 4)) {
-				ets_printf("Button DOWN handled\n");
+				ets_printf("Button DOWN handling\n");
 				picture_id = (picture_id + 1) % NUM_PICTURES;
 
 				int i;
@@ -191,6 +199,14 @@ void app_main(void) {
 					gdeBusyWait();
 					vTaskDelay(1000 / portTICK_PERIOD_MS);
 				}
+			}
+			if (buttons_down & (1 << 5)) {
+				ets_printf("Button LEFT handling\n");
+				enable_fast_waveform = !enable_fast_waveform;
+				writeLUT(enable_fast_waveform);
+				drawImage(pictures[picture_id]);
+				updateDisplay();
+				gdeBusyWait();
 			}
 		}
 	}

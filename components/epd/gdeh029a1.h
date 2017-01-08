@@ -5,22 +5,34 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-void writeLUT(bool fast);
-void initDisplay(bool fast);
+#define DISP_SIZE_X 128
+#define DISP_SIZE_Y 296
 
-void drawImage(const unsigned char *picture);
-int drawText(int x, int y, int y_len, const char *text, bool invert, bool fill);
+#define DISP_SIZE_X_B ((DISP_SIZE_X + 7) >> 3)
 
-void setRamArea(unsigned char Xstart, unsigned char Xend,
-                unsigned short Ystart, unsigned short Yend);
-void setRamPointer(unsigned char addrX, unsigned short addrY);
+extern void initDisplay(bool fast);
+extern void writeLUT(bool fast);
+
+extern void drawImage(const unsigned char *picture);
+
+#define FONT_16PX       0x01
+#define FONT_INVERT     0x02
+#define FONT_FULL_WIDTH 0x04
+#define FONT_MONOSPACE  0x08
+extern int drawText(int x, int y, int y_len, const char *text, uint8_t flags);
+
+extern void setRamArea(unsigned char Xstart, unsigned char Xend,
+                       unsigned short Ystart, unsigned short Yend);
+extern void setRamPointer(unsigned char addrX, unsigned short addrY);
+extern void updateDisplay(void);
+extern void updateDisplayPartial(unsigned short yStart, unsigned short yEnd);
+
+/*
 void partialDisplay(unsigned char RAM_XST, unsigned char RAM_XEND,
                     unsigned short RAM_YST, unsigned short RAM_YEND);
-void updateDisplay(void);
-void updateDisplayPartial(unsigned short yStart, unsigned short yEnd);
-//void updateDisplayPartial(void);
 void writeRam(void);
 void powerOff(void);
 void powerOn(void);
+*/
 
 #endif
