@@ -3,19 +3,64 @@
 
 #include <stdint.h>
 
-void initSPI();
-void resetDisplay();
-void writeCommand(unsigned char command);
-void writeData(unsigned char data);
-void writeCMD_p1(unsigned char command, unsigned char para);
-void writeCMD_p2(unsigned char command, unsigned char para1,
-                 unsigned char para2);
-void writeStream(const unsigned char *value, unsigned char datalen);
-void writeDispRam(unsigned char xSize, unsigned int ySize,
-                  const unsigned char *dispdata);
-void writeDispRamMono(unsigned char xSize, unsigned int ySize,
-                      unsigned char dispdata);
+extern void gdeInit(void);
+extern void gdeReset(void);
+extern void gdeBusyWait(void);
+extern void gdeWriteByte(uint8_t data);
+extern void gdeWriteCommand(uint8_t command);
+extern void gdeWriteCommandInit(uint8_t command);
+extern void gdeWriteCommandEnd(void);
 
-void spiWriteByte(const uint8_t data);
+static inline void
+gdeWriteCommand_p1(uint8_t command, uint8_t para1)
+{
+	gdeWriteCommandInit(command);
+	gdeWriteByte(para1);
+	gdeWriteCommandEnd();
+}
+
+static inline void
+gdeWriteCommand_p2(uint8_t command, uint8_t para1, uint8_t para2)
+{
+	gdeWriteCommandInit(command);
+	gdeWriteByte(para1);
+	gdeWriteByte(para2);
+	gdeWriteCommandEnd();
+}
+
+static inline void
+gdeWriteCommand_p3(uint8_t command, uint8_t para1, uint8_t para2,
+                   uint8_t para3)
+{
+	gdeWriteCommandInit(command);
+	gdeWriteByte(para1);
+	gdeWriteByte(para2);
+	gdeWriteByte(para3);
+	gdeWriteCommandEnd();
+}
+
+static inline void
+gdeWriteCommand_p4(uint8_t command, uint8_t para1, uint8_t para2,
+                   uint8_t para3, uint8_t para4)
+{
+	gdeWriteCommandInit(command);
+	gdeWriteByte(para1);
+	gdeWriteByte(para2);
+	gdeWriteByte(para3);
+	gdeWriteByte(para4);
+	gdeWriteCommandEnd();
+}
+
+static inline void
+gdeWriteCommandStream(uint8_t command, const uint8_t *data,
+                      unsigned int datalen)
+{
+	gdeWriteCommandInit(command);
+	while (datalen-- > 0)
+	{
+		gdeWriteByte(*(data++));
+	}
+	gdeWriteCommandEnd();
+}
 
 #endif

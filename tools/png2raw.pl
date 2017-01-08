@@ -26,11 +26,11 @@ $p->Read($file_in // '/dev/stdin');
 
 # FIXME: check dimensions of image
 
-for (my $y=0; $y<296; $y++) {
-	for (my $x=0; $x<128; $x++) {
-		my @pix = $p->GetPixel(x => $y, y => $x);
+for (my $x=0; $x<296; $x++) {
+	for (my $y=0; $y<128; $y++) {
+		my @pix = $p->GetPixel(x => (295-$x), y => $y);
 		if ($pix[0] > 0.5) {
-			vec($bin, ($x + $y * 128)^7, 1) = 1;
+			vec($bin, ($y + $x * 128)^7, 1) = 1;
 		}
 	}
 }
