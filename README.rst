@@ -25,8 +25,8 @@ Compiling and flashing
 ----------------------
 
 .. compiling::
-  git submodule update -i -r
-  make defconfig
-  make
+    git submodule update -i -r
+    make defconfig
+    make
 .. flashing::
-  make flash
+    make flash
