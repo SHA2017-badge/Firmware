@@ -1,46 +1,17 @@
-#include "gdeh029a1.h"
-#include "driver/gpio.h"
-#include "soc/io_mux_reg.h"
-#include "soc/spi_reg.h"
-#include <gde.h>
-#include <pins.h>
 #include <stdbool.h>
+#include <stdint.h>
+
+#include "gde.h"
+#include "gdeh029a1.h"
 
 // GDEH029A1
 // SSD1608
 
-#define DISP_SIZE_X 128
-#define DISP_SIZE_Y 296
-
-#define DISP_SIZE_X_B ((DISP_SIZE_X + 7) >> 3)
-
-/* 01 - driver output control */
-const unsigned char GDOControl[] = {0x01, 0x27, 0x01, 0x00}; // for 2.9inch
-/* 0C - booster soft start control */
-const unsigned char softstart[] = {0x0c, 0xd7, 0xd6, 0x9d};
-/* 21 - display update control 1 */
-const unsigned char Rambypass[] = {0x21, 0x8f};        // Display update
-/* 22 - display update control 2 */
-const unsigned char MAsequency[] = {0x22, 0xf0};       // clock
-/* 03 - gate driving voltage control */
-const unsigned char GDVol[] = {0x03, 0x00};            // Gate voltage +15V/-15V
-/* 04 - source driving voltage control */
-const unsigned char SDVol[] = {0x04, 0x0a};            // Source voltage +15V/-15V
-/* 2C - write VCOM register */
-const unsigned char VCOMVol[] = {0x2c, 0xa8};          // VCOM 7c
-/* F0 - ??? */
-const unsigned char BOOSTERFB[] = {0xf0, 0x1f};        // Source voltage +15V/-15V
-/* 3A - set dummy line period */
-const unsigned char DummyLine[] = {0x3a, 0x1a};        // 4 dummy line per gate
-/* 3B - set gate line width */
-const unsigned char Gatetime[] = {0x3b, 0x08};         // 2us per line
-/* 3C - border waveform control */
-const unsigned char BorderWavefrom[] = {0x3c, 0x33};   // Border
-/* 11 - data entry mode setting */
-const unsigned char RamDataEntryMode[] = {0x11, 0x01}; // Ram data entry mode
+#include "font_8px.h"
+#include "font_16px.h"
 
 /* LUT data without the last 2 bytes */
-const unsigned char LUTDefault_part[30] = {
+const uint8_t LUTDefault_part[30] = {
 	/* VS */
     0x10, 0x18, 0x18, 0x08, 0x18, 0x18, 0x08, 0x00, 0x00, 0x00,
     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
@@ -48,7 +19,7 @@ const unsigned char LUTDefault_part[30] = {
     0x13, 0x14, 0x44, 0x12, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
 };
 
-const unsigned char LUTDefault_full[30] = {
+const uint8_t LUTDefault_full[30] = {
 	/* VS */
     0x02, 0x02, 0x01, 0x11, 0x12, 0x12, 0x22, 0x22, 0x66, 0x69,
     0x69, 0x59, 0x58, 0x99, 0x99, 0x88, 0x00, 0x00, 0x00, 0x00,
@@ -56,118 +27,274 @@ const unsigned char LUTDefault_full[30] = {
     0xF8, 0xB4, 0x13, 0x51, 0x35, 0x51, 0x51, 0x19, 0x01, 0x00,
 };
 
-void writeLUT(bool fast) {
-  unsigned char i;
-  writeCommand(0x32); // write LUT register
-  for (i = 0; i < 30; i++) {
-    if (fast) {
-      writeData(LUTDefault_part[i]);
-    } else {
-      writeData(LUTDefault_full[i]);
-    }
-  }
+void
+writeLUT(bool fast)
+{
+	gdeWriteCommandStream(0x32, fast ? LUTDefault_part : LUTDefault_full, 30);
 }
 
-void initDisplay(bool fast) {
-  resetDisplay();
-  writeStream(GDOControl,
-              sizeof(GDOControl)); // Pannel configuration, Gate selection
-  writeStream(softstart, sizeof(softstart)); // X decrease, Y decrease
-  writeStream(VCOMVol, sizeof(VCOMVol));     // VCOM setting
-  writeStream(DummyLine, sizeof(DummyLine)); // dummy line per gate
-  writeStream(Gatetime, sizeof(Gatetime));   // Gage time setting
-  writeStream(RamDataEntryMode,
-              sizeof(RamDataEntryMode));          // X increase, Y decrease
-  setRamArea(0, DISP_SIZE_X_B-1, DISP_SIZE_Y-1, 0); // X-source area,Y-gage area
-  setRamPointer(0x00, 0xC7);                // set ram
+void
+initDisplay(bool fast)
+{
+	gdeReset();
 
-  writeLUT(fast);
+	// 01: driver output control
+	gdeWriteCommand_p3(0x01, (DISP_SIZE_Y-1)&0xff, (DISP_SIZE_Y-1)>>8, 0x00); // DISP_SIZE_Y lines, no interlacing
+	// 03: gate driving voltage control (VGH/VGL)
+//	gdeWriteCommand_p1(0x03, 0xea); // +22V/-20V (POR)
+//	gdeWriteCommand_p1(0x03, 0x00); // +15V/-15V (in original source, but not used)
+	// 04: source driving voltage control (VSH/VSL)
+//	gdeWriteCommand_p1(0x04, 0x0a); // +15V/-15V (POR) (in original source, but not used)
+	// 0C: booster soft start control
+	gdeWriteCommand_p3(0x0c, 0xd7, 0xd6, 0x9d);
+	// 2C: write VCOM register
+	gdeWriteCommand_p1(0x2c, 0xa8); // VCOM 7c
+	// 3A: set dummy line period
+	gdeWriteCommand_p1(0x3a, 0x1a); // 4 dummy lines per gate
+	// 3B: set gate line width
+	gdeWriteCommand_p1(0x3b, 0x08); // 2us per line
+	// 3C: border waveform control
+//	gdeWriteCommand_p1(0x3c, 0x71); // POR
+//	gdeWriteCommand_p1(0x3c, 0x33); // FIXME: check value (in original source, but not used)
+	// F0: ???
+//	gdeWriteCommand_p1(0xf0, 0x1f); // +15V/-15V ?? (in original source, but not used)
+
+	// 11: data entry mode setting
+	gdeWriteCommand_p1(0x11, 0x03); // X inc, Y inc
+	// 21: display update control 1
+//	gdeWriteCommand_p1(0x21, 0x8f); // (in original source, but not used)
+	// 22: display update control 2
+//	gdeWriteCommand_p1(0x22, 0xf0); // (in original source, but not used)
+
+	// configure LUT.
+	// The device should have a hardcoded list, but reading the
+	// temperature sensor or loading the LUT data from non-volatile
+	// memory doesn't seem to work.
+	writeLUT(fast);
 }
 
-void displayImage(const unsigned char *picture, bool partial) {
-  setRamPointer(0, DISP_SIZE_Y-1); // set ram
-  writeDispRam(DISP_SIZE_X, DISP_SIZE_Y, picture);
-  if (partial) {
-    updateDisplayPartial();
-    setRamPointer(0, DISP_SIZE_Y-1); // set ram
-    writeDispRam(DISP_SIZE_X, DISP_SIZE_Y, picture);
-  } else {
-    updateDisplay();
-  }
+void
+drawImage(const uint8_t *picture)
+{
+	setRamArea(0, DISP_SIZE_X_B-1, 0, DISP_SIZE_Y-1);
+	setRamPointer(0, 0);
+	gdeWriteCommandStream(0x24, picture, DISP_SIZE_X_B * DISP_SIZE_Y);
 }
 
-void setRamArea(unsigned char Xstart, unsigned char Xend,
-                unsigned short Ystart, unsigned short Yend) {
-  unsigned char RamAreaX[3]; // X start and end
-  unsigned char RamAreaY[5]; // Y start and end
-  RamAreaX[0] = 0x44;        // command
-  RamAreaX[1] = Xstart;
-  RamAreaX[2] = Xend;
-  RamAreaY[0] = 0x45; // command
-  RamAreaY[1] = Ystart & 0xff;
-  RamAreaY[2] = Ystart >> 8;
-  RamAreaY[3] = Yend & 0xff;
-  RamAreaY[4] = Yend >> 8;
-  writeStream(RamAreaX, sizeof(RamAreaX));
-  writeStream(RamAreaY, sizeof(RamAreaY));
+int
+drawText(int x, int y, int y_len, const char *text, uint8_t flags)
+{
+	// select font definitions
+	const uint8_t *font_data;
+	const uint8_t *font_width;
+	int font_FIRST, font_LAST, font_WIDTH, font_HEIGHT;
+
+	if (flags & FONT_16PX)
+	{
+		font_data = font_16px_data;
+		font_width = font_16px_width;
+		font_FIRST = FONT_16PX_FIRST;
+		font_LAST = FONT_16PX_LAST;
+		font_WIDTH = FONT_16PX_WIDTH;
+		font_HEIGHT = FONT_16PX_HEIGHT;
+	}
+	else
+	{
+		font_data = font_8px_data;
+		font_width = font_8px_width;
+		font_FIRST = FONT_8PX_FIRST;
+		font_LAST = FONT_8PX_LAST;
+		font_WIDTH = FONT_8PX_WIDTH;
+		font_HEIGHT = FONT_8PX_HEIGHT;
+	}
+
+	if (x < 0)
+		return 0;
+	if (x > DISP_SIZE_X_B-font_HEIGHT)
+		return 0;
+
+	if (y < 0)
+		return 0;
+	if (y >= DISP_SIZE_Y)
+		return 0;
+
+	if (y_len <= 0)
+		y_len += DISP_SIZE_Y - y;
+	if (y_len <= 0)
+		return 0;
+	if (y_len > DISP_SIZE_Y - y)
+		y_len = DISP_SIZE_Y - y;
+
+	int y_max = y_len + y;
+	setRamArea(x, x+font_HEIGHT-1, y, y_max-1);
+	setRamPointer(x, y);
+
+	gdeWriteCommandInit(0x24); // write RAM
+
+	int numChars = 0;
+	while (*text != 0 && y < y_max)
+	{
+		int ch = *text;
+		if (ch < font_FIRST || ch > font_LAST)
+			ch = 0;
+		else
+			ch -= font_FIRST;
+
+		uint8_t ch_width;
+		unsigned int f_index = ch * (font_WIDTH*font_HEIGHT);
+		if (flags & FONT_MONOSPACE)
+		{
+			ch_width = font_WIDTH;
+		}
+		else
+		{
+			ch_width = font_width[ch];
+			f_index += (ch_width >> 4) * font_HEIGHT;
+			ch_width &= 0x0f;
+		}
+
+		if (y + ch_width >= y_max)
+			break; // not enough space for full character
+
+		while (ch_width > 0 && y < y_max)
+		{
+			int ch_x;
+			for (ch_x=0; ch_x < font_HEIGHT; ch_x++)
+			{
+				uint8_t ch = font_data[f_index++];
+				if (flags & FONT_INVERT)
+					ch = ~ch;
+				gdeWriteByte(ch);
+			}
+			y++;
+			ch_width--;
+		}
+		text = &text[1];
+		numChars++;
+	}
+
+	if (flags & FONT_FULL_WIDTH)
+	{
+		uint8_t ch = 0;
+		if (flags & FONT_INVERT)
+			ch = ~ch;
+		while (y < y_max)
+		{
+			int ch_x;
+			for (ch_x=0; ch_x < font_HEIGHT; ch_x++)
+				gdeWriteByte(ch);
+			y++;
+		}
+	}
+
+	gdeWriteCommandEnd();
+
+	return numChars;
 }
 
-void setRamPointer(unsigned char addrX, unsigned short addrY) {
-  unsigned char RamPointerX[2]; // default (0,0)
-  unsigned char RamPointerY[3];
-  RamPointerX[0] = 0x4e;
-  RamPointerX[1] = addrX;
-  RamPointerY[0] = 0x4f;
-  RamPointerY[1] = addrY & 0xff;
-  RamPointerY[2] = addrY >> 8;
-  writeStream(RamPointerX, sizeof(RamPointerX));
-  writeStream(RamPointerY, sizeof(RamPointerY));
+void
+setRamArea(uint8_t Xstart, uint8_t Xend,
+           uint16_t Ystart, uint16_t Yend)
+{
+	// set RAM X - address Start / End position
+	gdeWriteCommand_p2(0x44, Xstart, Xend);
+	// set RAM Y - address Start / End position
+	gdeWriteCommand_p4(0x45, Ystart & 0xff, Ystart >> 8, Yend & 0xff, Yend >> 8);
 }
 
-void updateDisplay(void) {
-  writeCMD_p1(0x22, 0xc7);
-  writeCommand(0x20);
-  writeCommand(0xff);
+void
+setRamPointer(uint8_t addrX, uint16_t addrY)
+{
+	// set RAM X address counter
+	gdeWriteCommand_p1(0x4e, addrX);
+	// set RAM Y address counter
+	gdeWriteCommand_p2(0x4f, addrY & 0xff, addrY >> 8);
 }
 
-void updateDisplayPartial(void) {
-  writeCMD_p1(0x22, 0x04);
-  // writeCMD_p1(0x22,0x08);
-  writeCommand(0x20);
-  writeCommand(0xff);
+void
+updateDisplay(void)
+{
+	// enforce full screen update
+	gdeWriteCommand_p3(0x01, (DISP_SIZE_Y-1) & 0xff, (DISP_SIZE_Y-1) >> 8, 0x00);
+	gdeWriteCommand_p2(0x0f, 0, 0);
+
+//	gdeWriteCommand_p1(0x22, 0xc7);
+	gdeWriteCommand_p1(0x22, 0xc7);
+//	gdeWriteCommand_p1(0x22, 0xff);
+	// 80 - enable clock signal
+	// 40 - enable CP
+	// 20 - load temperature value
+	// 10 - load LUT
+	// 08 - initial display
+	// 04 - pattern display
+	// 02 - disable CP
+	// 01 - disable clock signal
+	gdeWriteCommand(0x20);
 }
 
-void powerOn(void) {
-  writeCMD_p1(0x22, 0xc0);
-  writeCommand(0x20);
-  //	writeCommand(0xff);
+void
+updateDisplayPartial(uint16_t yStart, uint16_t yEnd)
+{
+	// NOTE: partial screen updates work, but you need the full
+	//       LUT waveform. but still a lot of ghosting..
+	uint16_t yLen = yEnd - yStart;
+	gdeWriteCommand_p3(0x01, yLen & 0xff, yLen >> 8, 0x00);
+	gdeWriteCommand_p2(0x0f, yStart & 0xff, yStart >> 8);
+	gdeWriteCommand_p1(0x22, 0xc7);
+	gdeWriteCommand(0x20);
 }
 
-void powerOff(void) {
-  writeCMD_p1(0x22, 0xc3);
-  writeCommand(0x20);
-  //  writeCommand(0xff);
+
+/* Currently unused (and untested) functions: */
+/*
+void
+updateDisplayPartial(void)
+{
+	gdeWriteCommand_p1(0x22, 0x04);
+//	gdeWriteCommand_p1(0x22, 0x08);
+	gdeWriteCommand(0x20);
 }
 
-void partialDisplay(unsigned char RAM_XST, unsigned char RAM_XEND,
-                    unsigned short RAM_YST, unsigned short RAM_YEND) {
-  setRamArea(RAM_XST, RAM_XEND, RAM_YST, RAM_YEND);  /*set w h*/
-  setRamPointer(RAM_XST, RAM_YST); /*set orginal*/
+void
+powerOn(void)
+{
+	gdeWriteCommand_p1(0x22, 0xc0);
+	gdeWriteCommand(0x20);
 }
 
-// Currently unused functions
-
-void writeRam(void) { writeCommand(0x24); }
-
-void enableChargepump(void) {
-  writeCMD_p1(0xf0, 0x8f);
-  writeCMD_p1(0x22, 0xc0);
-  writeCommand(0x20);
-  writeCommand(0xff);
+void
+powerOff(void)
+{
+	gdeWriteCommand_p1(0x22, 0xc3);
+	gdeWriteCommand(0x20);
 }
 
-void disableChargepump(void) {
-  writeCMD_p1(0x22, 0xf0);
-  writeCommand(0x20);
-  writeCommand(0xff);
+void
+partialDisplay(uint8_t RAM_XST, uint8_t RAM_XEND,
+               uint16_t RAM_YST, uint16_t RAM_YEND)
+{
+	setRamArea(RAM_XST, RAM_XEND, RAM_YST, RAM_YEND);
+	setRamPointer(RAM_XST, RAM_YST);
 }
+
+void
+writeRam(void)
+{
+	gdeWriteCommand(0x24);
+}
+
+void
+enableChargepump(void)
+{
+	gdeWriteCommand_p1(0xf0, 0x8f); // undefined register?
+	gdeWriteCommand_p1(0x22, 0xc0);
+	gdeWriteCommand(0x20);
+}
+
+void
+disableChargepump(void)
+{
+	gdeWriteCommand_p1(0x22, 0xf0);
+	gdeWriteCommand(0x20);
+}
+*/

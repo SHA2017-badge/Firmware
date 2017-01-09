@@ -1,0 +1,6 @@
+#!/bin/bash
+
+destpath=../components/epd
+
+./font2h.pl -w 6 -h 8 ../pictures/font_8px.png $destpath/font_8px
+./font2h.pl -w 12 -h 16 ../pictures/font_16px.png $destpath/font_16px
