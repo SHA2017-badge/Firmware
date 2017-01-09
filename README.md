@@ -26,7 +26,7 @@ Compiling and flashing
 ----------------------
 
 ```
-git submodule update -i -r
+git submodule update --init --recursive
 make defconfig
 make flash
 ```
