@@ -208,6 +208,74 @@ void app_main(void) {
 				updateDisplay();
 				gdeBusyWait();
 			}
+			if (buttons_down & (1 << 6)) {
+				ets_printf("Button RIGHT handling\n");
+				// enable slow waveform
+				writeLUT(false);
+
+				/* draw test pattern */
+				setRamArea(0, DISP_SIZE_X_B-1, 0, DISP_SIZE_Y-1);
+				setRamPointer(0, 0);
+				gdeWriteCommandInit(0x24);
+				{
+					int x,y;
+					for (y=0; y<DISP_SIZE_Y; y++) {
+						for (x=0; x<16; x++)
+							gdeWriteByte( x & 4 ? 0xff : 0x00 );
+					}
+				}
+				gdeWriteCommandEnd();
+				updateDisplay();
+				gdeBusyWait();
+				int y=0;
+				int n=8;
+				while (y < DISP_SIZE_Y) {
+					/* draw new test pattern */
+					setRamArea(0, DISP_SIZE_X_B-1, 0, DISP_SIZE_Y-1);
+					setRamPointer(0, 0);
+					gdeWriteCommandInit(0x24);
+					{
+						int x,y;
+						for (y=0; y<DISP_SIZE_Y; y++) {
+							for (x=0; x<16; x++)
+								gdeWriteByte( x & 2 ? 0xff : 0x00 );
+						}
+					}
+					gdeWriteCommandEnd();
+
+					if (y+n > DISP_SIZE_Y)
+						n = DISP_SIZE_Y - y;
+					updateDisplayPartial(y, y+n);
+					gdeBusyWait();
+					vTaskDelay(1000 / portTICK_PERIOD_MS);
+					y += n;
+					n += 4;
+				}
+				y = 0;
+				n = 4;
+				while (y < DISP_SIZE_Y) {
+					/* draw new test pattern */
+					setRamArea(0, DISP_SIZE_X_B-1, 0, DISP_SIZE_Y-1);
+					setRamPointer(0, 0);
+					gdeWriteCommandInit(0x24);
+					{
+						int x,y;
+						for (y=0; y<DISP_SIZE_Y; y++) {
+							for (x=0; x<16; x++)
+								gdeWriteByte( x & 8 ? 0xff : 0x00 );
+						}
+					}
+					gdeWriteCommandEnd();
+
+					if (y+n > DISP_SIZE_Y)
+						n = DISP_SIZE_Y - y;
+					updateDisplayPartial(y, y+n);
+					gdeBusyWait();
+					vTaskDelay(1000 / portTICK_PERIOD_MS);
+					y += n;
+					n += 2;
+				}
+			}
 		}
 	}
 }
