@@ -21,6 +21,11 @@
 #define HIGH 1
 #endif
 
+#ifndef VSPICLK_OUT_IDX
+// use old define
+#define VSPICLK_OUT_IDX VSPICLK_OUT_MUX_IDX
+#endif
+
 void
 gdeReset(void)
 {
