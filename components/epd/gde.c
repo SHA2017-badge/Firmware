@@ -21,6 +21,11 @@
 #define HIGH 1
 #endif
 
+#ifndef VSPICLK_OUT_IDX
+// use old define
+#define VSPICLK_OUT_IDX VSPICLK_OUT_MUX_IDX
+#endif
+
 void
 gdeReset(void)
 {
@@ -75,7 +80,7 @@ gdeInit(void)
 	gpio_set_direction(PIN_NUM_BUSY, GPIO_MODE_INPUT);
 	ets_printf("epd spi pin mux init ...\r\n");
 	gpio_matrix_out(PIN_NUM_MOSI, VSPID_OUT_IDX,0,0);
-	gpio_matrix_out(PIN_NUM_CLK, VSPICLK_OUT_MUX_IDX,0,0);
+	gpio_matrix_out(PIN_NUM_CLK, VSPICLK_OUT_IDX,0,0);
 	gpio_matrix_out(PIN_NUM_CS, VSPICS0_OUT_IDX,0,0);
 	CLEAR_PERI_REG_MASK(SPI_SLAVE_REG(SPI_NUM), SPI_TRANS_DONE << 5);
 	SET_PERI_REG_MASK(SPI_USER_REG(SPI_NUM), SPI_CS_SETUP);
