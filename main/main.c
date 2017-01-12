@@ -72,7 +72,186 @@ void gpio_intr_test(void *arg)
 	gpio_set_level(22, 1-gpio_get_level(21));
 }
 
-void app_main(void) {
+struct menu_item {
+	const char *title;
+	void (*handler)(void);
+};
+
+void
+demoGreyscale1(void)
+{
+	// enable slow waveform
+	writeLUT(LUT_DEFAULT);
+
+	/* draw test pattern */
+	setRamArea(0, DISP_SIZE_X_B-1, 0, DISP_SIZE_Y-1);
+	setRamPointer(0, 0);
+	gdeWriteCommandInit(0x24);
+	{
+		int x,y;
+		for (y=0; y<DISP_SIZE_Y; y++) {
+			for (x=0; x<16; x++)
+				gdeWriteByte( x & 4 ? 0xff : 0x00 );
+		}
+	}
+	gdeWriteCommandEnd();
+	updateDisplay();
+	gdeBusyWait();
+	int y=0;
+	int n=8;
+	while (y < DISP_SIZE_Y) {
+		/* draw new test pattern */
+		setRamArea(0, DISP_SIZE_X_B-1, 0, DISP_SIZE_Y-1);
+		setRamPointer(0, 0);
+		gdeWriteCommandInit(0x24);
+		{
+			int x,y;
+			for (y=0; y<DISP_SIZE_Y; y++) {
+				for (x=0; x<16; x++)
+					gdeWriteByte( x & 2 ? 0xff : 0x00 );
+			}
+		}
+		gdeWriteCommandEnd();
+
+		if (y+n > DISP_SIZE_Y)
+			n = DISP_SIZE_Y - y;
+		updateDisplayPartial(y, y+n);
+		gdeBusyWait();
+		vTaskDelay(1000 / portTICK_PERIOD_MS);
+		y += n;
+		n += 4;
+	}
+	y = 0;
+	n = 4;
+	while (y < DISP_SIZE_Y) {
+		/* draw new test pattern */
+		setRamArea(0, DISP_SIZE_X_B-1, 0, DISP_SIZE_Y-1);
+		setRamPointer(0, 0);
+		gdeWriteCommandInit(0x24);
+		{
+			int x,y;
+			for (y=0; y<DISP_SIZE_Y; y++) {
+				for (x=0; x<16; x++)
+					gdeWriteByte( x & 8 ? 0xff : 0x00 );
+			}
+		}
+		gdeWriteCommandEnd();
+
+		if (y+n > DISP_SIZE_Y)
+			n = DISP_SIZE_Y - y;
+		updateDisplayPartial(y, y+n);
+		gdeBusyWait();
+		vTaskDelay(1000 / portTICK_PERIOD_MS);
+		y += n;
+		n += 2;
+	}
+}
+
+void
+demoGreyscale2(void)
+{
+}
+
+const struct menu_item demoMenu[] = {
+	{ "greyscale 1", &demoGreyscale1 },
+	{ "greyscale 2", &demoGreyscale2 },
+	{ "tetris?", NULL },
+	{ "something else", NULL },
+	{ "test, test, test", NULL },
+	{ "another item..", NULL },
+	{ "dot", NULL },
+	{ "dot 2", NULL },
+	{ "dot 3", NULL },
+	{ NULL, NULL },
+};
+
+void
+displayMenu(const char *menu_title, const struct menu_item *itemlist)
+{
+	int num_items = 0;
+	while (itemlist[num_items].title != NULL)
+		num_items++;
+
+	int scroll_pos = 0;
+	int item_pos = 0;
+	int num_draw = 0;
+	while (1)
+	{
+		TickType_t xTicksToWait = portMAX_DELAY;
+
+		/* draw menu */
+		if (num_draw < 2) {
+			// init buffer
+			drawText(14, 0, DISP_SIZE_Y, menu_title,
+					FONT_16PX|FONT_INVERT|FONT_FULL_WIDTH|FONT_UNDERLINE_2);
+			int i;
+			for (i=0; i<7; i++)
+			{
+				int pos = scroll_pos + i;
+				drawText(12 - 2*i, 0, DISP_SIZE_Y,
+						(pos < num_items) ? itemlist[pos].title : "",
+						FONT_16PX | FONT_FULL_WIDTH |
+							((pos == item_pos) ? 0 : FONT_INVERT));
+			}
+		}
+		if (num_draw == 0) {
+			// init LUT
+			static const uint8_t lut[30] = {
+				0x99,0,0,0,0,0,0,0,0,0,
+				0,0,0,0,0,0,0,0,0,0,
+				1,0,0,0,0,0,0,0,0,0,
+			};
+			gdeWriteCommandStream(0x32, lut, 30);
+		}
+		if (num_draw < 10) {
+			updateDisplay();
+			gdeBusyWait();
+			num_draw++;
+			if (num_draw < 10)
+				xTicksToWait = 0;
+		}
+
+		/* handle input */
+		uint32_t buttons_down;
+		if (xQueueReceive(evt_queue, &buttons_down, xTicksToWait)) {
+			if (buttons_down & (1 << 1)) {
+				ets_printf("Button B handling\n");
+				return;
+			}
+			if (buttons_down & (1 << 2)) {
+				ets_printf("Selected '%s'\n", itemlist[item_pos].title);
+				if (itemlist[item_pos].handler != NULL)
+					itemlist[item_pos].handler();
+				num_draw = 0;
+				ets_printf("Button MID handled\n");
+				continue;
+			}
+			if (buttons_down & (1 << 3)) {
+				if (item_pos > 0)
+				{
+					item_pos--;
+					if (scroll_pos > item_pos)
+						scroll_pos = item_pos;
+					num_draw = 0;
+				}
+				ets_printf("Button UP handled\n");
+			}
+			if (buttons_down & (1 << 4)) {
+				if (item_pos+1 < num_items)
+				{
+					item_pos++;
+					if (scroll_pos+6 < item_pos)
+						scroll_pos = item_pos-6;
+					num_draw = 0;
+				}
+				ets_printf("Button DOWN handled\n");
+			}
+		}
+	}
+}
+
+void
+app_main(void) {
 	nvs_flash_init();
 
 	/* create event queue */
@@ -115,15 +294,15 @@ void app_main(void) {
 //  ESP_ERROR_CHECK(esp_wifi_connect());
 
 	gdeInit();
-	initDisplay(false); // configure slow LUT
+	initDisplay(LUT_DEFAULT); // configure slow LUT
 
 	int picture_id = 0;
 	drawImage(pictures[picture_id]);
 	updateDisplay();
 	gdeBusyWait();
 
-	bool enable_fast_waveform = true;
-	writeLUT(enable_fast_waveform); // configure fast LUT
+	int selected_lut = LUT_PART;
+	writeLUT(selected_lut); // configure fast LUT
 
 	while (1) {
 		uint32_t buttons_down;
@@ -181,11 +360,11 @@ void app_main(void) {
 			}
 			if (buttons_down & (1 << 3)) {
 				ets_printf("Button UP handling\n");
-				writeLUT(false);
+				writeLUT(LUT_DEFAULT);
 				drawImage(pictures[picture_id]);
 				updateDisplay();
 				gdeBusyWait();
-				writeLUT(enable_fast_waveform);
+				writeLUT(selected_lut);
 			}
 			if (buttons_down & (1 << 4)) {
 				ets_printf("Button DOWN handling\n");
@@ -202,79 +381,21 @@ void app_main(void) {
 			}
 			if (buttons_down & (1 << 5)) {
 				ets_printf("Button LEFT handling\n");
-				enable_fast_waveform = !enable_fast_waveform;
-				writeLUT(enable_fast_waveform);
+				selected_lut = (selected_lut + 1) % (LUT_MAX+1);
+				writeLUT(selected_lut);
 				drawImage(pictures[picture_id]);
 				updateDisplay();
 				gdeBusyWait();
 			}
 			if (buttons_down & (1 << 6)) {
 				ets_printf("Button RIGHT handling\n");
-				// enable slow waveform
-				writeLUT(false);
+//				demoGreyscale1();
+				displayMenu("Demo menu", demoMenu);
 
-				/* draw test pattern */
-				setRamArea(0, DISP_SIZE_X_B-1, 0, DISP_SIZE_Y-1);
-				setRamPointer(0, 0);
-				gdeWriteCommandInit(0x24);
-				{
-					int x,y;
-					for (y=0; y<DISP_SIZE_Y; y++) {
-						for (x=0; x<16; x++)
-							gdeWriteByte( x & 4 ? 0xff : 0x00 );
-					}
-				}
-				gdeWriteCommandEnd();
+				writeLUT(selected_lut);
+				drawImage(pictures[picture_id]);
 				updateDisplay();
 				gdeBusyWait();
-				int y=0;
-				int n=8;
-				while (y < DISP_SIZE_Y) {
-					/* draw new test pattern */
-					setRamArea(0, DISP_SIZE_X_B-1, 0, DISP_SIZE_Y-1);
-					setRamPointer(0, 0);
-					gdeWriteCommandInit(0x24);
-					{
-						int x,y;
-						for (y=0; y<DISP_SIZE_Y; y++) {
-							for (x=0; x<16; x++)
-								gdeWriteByte( x & 2 ? 0xff : 0x00 );
-						}
-					}
-					gdeWriteCommandEnd();
-
-					if (y+n > DISP_SIZE_Y)
-						n = DISP_SIZE_Y - y;
-					updateDisplayPartial(y, y+n);
-					gdeBusyWait();
-					vTaskDelay(1000 / portTICK_PERIOD_MS);
-					y += n;
-					n += 4;
-				}
-				y = 0;
-				n = 4;
-				while (y < DISP_SIZE_Y) {
-					/* draw new test pattern */
-					setRamArea(0, DISP_SIZE_X_B-1, 0, DISP_SIZE_Y-1);
-					setRamPointer(0, 0);
-					gdeWriteCommandInit(0x24);
-					{
-						int x,y;
-						for (y=0; y<DISP_SIZE_Y; y++) {
-							for (x=0; x<16; x++)
-								gdeWriteByte( x & 8 ? 0xff : 0x00 );
-						}
-					}
-					gdeWriteCommandEnd();
-
-					if (y+n > DISP_SIZE_Y)
-						n = DISP_SIZE_Y - y;
-					updateDisplayPartial(y, y+n);
-					gdeBusyWait();
-					vTaskDelay(1000 / portTICK_PERIOD_MS);
-					y += n;
-					n += 2;
-				}
 			}
 		}
 	}
