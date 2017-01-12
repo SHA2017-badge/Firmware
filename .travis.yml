@@ -31,5 +31,6 @@ script:
 
 notifications:
   irc: "chat.freenode.net#sha2017-badge"
+  irc: "chat.freenode.net#sha2017-badge-dev"
   on_success: change
   on_failure: always
