@@ -30,7 +30,9 @@ script:
   - make
 
 notifications:
-  irc: "chat.freenode.net#sha2017-badge"
-  irc: "chat.freenode.net#sha2017-badge-dev"
+  irc:
+    channels:
+      - "chat.freenode.net#sha2017-badge"
+      - "chat.freenode.net#sha2017-badge-dev"
   on_success: change
   on_failure: always
