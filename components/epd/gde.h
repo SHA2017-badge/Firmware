@@ -5,6 +5,7 @@
 
 extern void gdeInit(void);
 extern void gdeReset(void);
+extern bool gdeIsBusy(void);
 extern void gdeBusyWait(void);
 extern void gdeWriteByte(uint8_t data);
 extern void gdeWriteCommand(uint8_t command);

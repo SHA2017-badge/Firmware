@@ -1,4 +1,5 @@
 #include <stdint.h>
+#include <stdbool.h>
 
 #include "driver/gpio.h"
 #include "rom/ets_sys.h"
@@ -35,13 +36,19 @@ gdeReset(void)
 	ets_delay_us(200000);
 }
 
+bool
+gdeIsBusy(void)
+{
+	return gpio_get_level(PIN_NUM_BUSY);
+}
+
 void
 gdeBusyWait(void)
 {
-	while (gpio_get_level(PIN_NUM_BUSY))
+	while (gdeIsBusy())
 	{
 		// FIXME: use vTaskDelay ?
-		ets_delay_us(100000);
+		ets_delay_us(10000);
 //		vTaskDelay(100 / portTICK_PERIOD_MS);
 	}
 }
