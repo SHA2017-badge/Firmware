@@ -83,7 +83,9 @@ for (my $ch=$ch_first; $ch<=$ch_last; $ch++) {
 		push @n, reverse @nn;
 	}
 	die "character $ch too wide.\n" if @n > $width*$height_b;
-	push @chars, [ $x ];
+	my $indent = ($width - $x) >> 1;
+	unshift @n, ('0x00') x ($indent*$height_b);
+	push @chars, [ $x, $indent ];
 	while (@n < $width*$height_b) { push @n, '0x00' }
 	$out_c .= "\t".join(', ', @n).",\n";
 }
@@ -93,8 +95,8 @@ $out_c .= "const uint8_t ".$varname."_width[".($ch_last+1-$ch_first)."] = {\n";
 $out_h .= "extern const uint8_t ".$varname."_width[".($ch_last+1-$ch_first)."];\n";
 my @n;
 foreach my $c (@chars) {
-	my ($clen) = @$c;
-	push @n, sprintf('%2u', $clen);
+	my ($clen, $indent) = @$c;
+	push @n, sprintf('0x%02x', ($indent << 4) | $clen);
 	if (@n >= 16) {
 		$out_c .= "\t".join(', ', @n).",\n";
 		splice @n, 0, 16;
