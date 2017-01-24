@@ -8,6 +8,10 @@
 
 **Merged pull requests:**
 
+- greyscale image code improvement; add demo 3 [\#6](https://github.com/SHA2017-badge/Firmware/pull/6) ([annejan](https://github.com/annejan))
+- Greyscale awesomeness!! [\#5](https://github.com/SHA2017-badge/Firmware/pull/5) ([annejan](https://github.com/annejan))
+- Menu and demo's [\#4](https://github.com/SHA2017-badge/Firmware/pull/4) ([annejan](https://github.com/annejan))
+- Compatibility and awesomes [\#3](https://github.com/SHA2017-badge/Firmware/pull/3) ([annejan](https://github.com/annejan))
 - Update structure and add submodules. [\#1](https://github.com/SHA2017-badge/Firmware/pull/1) ([Petraea](https://github.com/Petraea))
 
 
