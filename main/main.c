@@ -72,7 +72,7 @@ void gpio_intr_test(void *arg)
 		ets_printf("GDE-Busy up\n");
 
 	// pass on BUSY signal to LED.
-	gpio_set_level(22, 1-gpio_get_level(21));
+//	gpio_set_level(22, 1-gpio_get_level(21));
 }
 
 struct menu_item {
@@ -961,7 +961,7 @@ app_main(void) {
 	io_conf.mode = GPIO_MODE_INPUT;
 	io_conf.pin_bit_mask =
 		GPIO_SEL_0 |
-		GPIO_SEL_21 | // GDE BUSY pin
+//		GPIO_SEL_21 | // GDE BUSY pin
 		GPIO_SEL_25 |
 		GPIO_SEL_26 |
 		GPIO_SEL_27 |
@@ -973,8 +973,8 @@ app_main(void) {
 	gpio_config(&io_conf);
 
 	/** configure output **/
-    gpio_pad_select_gpio(22);
-	gpio_set_direction(22, GPIO_MODE_OUTPUT);
+//    gpio_pad_select_gpio(22);
+//	gpio_set_direction(22, GPIO_MODE_OUTPUT);
 
 	tcpip_adapter_init();
 	ESP_ERROR_CHECK(esp_event_loop_init(event_handler, NULL));
