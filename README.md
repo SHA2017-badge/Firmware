@@ -8,8 +8,6 @@ Project updates:
 * [Firmware](https://github.com/SHA2017-badge/Firmware)
 * [PCB](https://github.com/SHA2017-badge/PCB)
 
-Hardware patch: PIN 20 to PIN 23
-
 Based on template application for [Espressif IoT Development Framework (ESP-IDF)](https://github.com/espressif/esp-idf
 ). Copyright (C) 2016 Espressif Systems, licensed under the Apache License 2.0 as described in the file LICENSE.
 
