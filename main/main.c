@@ -88,7 +88,7 @@ void gpio_intr_test(void *arg) {
 
 #ifdef PIN_NUM_LED
   // pass on BUSY signal to LED.
-  gpio_set_level(PIN_NUM_LED, 1 - gpio_get_level(21));
+  gpio_set_level(PIN_NUM_LED, 1 - gpio_get_level(PIN_NUM_BUSY));
 #endif // PIN_NUM_LED
 }
 
