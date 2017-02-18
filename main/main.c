@@ -1,3 +1,4 @@
+#include "sdkconfig.h"
 #include "driver/adc.h"
 #include "driver/gpio.h"
 #include "esp_event.h"
@@ -995,6 +996,8 @@ app_main(void) {
 
   tcpip_adapter_init();
   ESP_ERROR_CHECK(esp_event_loop_init(event_handler, NULL));
+
+#ifdef CONFIG_WIFI_USE
   wifi_init_config_t cfg = WIFI_INIT_CONFIG_DEFAULT();
   ESP_ERROR_CHECK(esp_wifi_init(&cfg));
   ESP_ERROR_CHECK(esp_wifi_set_storage(WIFI_STORAGE_RAM));
@@ -1004,6 +1007,7 @@ app_main(void) {
   ESP_ERROR_CHECK(esp_wifi_set_config(WIFI_IF_STA, &sta_config));
   ESP_ERROR_CHECK(esp_wifi_start());
   ESP_ERROR_CHECK(esp_wifi_connect());
+#endif // CONFIG_WIFI_USE
 
   gdeInit();
   initDisplay(LUT_DEFAULT); // configure slow LUT
