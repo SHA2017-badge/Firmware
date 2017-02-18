@@ -60,10 +60,10 @@ void initDisplay(int lut_idx) {
   // 03: gate driving voltage control (VGH/VGL)
   //	gdeWriteCommand_p1(0x03, 0xea); // +22V/-20V (POR)
   //	gdeWriteCommand_p1(0x03, 0x00); // +15V/-15V (in original source, but
-  //not used)
+  // not used)
   // 04: source driving voltage control (VSH/VSL)
   //	gdeWriteCommand_p1(0x04, 0x0a); // +15V/-15V (POR) (in original source,
-  //but not used)
+  // but not used)
   // 0C: booster soft start control
   gdeWriteCommand_p3(0x0c, 0xd7, 0xd6, 0x9d);
   // 2C: write VCOM register
@@ -75,10 +75,10 @@ void initDisplay(int lut_idx) {
   // 3C: border waveform control
   //	gdeWriteCommand_p1(0x3c, 0x71); // POR
   //	gdeWriteCommand_p1(0x3c, 0x33); // FIXME: check value (in original
-  //source, but not used)
+  // source, but not used)
   // F0: ???
   //	gdeWriteCommand_p1(0xf0, 0x1f); // +15V/-15V ?? (in original source, but
-  //not used)
+  // not used)
 
   // 11: data entry mode setting
   gdeWriteCommand_p1(0x11, 0x03); // X inc, Y inc

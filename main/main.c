@@ -1,6 +1,6 @@
 #include "driver/adc.h"
-#include "driver/i2c.h"
 #include "driver/gpio.h"
+#include "driver/i2c.h"
 #include "esp_event.h"
 #include "esp_event_loop.h"
 #include "esp_system.h"
@@ -11,6 +11,7 @@
 #include <gdeh029a1.h>
 #include <pictures.h>
 #include <pins.h>
+#include <touch.h>
 
 #include "img_hacking.h"
 
@@ -24,42 +25,26 @@
 #define PIN_NUM_BUTTON_LEFT 33
 #define PIN_NUM_BUTTON_RIGHT 35
 #else
-#define PIN_NUM_BUTTON_MID    25
+#define PIN_NUM_BUTTON_MID 25
 #endif
 
 esp_err_t event_handler(void *ctx, system_event_t *event) { return ESP_OK; }
 
-#define I2C_MASTER_SCL_IO     27    /*!<gpio number for i2c slave clock  */
-#define I2C_MASTER_SDA_IO     26    /*!<gpio number for i2c slave data */
-#define I2C_MASTER_NUM I2C_NUM_1   /*!< I2C port number for master dev */
-#define I2C_MASTER_TX_BUF_DISABLE   0   /*!< I2C master do not need buffer */
-#define I2C_MASTER_RX_BUF_DISABLE   0   /*!< I2C master do not need buffer */
-#define I2C_MASTER_FREQ_HZ    100000     /*!< I2C master clock frequency */
-#define ESP_SLAVE_ADDR 0xe0         /*!< ESP32 slave address, you can set any 7bit value */
-#define WRITE_BIT  I2C_MASTER_WRITE /*!< I2C master write */
-#define READ_BIT   I2C_MASTER_READ  /*!< I2C master read */
-#define ACK_CHECK_EN   0x1     /*!< I2C master will check ack from slave*/
-#define ACK_CHECK_DIS  0x0     /*!< I2C master will not check ack from slave */
-#define ACK_VAL    0x0         /*!< I2C ack value */
-#define NACK_VAL   0x1         /*!< I2C nack value */
-
-uint32_t
-get_buttons(void)
-{
-	uint32_t bits = 0;
+uint32_t get_buttons(void) {
+  uint32_t bits = 0;
 #ifdef CONFIG_SHA_BADGE_V1
-	bits |= gpio_get_level(PIN_NUM_BUTTON_A)     << 0; // A
-	bits |= gpio_get_level(PIN_NUM_BUTTON_B)     << 1; // B
-#endif // CONFIG_SHA_BADGE_V1
-	bits |= gpio_get_level(PIN_NUM_BUTTON_MID)   << 2; // MID
+  bits |= gpio_get_level(PIN_NUM_BUTTON_A) << 0;   // A
+  bits |= gpio_get_level(PIN_NUM_BUTTON_B) << 1;   // B
+#endif                                             // CONFIG_SHA_BADGE_V1
+  bits |= gpio_get_level(PIN_NUM_BUTTON_MID) << 2; // MID
 #ifdef CONFIG_SHA_BADGE_V1
-	bits |= gpio_get_level(PIN_NUM_BUTTON_UP)    << 3; // UP
-	bits |= gpio_get_level(PIN_NUM_BUTTON_DOWN)  << 4; // DOWN
-	bits |= gpio_get_level(PIN_NUM_BUTTON_LEFT)  << 5; // LEFT
-	bits |= gpio_get_level(PIN_NUM_BUTTON_RIGHT) << 6; // RIGHT
-#endif // CONFIG_SHA_BADGE_V1
-	bits |= gpio_get_level(PIN_NUM_BUSY)         << 7; // GDE BUSY
-	return bits;
+  bits |= gpio_get_level(PIN_NUM_BUTTON_UP) << 3;    // UP
+  bits |= gpio_get_level(PIN_NUM_BUTTON_DOWN) << 4;  // DOWN
+  bits |= gpio_get_level(PIN_NUM_BUTTON_LEFT) << 5;  // LEFT
+  bits |= gpio_get_level(PIN_NUM_BUTTON_RIGHT) << 6; // RIGHT
+#endif                                               // CONFIG_SHA_BADGE_V1
+  bits |= gpio_get_level(PIN_NUM_BUSY) << 7;         // GDE BUSY
+  return bits;
 }
 
 xQueueHandle evt_queue = NULL;
@@ -923,7 +908,7 @@ void displayMenu(const char *menu_title, const struct menu_item *itemlist) {
       gdeWriteCommand_p1(0x3a, 0x02); // 2 dummy lines per gate
       gdeWriteCommand_p1(0x3b, 0x00); // 30us per line
       //			gdeWriteCommand_p1(0x3a, 0x1a); // 26 dummy
-      //lines per gate
+      // lines per gate
       //			gdeWriteCommand_p1(0x3b, 0x08); // 62us per line
     }
     if (num_draw < MENU_UPDATE_CYCLES) {
@@ -973,108 +958,36 @@ void displayMenu(const char *menu_title, const struct menu_item *itemlist) {
 
 // interesting stuff here
 
-/**
- * @brief test code to read esp-i2c-slave
- *        We need to fill the buffer of esp slave device, then master can read them out.
- *
- * _______________________________________________________________________________________
- * | start | slave_addr + rd_bit +ack | read n-1 bytes + ack | read 1 byte + nack | stop |
- * --------|--------------------------|----------------------|--------------------|------|
- *
- */
-esp_err_t i2c_master_read_slave(i2c_port_t i2c_num, uint8_t* data_rd, size_t size)
-{
-    if (size == 0) {
-        return ESP_OK;
-    }
-    i2c_cmd_handle_t cmd = i2c_cmd_link_create();
-    i2c_master_start(cmd);
-    i2c_master_write_byte(cmd, ( ESP_SLAVE_ADDR << 1 ) | READ_BIT, ACK_CHECK_EN);
-    if (size > 1) {
-        i2c_master_read(cmd, data_rd, size - 1, ACK_VAL);
-    }
-    i2c_master_read_byte(cmd, data_rd + size - 1, NACK_VAL);
-    i2c_master_stop(cmd);
-    esp_err_t ret = i2c_master_cmd_begin(i2c_num, cmd, 1000 / portTICK_RATE_MS);
-    i2c_cmd_link_delete(cmd);
-    return ret;
-}
+void app_main(void) {
+  nvs_flash_init();
 
-/**
- * @brief Test code to write esp-i2c-slave
- *        Master device write data to slave(both esp32),
- *        the data will be stored in slave buffer.
- *        We can read them out from slave buffer.
- *
- * ___________________________________________________________________
- * | start | slave_addr + wr_bit + ack | write n bytes + ack  | stop |
- * --------|---------------------------|----------------------|------|
- *
- */
-esp_err_t i2c_master_write_slave(i2c_port_t i2c_num, uint8_t* data_wr, size_t size)
-{
-    i2c_cmd_handle_t cmd = i2c_cmd_link_create();
-    i2c_master_start(cmd);
-    i2c_master_write_byte(cmd, ( ESP_SLAVE_ADDR << 1 ) | WRITE_BIT, ACK_CHECK_EN);
-    i2c_master_write(cmd, data_wr, size, ACK_CHECK_EN);
-    i2c_master_stop(cmd);
-    esp_err_t ret = i2c_master_cmd_begin(i2c_num, cmd, 1000 / portTICK_RATE_MS);
-    i2c_cmd_link_delete(cmd);
-    return ret;
-}
+  /* create event queue */
+  evt_queue = xQueueCreate(10, sizeof(uint32_t));
 
-/**
- * @brief i2c master initialization
- */
-void i2c_master_init()
-{
-    int i2c_master_port = I2C_MASTER_NUM;
-    i2c_config_t conf;
-    conf.mode = I2C_MODE_MASTER;
-    conf.sda_io_num = I2C_MASTER_SDA_IO;
-    conf.sda_pullup_en = GPIO_PULLUP_ENABLE;
-    conf.scl_io_num = I2C_MASTER_SCL_IO;
-    conf.scl_pullup_en = GPIO_PULLUP_ENABLE;
-    conf.master.clk_speed = I2C_MASTER_FREQ_HZ;
-    i2c_param_config(i2c_master_port, &conf);
-    i2c_driver_install(i2c_master_port, conf.mode, I2C_MASTER_RX_BUF_DISABLE, I2C_MASTER_TX_BUF_DISABLE, 0);
-}
+  /** configure input **/
+  gpio_isr_register(gpio_intr_test, NULL, 0, NULL);
 
-void
-app_main(void) {
-	nvs_flash_init();
-
-	/* create event queue */
-	evt_queue = xQueueCreate(10, sizeof(uint32_t));
-
-	/** configure input **/
-	gpio_isr_register(gpio_intr_test, NULL, 0, NULL);
-
-	gpio_config_t io_conf;
-	io_conf.intr_type = GPIO_INTR_ANYEDGE;
-	io_conf.mode = GPIO_MODE_INPUT;
-	io_conf.pin_bit_mask =
-		(1LL << PIN_NUM_BUSY) |
+  gpio_config_t io_conf;
+  io_conf.intr_type = GPIO_INTR_ANYEDGE;
+  io_conf.mode = GPIO_MODE_INPUT;
+  io_conf.pin_bit_mask =
+      (1LL << PIN_NUM_BUSY) |
 #ifdef CONFIG_SHA_BADGE_V1
-		(1LL << PIN_NUM_BUTTON_A) |
-		(1LL << PIN_NUM_BUTTON_B) |
+      (1LL << PIN_NUM_BUTTON_A) | (1LL << PIN_NUM_BUTTON_B) |
 #endif // CONFIG_SHA_BADGE_V1
-		(1LL << PIN_NUM_BUTTON_MID) |
+      (1LL << PIN_NUM_BUTTON_MID) |
 #ifdef CONFIG_SHA_BADGE_V1
-		(1LL << PIN_NUM_BUTTON_UP) |
-		(1LL << PIN_NUM_BUTTON_DOWN) |
-		(1LL << PIN_NUM_BUTTON_LEFT) |
-		(1LL << PIN_NUM_BUTTON_RIGHT) |
+      (1LL << PIN_NUM_BUTTON_UP) | (1LL << PIN_NUM_BUTTON_DOWN) |
+      (1LL << PIN_NUM_BUTTON_LEFT) | (1LL << PIN_NUM_BUTTON_RIGHT) |
 #endif // CONFIG_SHA_BADGE_V1
-		0LL;
-	io_conf.pull_down_en = 0;
-	io_conf.pull_up_en = 1;
-	gpio_config(&io_conf);
+      0LL;
+  io_conf.pull_down_en = 0;
+  io_conf.pull_up_en = 1;
+  gpio_config(&io_conf);
 
+// i2c_master_init();
 
-  //i2c_master_init();
-
-	/** configure output **/
+/** configure output **/
 #ifdef PIN_NUM_LED
   gpio_pad_select_gpio(PIN_NUM_LED);
   gpio_set_direction(PIN_NUM_LED, GPIO_MODE_OUTPUT);
@@ -1086,14 +999,17 @@ app_main(void) {
   ESP_ERROR_CHECK(esp_wifi_init(&cfg));
   ESP_ERROR_CHECK(esp_wifi_set_storage(WIFI_STORAGE_RAM));
   ESP_ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_STA));
-  wifi_config_t sta_config = {
-      .sta = {.ssid = CONFIG_WIFI_SSID, .password = CONFIG_WIFI_PASSWORD, .bssid_set = false}};
+  wifi_config_t sta_config = {.sta = {.ssid = CONFIG_WIFI_SSID,
+                                      .password = CONFIG_WIFI_PASSWORD,
+                                      .bssid_set = false}};
   ESP_ERROR_CHECK(esp_wifi_set_config(WIFI_IF_STA, &sta_config));
   ESP_ERROR_CHECK(esp_wifi_start());
   ESP_ERROR_CHECK(esp_wifi_connect());
 
   gdeInit();
   initDisplay(LUT_DEFAULT); // configure slow LUT
+
+  i2c_master_init();
 
   int picture_id = 0;
   drawImage(pictures[picture_id]);
