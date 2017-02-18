@@ -45,6 +45,9 @@ esp_err_t event_handler(void *ctx, system_event_t *event) { return ESP_OK; }
 #define ACK_VAL    0x0         /*!< I2C ack value */
 #define NACK_VAL   0x1         /*!< I2C nack value */
 
+#define I2C_EXPANDER_ADDR 0b1000100 // FXL6408 port expander address (ADDR=1)
+uint8_t expander_output_state = 0x0;
+
 uint32_t
 get_buttons(void)
 {
@@ -1036,10 +1039,58 @@ void i2c_master_init()
     conf.sda_io_num = I2C_MASTER_SDA_IO;
     conf.sda_pullup_en = GPIO_PULLUP_ENABLE;
     conf.scl_io_num = I2C_MASTER_SCL_IO;
-    conf.scl_pullup_en = GPIO_PULLUP_ENABLE;
+//    conf.scl_pullup_en = GPIO_PULLUP_ENABLE;
     conf.master.clk_speed = I2C_MASTER_FREQ_HZ;
     i2c_param_config(i2c_master_port, &conf);
     i2c_driver_install(i2c_master_port, conf.mode, I2C_MASTER_RX_BUF_DISABLE, I2C_MASTER_TX_BUF_DISABLE, 0);
+}
+
+/**
+ * Write simple byte to I2C slave (hopefully)
+ * ___________________________________________________________________________________________________
+ * | start | slave_addr + wr_bit + ack | write RA (1 byte) + ack  | write data (1 byte) + ack | stop |
+ * |-------|---------------------------|--------------------------|---------------------------|------|
+ */
+void i2c_write(uint8_t addr, uint8_t RA, uint8_t data) {
+
+    i2c_cmd_handle_t cmd = i2c_cmd_link_create();
+    i2c_master_start(cmd);
+
+    i2c_master_write_byte(cmd, addr << 1 | WRITE_BIT, ACK_CHECK_EN);
+    i2c_master_write_byte(cmd, RA, ACK_CHECK_EN);
+    i2c_master_write_byte(cmd, data, ACK_CHECK_EN);
+    i2c_master_stop(cmd);
+
+    // Timeout 1 second
+    int ret = i2c_master_cmd_begin(i2c_num, cmd, 1000 / portTICK_RATE_MS);
+    i2c_cmd_link_delete(cmd);
+
+    if (ret == ESP_FAIL) {
+        // FAIL, handle?
+    }
+}
+
+
+void i2c_expander_init() {
+    // IO direction (0 = input, 1 = output)
+    i2c_write(I2C_EXPANDER_ADDR, 0x03, 0b00000110);
+
+    expander_output_state = 0x0;
+    i2c_write(I2C_EXPANDER_ADDR, 0x05, expander_output_state);
+
+}
+
+/**
+ * Pager motor stuff
+ */
+void buzz_pager(int duration) {
+    expander_output_state |= 1 << 1;
+    i2c_write(I2C_EXPANDER_ADDR, 0x05, expander_output_state);
+
+    vTaskDelay(duration / portTICK_RATE_MS);
+
+    expander_output_state &= ~(1 << 1);
+    i2c_write(I2C_EXPANDER_ADDR, 0x05, expander_output_state);
 }
 
 void
@@ -1051,6 +1102,12 @@ app_main(void) {
 
 	/** configure input **/
 	gpio_isr_register(gpio_intr_test, NULL, 0, NULL);
+
+#ifdef CONFIG_SHA_BADGE_V2
+    i2c_master_init();
+    i2c_expander_init();
+    buzz_pager(500);
+#endif
 
 	gpio_config_t io_conf;
 	io_conf.intr_type = GPIO_INTR_ANYEDGE;
