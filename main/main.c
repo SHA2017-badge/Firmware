@@ -408,7 +408,7 @@ void demoGreyscaleImg1(void) {
   gdeWriteCommand_p1(0x3a, 0x00); // no dummy lines per gate
   gdeWriteCommand_p1(0x3b, 0x00); // 30us per line
 
-  for (i = 1; i < 16; i++) {
+  for (i = 0; i < 16; i++) {
     //		// linear
     //		uint8_t lvl = 17 * i;
 
