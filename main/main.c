@@ -24,6 +24,10 @@
 #define PIN_NUM_BUTTON_RIGHT  35
 #endif
 
+#ifdef SHA_BADGE_V2
+#define PIN_NUM_BUTTON_MID    25
+#endif
+
 esp_err_t event_handler(void *ctx, system_event_t *event) { return ESP_OK; }
 
 uint32_t
@@ -33,7 +37,9 @@ get_buttons(void)
 #ifdef SHA_BADGE_V1
 	bits |= gpio_get_level(PIN_NUM_BUTTON_A)     << 0; // A
 	bits |= gpio_get_level(PIN_NUM_BUTTON_B)     << 1; // B
+#endif // SHA_BADGE_V1
 	bits |= gpio_get_level(PIN_NUM_BUTTON_MID)   << 2; // MID
+#ifdef SHA_BADGE_V1
 	bits |= gpio_get_level(PIN_NUM_BUTTON_UP)    << 3; // UP
 	bits |= gpio_get_level(PIN_NUM_BUTTON_DOWN)  << 4; // DOWN
 	bits |= gpio_get_level(PIN_NUM_BUTTON_LEFT)  << 5; // LEFT
@@ -980,7 +986,9 @@ app_main(void) {
 #ifdef SHA_BADGE_V1
 		(1LL << PIN_NUM_BUTTON_A) |
 		(1LL << PIN_NUM_BUTTON_B) |
+#endif // SHA_BADGE_V1
 		(1LL << PIN_NUM_BUTTON_MID) |
+#ifdef SHA_BADGE_V1
 		(1LL << PIN_NUM_BUTTON_UP) |
 		(1LL << PIN_NUM_BUTTON_DOWN) |
 		(1LL << PIN_NUM_BUTTON_LEFT) |
