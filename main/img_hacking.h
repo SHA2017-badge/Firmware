@@ -1,5 +1,5 @@
-#ifndef IMG_HACKING
-#define IMG_HACKING
+#ifndef IMG_HACKING_H
+#define IMG_HACKING_H
 
 #include <stdint.h>
 
@@ -15,4 +15,4 @@
 
 extern const uint8_t img_hacking[37888];
 
-#endif // IMG_HACKING
+#endif // IMG_HACKING_H
