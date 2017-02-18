@@ -1,13 +1,28 @@
 menu "SHA2017 Badge Configuration"
 
+config SHA_BADGE_V1
+    bool "SHA Rev0.0.1 Dev"
+	default false
+	help
+			First dev board released at 33C3
+
+config WIFI_USE
+	bool "Use WiFi on badge"
+	depends on WIFI_ENABLED
+	default false
+	help
+		Let the badge use wifi
+
 config WIFI_SSID
     string "WiFi SSID"
+	depends on WIFI_USE
 	default "myssid"
 	help
 		SSID (network name) for the example to connect to.
 
 config WIFI_PASSWORD
     string "WiFi Password"
+	depends on WIFI_USE
 	default "myssid"
 	help
 		WiFi password (WPA or WPA2) for the example to use.

@@ -7,7 +7,8 @@
 #define MATRIX_SERVER "https://chat.weho.st"
 #define MATRIX_ROOM "!KkvzNRuBRnkSqbfYuC:chat.weho.st"
 
-void createLoginBody(char* buffer, int bufferLen, const char* user, const char* password) {
+void createLoginBody(char *buffer, int bufferLen, const char *user,
+                     const char *password) {
   // DynamicJsonBuffer jsonBuffer;
   // JsonObject& root = jsonBuffer.createObject();
   // root["type"] = "m.login.password";
@@ -16,7 +17,7 @@ void createLoginBody(char* buffer, int bufferLen, const char* user, const char* 
   // root.printTo(buffer, bufferLen);
 }
 
-void createMessageBody(char* buffer, int bufferLen, const char* message) {
+void createMessageBody(char *buffer, int bufferLen, const char *message) {
   // DynamicJsonBuffer jsonBuffer;
   // JsonObject& root = jsonBuffer.createObject();
   // root["msgtype"] = "m.text";
@@ -24,7 +25,7 @@ void createMessageBody(char* buffer, int bufferLen, const char* message) {
   // root.printTo(buffer, bufferLen);
 }
 
-bool login(const char* user, const char* password) {
+bool login(const char *user, const char *password) {
   bool success = false;
   //
   // char buffer[512];
@@ -52,10 +53,11 @@ bool login(const char* user, const char* password) {
   return success;
 }
 
-bool getMessages(const char* roomId) {
+bool getMessages(const char *roomId) {
   bool success = false;
   //
-  // string url = MATRIX_SERVER + "/_matrix/client/r0/rooms/" + roomId + "/messages?access_token=" + accessToken + "&limit=1";
+  // string url = MATRIX_SERVER + "/_matrix/client/r0/rooms/" + roomId +
+  // "/messages?access_token=" + accessToken + "&limit=1";
   // if (lastMessageToken == "") {
   //   url += "&dir=b";
   // } else {
@@ -93,24 +95,26 @@ bool getMessages(const char* roomId) {
   return success;
 }
 
-bool sendMessage(const char* roomId, const char* message) {
+bool sendMessage(const char *roomId, const char *message) {
   bool success = false;
-//
-//   char buffer[512];
-//   createMessageBody(buffer, 512, message);
-//
-//   string url = MATRIX_SERVER + "/_matrix/client/r0/rooms/" + roomId + "/send/m.room.message/" + string(millis()) + "?access_token=" + accessToken + "&limit=1";
-//   ets_printf("PUT %s\n", url.c_str());
-//
-//   http.begin(url);
-//   int rc = http.sendRequest("PUT", buffer);
-//   if (rc > 0) {
-// //    ets_printf("%d\n", rc);
-//     if (rc == HTTP_CODE_OK) {
-//       success = true;
-//     }
-//   } else {
-//     ets_printf("Error: %s\n", http.errorToString(rc).c_str());
-//   }
+  //
+  //   char buffer[512];
+  //   createMessageBody(buffer, 512, message);
+  //
+  //   string url = MATRIX_SERVER + "/_matrix/client/r0/rooms/" + roomId +
+  //   "/send/m.room.message/" + string(millis()) + "?access_token=" +
+  //   accessToken + "&limit=1";
+  //   ets_printf("PUT %s\n", url.c_str());
+  //
+  //   http.begin(url);
+  //   int rc = http.sendRequest("PUT", buffer);
+  //   if (rc > 0) {
+  // //    ets_printf("%d\n", rc);
+  //     if (rc == HTTP_CODE_OK) {
+  //       success = true;
+  //     }
+  //   } else {
+  //     ets_printf("Error: %s\n", http.errorToString(rc).c_str());
+  //   }
   return success;
 }
