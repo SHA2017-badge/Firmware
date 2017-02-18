@@ -23,9 +23,7 @@
 #define PIN_NUM_BUTTON_DOWN 32
 #define PIN_NUM_BUTTON_LEFT 33
 #define PIN_NUM_BUTTON_RIGHT 35
-#endif // CONFIG_SHA_BADGE_V1
-
-#ifdef SHA_BADGE_V2
+#else
 #define PIN_NUM_BUTTON_MID    25
 #endif
 
