@@ -87,8 +87,8 @@ void demoGreyscaleImg3(void) {
       //   Make pixel whiter when bit is set;
       //   Duration is <ii> cycles.
       uint8_t lut[30] = {
-          0x88, 0, 0, 0, 0, 0,  0, 0, 0, 0, 0, 0, 0, 0, 0,
-          0,    0, 0, 0, 0, ii, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+          0, 0x88, 0, 0, 0,         0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+          0, 0   , 0, 0, 0, (ii<<4)|1, 1, 0, 0, 0, 0, 0, 0, 0, 0,
       };
       gdeWriteCommandStream(0x32, lut, 30);
 
