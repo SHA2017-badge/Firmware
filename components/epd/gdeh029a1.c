@@ -69,7 +69,7 @@ void initDisplay(int lut_idx) {
   // 2C: write VCOM register
   gdeWriteCommand_p1(0x2c, 0xa8); // VCOM 7c
   // 3A: set dummy line period
-  gdeWriteCommand_p1(0x3a, 0x1a); // 4 dummy lines per gate
+  gdeWriteCommand_p1(0x3a, 0x1a); // 26 dummy lines per gate
   // 3B: set gate line width
   gdeWriteCommand_p1(0x3b, 0x08); // 2us per line
   // 3C: border waveform control
