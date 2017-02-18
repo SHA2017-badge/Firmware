@@ -6,11 +6,23 @@
 #include "esp_wifi.h"
 #include "freertos/FreeRTOS.h"
 #include "nvs_flash.h"
+#include <pins.h>
 #include <gde.h>
 #include <gdeh029a1.h>
 #include <pictures.h>
 
 #include "img_hacking.h"
+
+#ifdef SHA_BADGE_V1
+#define PIN_NUM_LED           22
+#define PIN_NUM_BUTTON_A       0
+#define PIN_NUM_BUTTON_B      27
+#define PIN_NUM_BUTTON_MID    25
+#define PIN_NUM_BUTTON_UP     26
+#define PIN_NUM_BUTTON_DOWN   32
+#define PIN_NUM_BUTTON_LEFT   33
+#define PIN_NUM_BUTTON_RIGHT  35
+#endif
 
 esp_err_t event_handler(void *ctx, system_event_t *event) { return ESP_OK; }
 
@@ -18,14 +30,16 @@ uint32_t
 get_buttons(void)
 {
 	uint32_t bits = 0;
-	bits |= gpio_get_level(0) << 0; // A
-	bits |= gpio_get_level(27) << 1; // B
-	bits |= gpio_get_level(25) << 2; // MID
-	bits |= gpio_get_level(26) << 3; // UP
-	bits |= gpio_get_level(32) << 4; // DOWN
-	bits |= gpio_get_level(33) << 5; // LEFT
-	bits |= gpio_get_level(35) << 6; // RIGHT
-	bits |= gpio_get_level(21) << 7; // GDE BUSY
+#ifdef SHA_BADGE_V1
+	bits |= gpio_get_level(PIN_NUM_BUTTON_A)     << 0; // A
+	bits |= gpio_get_level(PIN_NUM_BUTTON_B)     << 1; // B
+	bits |= gpio_get_level(PIN_NUM_BUTTON_MID)   << 2; // MID
+	bits |= gpio_get_level(PIN_NUM_BUTTON_UP)    << 3; // UP
+	bits |= gpio_get_level(PIN_NUM_BUTTON_DOWN)  << 4; // DOWN
+	bits |= gpio_get_level(PIN_NUM_BUTTON_LEFT)  << 5; // LEFT
+	bits |= gpio_get_level(PIN_NUM_BUTTON_RIGHT) << 6; // RIGHT
+#endif // SHA_BADGE_V1
+	bits |= gpio_get_level(PIN_NUM_BUSY)         << 7; // GDE BUSY
 	return bits;
 }
 
@@ -71,8 +85,10 @@ void gpio_intr_test(void *arg)
 	if (buttons_up & (1 << 7))
 		ets_printf("GDE-Busy up\n");
 
+#ifdef PIN_NUM_LED
 	// pass on BUSY signal to LED.
-//	gpio_set_level(22, 1-gpio_get_level(21));
+	gpio_set_level(PIN_NUM_LED, 1-gpio_get_level(21));
+#endif // PIN_NUM_LED
 }
 
 struct menu_item {
@@ -960,21 +976,26 @@ app_main(void) {
 	io_conf.intr_type = GPIO_INTR_ANYEDGE;
 	io_conf.mode = GPIO_MODE_INPUT;
 	io_conf.pin_bit_mask =
-		GPIO_SEL_0 |
-//		GPIO_SEL_21 | // GDE BUSY pin
-		GPIO_SEL_25 |
-		GPIO_SEL_26 |
-		GPIO_SEL_27 |
-		GPIO_SEL_32 |
-		GPIO_SEL_33 |
-		GPIO_SEL_35;
+		(1LL << PIN_NUM_BUSY) |
+#ifdef SHA_BADGE_V1
+		(1LL << PIN_NUM_BUTTON_A) |
+		(1LL << PIN_NUM_BUTTON_B) |
+		(1LL << PIN_NUM_BUTTON_MID) |
+		(1LL << PIN_NUM_BUTTON_UP) |
+		(1LL << PIN_NUM_BUTTON_DOWN) |
+		(1LL << PIN_NUM_BUTTON_LEFT) |
+		(1LL << PIN_NUM_BUTTON_RIGHT) |
+#endif // SHA_BADGE_V1
+		0LL;
 	io_conf.pull_down_en = 0;
 	io_conf.pull_up_en = 1;
 	gpio_config(&io_conf);
 
 	/** configure output **/
-//    gpio_pad_select_gpio(22);
-//	gpio_set_direction(22, GPIO_MODE_OUTPUT);
+#ifdef PIN_NUM_LED
+	gpio_pad_select_gpio(PIN_NUM_LED);
+	gpio_set_direction(PIN_NUM_LED, GPIO_MODE_OUTPUT);
+#endif // PIN_NUM_LED
 
 	tcpip_adapter_init();
 	ESP_ERROR_CHECK(esp_event_loop_init(event_handler, NULL));
