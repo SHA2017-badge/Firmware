@@ -34,7 +34,7 @@ esp_err_t event_handler(void *ctx, system_event_t *event) { return ESP_OK; }
 #define I2C_MASTER_TX_BUF_DISABLE   0   /*!< I2C master do not need buffer */
 #define I2C_MASTER_RX_BUF_DISABLE   0   /*!< I2C master do not need buffer */
 #define I2C_MASTER_FREQ_HZ    100000     /*!< I2C master clock frequency */
-#define ESP_SLAVE_ADDR 0x57         /*!< ESP32 slave address, you can set any 7bit value */
+#define ESP_SLAVE_ADDR 0x70         /*!< ESP32 slave address, you can set any 7bit value */
 #define WRITE_BIT  I2C_MASTER_WRITE /*!< I2C master write */
 #define READ_BIT   I2C_MASTER_READ  /*!< I2C master read */
 #define ACK_CHECK_EN   0x1     /*!< I2C master will check ack from slave*/
