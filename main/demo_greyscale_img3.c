@@ -102,7 +102,9 @@ void demoGreyscaleImg3(void) {
   gdeWriteCommand_p1(0x3b, 0x08); // 62us per line
 
   // wait for random keypress
+/*
   uint32_t buttons_down = 0;
-  while ((buttons_down & 0x7f) == 0)
+  while ((buttons_down & 0xff) == 0)
     xQueueReceive(evt_queue, &buttons_down, portMAX_DELAY);
+*/
 }
