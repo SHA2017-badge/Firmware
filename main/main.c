@@ -30,7 +30,7 @@
 #define PIN_NUM_I2C_CLOCK    27
 #endif
 
-esp_err_t event_handler(void *ctx, system_event_t *event) { return ESP_OK; }
+//esp_err_t event_handler(void *ctx, system_event_t *event) { return ESP_OK; }
 
 uint32_t
 get_buttons(void)
@@ -56,8 +56,6 @@ get_buttons(void)
 
 uint32_t buttons_state = 0;
 
-extern uint32_t i2c_read_event(void);
-
 void gpio_intr_test(void *arg) {
   // read status to get interrupt status for GPIO 0-31
   uint32_t gpio_intr_status_lo = READ_PERI_REG(GPIO_STATUS_REG);
@@ -73,8 +71,14 @@ void gpio_intr_test(void *arg) {
   uint32_t buttons_up = buttons_new & (~buttons_state);
   buttons_state = buttons_new;
 
-  if (buttons_down != 0)
+  if ((buttons_down & 0xff) != 0)
     xQueueSendFromISR(evt_queue, &buttons_down, NULL);
+
+  if ((buttons_down & 0x200) != 0)
+  {
+    uint32_t event = 1;
+    xQueueSendFromISR(i2c_queue, &event, NULL);
+  }
 
   if (buttons_down & (1 << 0))
     ets_printf("Button A\n");
@@ -310,28 +314,18 @@ i2c_write_reg(uint8_t reg, uint8_t value)
 }
 
 // scan the whole address-space on timeouts..
-uint8_t i2c_touchpad_addr = 0;
+uint8_t i2c_touchpad_addr = 0x78;
 
 uint32_t
 i2c_read_event(void)
 {
 	uint8_t buf[3];
 	i2c_cmd_handle_t cmd;
-retry:
+
 	cmd = i2c_cmd_link_create();
 	i2c_master_start(cmd);
-//	i2c_master_write_byte(cmd, ( 0x70 << 1 ) | READ_BIT, ACK_CHECK_EN);
 	i2c_master_write_byte(cmd, ( i2c_touchpad_addr << 1 ) | READ_BIT, ACK_CHECK_EN);
-//	i2c_master_write_byte(cmd, ( i2c_touchpad_addr << 1 ) | READ_BIT, ACK_CHECK_DIS);
 
-/*
-	i2c_master_read_byte(cmd, &buf[0], ACK_VAL);
-	i2c_master_read_byte(cmd, &buf[1], ACK_VAL);
-//	i2c_master_read_byte(cmd, &buf[0], NACK_VAL);
-//	i2c_master_read_byte(cmd, &buf[1], NACK_VAL);
-	i2c_master_read_byte(cmd, &buf[2], NACK_VAL);
-*/
-//	i2c_master_read(cmd, buf, 3, NACK_VAL);
 	i2c_master_read(cmd, buf, 3, ACK_VAL);
 	i2c_master_stop(cmd);
 
@@ -341,16 +335,35 @@ retry:
 	if (ret == ESP_OK) {
 		ets_printf("i2c master read (0x%02x): ok\n", i2c_touchpad_addr);
 		ets_printf("event: 0x%02x, 0x%02x, 0x%02x\n", buf[0], buf[1], buf[2]);
+		if ((buf[0] & 0x0f) == 0x00) {
+			ets_printf("\e[32mButton %d pressed.\e[0m\n", buf[1]);
+			uint32_t buttons_down = 0;
+			if (buf[1] == 2)
+				buttons_down = (1<<5);
+			if (buf[1] == 3)
+				buttons_down = (1<<3);
+			if (buf[1] == 4)
+				buttons_down = (1<<6);
+			if (buf[1] == 5)
+				buttons_down = (1<<4);
+			if (buf[1] == 7)
+				buttons_down = (1<<0); // alternative A
+			if (buf[1] == 8)
+				buttons_down = (1<<2); // MID
+			if (buf[1] == 9)
+				buttons_down = (1<<1); // B
+			if (buf[1] == 11)
+				buttons_down = (1<<0); // A (not working)
+
+			if (buttons_down != 0)
+				xQueueSendFromISR(evt_queue, &buttons_down, NULL);
+		}
+		else if ((buf[0] & 0x0f) == 0x01) {
+			ets_printf("\e[33mButton %d released.\e[0m\n", buf[1]);
+		}
+
 	} else {
 		ets_printf("i2c master read (0x%02x): error %d\n", i2c_touchpad_addr, ret);
-		if (ret == 263) { // timeout
-			i2c_touchpad_addr++;
-			i2c_touchpad_addr &= 0x7f;
-			if (i2c_touchpad_addr == I2C_SLAVE_ID)
-				i2c_touchpad_addr++;
-			if (i2c_touchpad_addr != 0)
-				goto retry;
-		}
 	}
 
 	return (buf[0] << 16) | (buf[1] << 8) | (buf[2]);
@@ -449,11 +462,34 @@ set_leds(void) {
 }
 
 void
+task_handle_i2c(void *arg)
+{
+	while (1) {
+		uint32_t event;
+		if (xQueueReceive(i2c_queue, &event, portMAX_DELAY)) {
+			if (event == 1)
+			{
+				ets_printf("I2C INT handling\n");
+				while (1)
+				{
+					i2c_read_event();
+					i2c_read_reg(0x13); // Interrupt Status
+					uint8_t x = i2c_read_reg(0x0f); // Input Level
+					if ((x & 0x08) != 0)
+						break;
+				}
+			}
+		}
+	}
+}
+
+void
 app_main(void) {
 	nvs_flash_init();
 
-	/* create event queue */
+	/* create event queues */
 	evt_queue = xQueueCreate(10, sizeof(uint32_t));
+	i2c_queue = xQueueCreate(10, sizeof(uint32_t));
 
 	/** configure input **/
 	gpio_isr_register(gpio_intr_test, NULL, 0, NULL);
@@ -495,7 +531,7 @@ app_main(void) {
 //	i2c_write_reg(0x07, 0xff); // Output High-Z (0=default; 1=high-z) - default
 	i2c_write_reg(0x07, 0xfb); // Output High-Z (0=default; 1=high-z)
 //	i2c_write_reg(0x09, 0x00); // Input Default State (int at: 0=l->h; 1=h->l)
-	i2c_write_reg(0x09, 0x00); // Input Default State (int at: 0=l->h; 1=h->l)
+	i2c_write_reg(0x09, 0x08); // Input Default State (int at: 0=l->h; 1=h->l)
 //	i2c_write_reg(0x0b, 0xff); // Pull Enable (0=disabled; 1=enabled) - default
 	i2c_write_reg(0x0b, 0xff); // Pull Enable (0=disabled; 1=enabled)
 //	i2c_write_reg(0x0d, 0x00); // Pull-Down/Pull-Up (0=down; 1=up) - default
@@ -510,18 +546,18 @@ app_main(void) {
 	i2c_read_reg(0x09);
 	i2c_read_reg(0x0b);
 	i2c_read_reg(0x0d);
-	i2c_read_reg(0x0f);
+	i2c_read_reg(0x0f); // pin status
 	i2c_read_reg(0x11);
-	i2c_read_reg(0x13);
 
-	i2c_read_event();
-	i2c_read_event();
-	i2c_read_event();
-	i2c_read_event();
+	// start i2c-event task
+	xTaskCreate(&task_handle_i2c, "i2c event task", 4096, NULL, 10, NULL);
+
+	uint32_t event = 1;
+    xQueueSendFromISR(i2c_queue, &event, NULL);
 #endif
 
-	tcpip_adapter_init();
-	ESP_ERROR_CHECK(esp_event_loop_init(event_handler, NULL));
+//	tcpip_adapter_init();
+//	ESP_ERROR_CHECK(esp_event_loop_init(event_handler, NULL));
 
 #ifdef CONFIG_WIFI_USE
 	wifi_init_config_t cfg = WIFI_INIT_CONFIG_DEFAULT();
@@ -616,14 +652,8 @@ demoGreyscaleImg3();
 				/* use the flash button to try to read something from the touchpad */
 				ets_printf("Button FLASH handling\n");
 				/* try to read an event */
-				i2c_read_event();
-			}
-			if (buttons_down & (1 << 9))
-			{
-				ets_printf("I2C INT handling\n");
-				/* the interrupt line was connected to the clock-line, which caused too many interrupts. we should read the interrupt status, but this would trigger more interrupts on my badge.. therefore it's temp. disabled */
-//				i2c_read_reg(0x13); // Interrupt Status
-				i2c_read_event();
+				uint32_t event = 1;
+				xQueueSendFromISR(i2c_queue, &event, NULL);
 			}
 		}
 	}
