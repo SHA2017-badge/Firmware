@@ -413,7 +413,6 @@ set_leds(void) {
 		+1, +1, +1,
 	};
 	const uint8_t conv[4] = { 0x11, 0x13, 0x31, 0x33 };
-//	const uint8_t conv[4] = { 0x11, 0x31, 0x13, 0x33 };
 
 	while (1) {
 		vTaskDelay(10 / portTICK_RATE_MS);
@@ -590,6 +589,10 @@ demoGreyscaleImg3();
 	while (1) {
 		uint32_t buttons_down;
 		if (xQueueReceive(evt_queue, &buttons_down, portMAX_DELAY)) {
+			if (buttons_down & (1 << 0)) {
+				ets_printf("Button A handling\n");
+				set_leds();
+			}
 			if (buttons_down & (1 << 1)) {
 				ets_printf("Button B handling\n");
 				/* redraw with default LUT */
