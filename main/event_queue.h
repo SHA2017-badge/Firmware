@@ -6,5 +6,6 @@
 #include "esp_event.h"
 
 extern xQueueHandle evt_queue;
+extern xQueueHandle i2c_queue;
 
 #endif // EVENT_QUEUE_H

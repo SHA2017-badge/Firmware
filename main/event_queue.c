@@ -3,3 +3,4 @@
 #include "esp_event.h"
 
 xQueueHandle evt_queue = NULL;
+xQueueHandle i2c_queue = NULL;
