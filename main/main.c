@@ -12,16 +12,16 @@
 #include <pins.h>
 
 #ifdef CONFIG_SHA_BADGE_V1
-#define PIN_NUM_LED 22
-#define PIN_NUM_BUTTON_A 0
-#define PIN_NUM_BUTTON_B 27
-#define PIN_NUM_BUTTON_MID 25
-#define PIN_NUM_BUTTON_UP 26
-#define PIN_NUM_BUTTON_DOWN 32
-#define PIN_NUM_BUTTON_LEFT 33
+#define PIN_NUM_LED          22
+#define PIN_NUM_BUTTON_A      0
+#define PIN_NUM_BUTTON_B     27
+#define PIN_NUM_BUTTON_MID   25
+#define PIN_NUM_BUTTON_UP    26
+#define PIN_NUM_BUTTON_DOWN  32
+#define PIN_NUM_BUTTON_LEFT  33
 #define PIN_NUM_BUTTON_RIGHT 35
 #else
-#define PIN_NUM_BUTTON_MID    25
+#define PIN_NUM_BUTTON_FLASH  0
 #endif
 
 esp_err_t event_handler(void *ctx, system_event_t *event) { return ESP_OK; }
@@ -31,15 +31,15 @@ get_buttons(void)
 {
 	uint32_t bits = 0;
 #ifdef CONFIG_SHA_BADGE_V1
-	bits |= gpio_get_level(PIN_NUM_BUTTON_A)     << 0; // A
-	bits |= gpio_get_level(PIN_NUM_BUTTON_B)     << 1; // B
-#endif // CONFIG_SHA_BADGE_V1
-	bits |= gpio_get_level(PIN_NUM_BUTTON_MID)   << 2; // MID
-#ifdef CONFIG_SHA_BADGE_V1
-	bits |= gpio_get_level(PIN_NUM_BUTTON_UP)    << 3; // UP
-	bits |= gpio_get_level(PIN_NUM_BUTTON_DOWN)  << 4; // DOWN
-	bits |= gpio_get_level(PIN_NUM_BUTTON_LEFT)  << 5; // LEFT
-	bits |= gpio_get_level(PIN_NUM_BUTTON_RIGHT) << 6; // RIGHT
+	bits |= gpio_get_level(PIN_NUM_BUTTON_A)     <<  0; // A
+	bits |= gpio_get_level(PIN_NUM_BUTTON_B)     <<  1; // B
+	bits |= gpio_get_level(PIN_NUM_BUTTON_MID)   <<  2; // MID
+	bits |= gpio_get_level(PIN_NUM_BUTTON_UP)    <<  3; // UP
+	bits |= gpio_get_level(PIN_NUM_BUTTON_DOWN)  <<  4; // DOWN
+	bits |= gpio_get_level(PIN_NUM_BUTTON_LEFT)  <<  5; // LEFT
+	bits |= gpio_get_level(PIN_NUM_BUTTON_RIGHT) <<  6; // RIGHT
+#else // CONFIG_SHA_BADGE_V2
+	bits |= gpio_get_level(PIN_NUM_BUTTON_FLASH) <<  7; // FLASH
 #endif // CONFIG_SHA_BADGE_V1
 	bits |= gpio_get_level(PIN_NUM_BUSY)         << 16; // GDE BUSY
 	return bits;
@@ -81,6 +81,8 @@ void gpio_intr_test(void *arg) {
     ets_printf("Button LEFT\n");
   if (buttons_down & (1 << 6))
     ets_printf("Button RIGHT\n");
+  if (buttons_down & (1 << 7))
+    ets_printf("Button FLASH\n");
   if (buttons_down & (1 << 16))
     ets_printf("GDE-Busy down\n");
   if (buttons_up & (1 << 16))
@@ -231,13 +233,13 @@ app_main(void) {
 #ifdef CONFIG_SHA_BADGE_V1
 		(1LL << PIN_NUM_BUTTON_A) |
 		(1LL << PIN_NUM_BUTTON_B) |
-#endif // CONFIG_SHA_BADGE_V1
 		(1LL << PIN_NUM_BUTTON_MID) |
-#ifdef CONFIG_SHA_BADGE_V1
 		(1LL << PIN_NUM_BUTTON_UP) |
 		(1LL << PIN_NUM_BUTTON_DOWN) |
 		(1LL << PIN_NUM_BUTTON_LEFT) |
 		(1LL << PIN_NUM_BUTTON_RIGHT) |
+#else
+		(1LL << PIN_NUM_BUTTON_FLASH) |
 #endif // CONFIG_SHA_BADGE_V1
 		0LL;
 	io_conf.pull_down_en = 0;
