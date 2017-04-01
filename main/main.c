@@ -41,7 +41,7 @@ get_buttons(void)
 	bits |= gpio_get_level(PIN_NUM_BUTTON_LEFT)  << 5; // LEFT
 	bits |= gpio_get_level(PIN_NUM_BUTTON_RIGHT) << 6; // RIGHT
 #endif // CONFIG_SHA_BADGE_V1
-	bits |= gpio_get_level(PIN_NUM_BUSY)         << 7; // GDE BUSY
+	bits |= gpio_get_level(PIN_NUM_BUSY)         << 16; // GDE BUSY
 	return bits;
 }
 
@@ -81,9 +81,9 @@ void gpio_intr_test(void *arg) {
     ets_printf("Button LEFT\n");
   if (buttons_down & (1 << 6))
     ets_printf("Button RIGHT\n");
-  if (buttons_down & (1 << 7))
+  if (buttons_down & (1 << 16))
     ets_printf("GDE-Busy down\n");
-  if (buttons_up & (1 << 7))
+  if (buttons_up & (1 << 16))
     ets_printf("GDE-Busy up\n");
 
 #ifdef PIN_NUM_LED

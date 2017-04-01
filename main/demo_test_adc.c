@@ -54,7 +54,7 @@ void demoTestAdc(void) {
     gdeBusyWait();
 
     if (xQueueReceive(evt_queue, &buttons_down, portMAX_DELAY))
-      if ((buttons_down & 0x7f) != 0)
+      if ((buttons_down & 0xffff) != 0)
         return;
   }
 }
