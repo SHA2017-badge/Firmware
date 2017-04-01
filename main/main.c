@@ -11,6 +11,8 @@
 #include <pictures.h>
 #include <pins.h>
 
+#include "badge_i2c.h"
+
 #ifdef CONFIG_SHA_BADGE_V1
 #define PIN_NUM_LED          22
 #define PIN_NUM_BUTTON_A      0
@@ -22,6 +24,9 @@
 #define PIN_NUM_BUTTON_RIGHT 35
 #else
 #define PIN_NUM_BUTTON_FLASH  0
+#define PIN_NUM_I2C_INT      25
+#define PIN_NUM_I2C_DATA     26
+#define PIN_NUM_I2C_CLOCK    27
 #endif
 
 esp_err_t event_handler(void *ctx, system_event_t *event) { return ESP_OK; }
@@ -40,6 +45,7 @@ get_buttons(void)
 	bits |= gpio_get_level(PIN_NUM_BUTTON_RIGHT) <<  6; // RIGHT
 #else // CONFIG_SHA_BADGE_V2
 	bits |= gpio_get_level(PIN_NUM_BUTTON_FLASH) <<  7; // FLASH
+	bits |= gpio_get_level(PIN_NUM_I2C_INT)      << 17; // I2C
 #endif // CONFIG_SHA_BADGE_V1
 	bits |= gpio_get_level(PIN_NUM_BUSY)         << 16; // GDE BUSY
 	return bits;
@@ -64,6 +70,8 @@ void gpio_intr_test(void *arg) {
   uint32_t buttons_up = buttons_new & (~buttons_state);
   buttons_state = buttons_new;
 
+  if (buttons_down & (1 << 17))
+    portexp_trigger_event();
   if (buttons_down != 0)
     xQueueSendFromISR(evt_queue, &buttons_down, NULL);
 
@@ -87,6 +95,10 @@ void gpio_intr_test(void *arg) {
     ets_printf("GDE-Busy down\n");
   if (buttons_up & (1 << 16))
     ets_printf("GDE-Busy up\n");
+  if (buttons_down & (1 << 17))
+    ets_printf("I2C Int down\n");
+  if (buttons_up & (1 << 17))
+    ets_printf("I2C Int up\n");
 
 #ifdef PIN_NUM_LED
   // pass on BUSY signal to LED.
@@ -240,6 +252,7 @@ app_main(void) {
 		(1LL << PIN_NUM_BUTTON_RIGHT) |
 #else
 		(1LL << PIN_NUM_BUTTON_FLASH) |
+		(1LL << PIN_NUM_I2C_INT) |
 #endif // CONFIG_SHA_BADGE_V1
 		0LL;
 	io_conf.pull_down_en = 0;
@@ -251,6 +264,8 @@ app_main(void) {
   gpio_pad_select_gpio(PIN_NUM_LED);
   gpio_set_direction(PIN_NUM_LED, GPIO_MODE_OUTPUT);
 #endif // PIN_NUM_LED
+
+  badge_i2c_init();
 
   tcpip_adapter_init();
   ESP_ERROR_CHECK(esp_event_loop_init(event_handler, NULL));
