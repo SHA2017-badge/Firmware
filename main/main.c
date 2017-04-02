@@ -12,6 +12,8 @@
 
 #include "badge_pins.h"
 #include "badge_i2c.h"
+#include "badge_portexp.h"
+#include "badge_touch.h"
 
 esp_err_t event_handler(void *ctx, system_event_t *event) { return ESP_OK; }
 
@@ -82,6 +84,26 @@ void gpio_intr_test(void *arg) {
   gpio_set_level(PIN_NUM_LED, 1 - gpio_get_level(PIN_NUM_EPD_BUSY));
 #endif // PIN_NUM_LED
 }
+
+#ifdef CONFIG_SHA_BADGE_V2
+void
+touch_event_handler(int event)
+{
+	// convert into button queue event
+	if (((event >> 16) & 0x0f) == 0x0) { // button down event
+		static const int conv[12] =
+		{ -1, -1, 5, 3, 6, 4, -1, 0, 2, 1, -1, 0 };
+		if (((event >> 8) & 0xff) < 12) {
+			int id = conv[(event >> 8) & 0xff];
+			if (id != -1)
+			{
+				uint32_t buttons_down = 1<<id;
+				xQueueSend(evt_queue, &buttons_down, 0);
+			}
+		}
+	}
+}
+#endif // CONFIG_SHA_BADGE_V2
 
 struct menu_item {
   const char *title;
@@ -255,6 +277,9 @@ app_main(void) {
 
 #ifdef CONFIG_SHA_BADGE_V2
   badge_i2c_init();
+  badge_portexp_init();
+  badge_touch_init();
+  badge_touch_set_event_handler(touch_event_handler);
 #endif // CONFIG_SHA_BADGE_V2
 
   tcpip_adapter_init();
