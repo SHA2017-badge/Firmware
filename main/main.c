@@ -9,25 +9,9 @@
 #include <gde.h>
 #include <gdeh029a1.h>
 #include <pictures.h>
-#include <pins.h>
 
+#include "badge_pins.h"
 #include "badge_i2c.h"
-
-#ifdef CONFIG_SHA_BADGE_V1
-#define PIN_NUM_LED          22
-#define PIN_NUM_BUTTON_A      0
-#define PIN_NUM_BUTTON_B     27
-#define PIN_NUM_BUTTON_MID   25
-#define PIN_NUM_BUTTON_UP    26
-#define PIN_NUM_BUTTON_DOWN  32
-#define PIN_NUM_BUTTON_LEFT  33
-#define PIN_NUM_BUTTON_RIGHT 35
-#else
-#define PIN_NUM_BUTTON_FLASH  0
-#define PIN_NUM_I2C_INT      25
-#define PIN_NUM_I2C_DATA     26
-#define PIN_NUM_I2C_CLOCK    27
-#endif
 
 esp_err_t event_handler(void *ctx, system_event_t *event) { return ESP_OK; }
 
@@ -47,7 +31,7 @@ get_buttons(void)
 	bits |= gpio_get_level(PIN_NUM_BUTTON_FLASH) <<  7; // FLASH
 	bits |= gpio_get_level(PIN_NUM_I2C_INT)      << 17; // I2C
 #endif // CONFIG_SHA_BADGE_V1
-	bits |= gpio_get_level(PIN_NUM_BUSY)         << 16; // GDE BUSY
+	bits |= gpio_get_level(PIN_NUM_EPD_BUSY)     << 16; // GDE BUSY
 	return bits;
 }
 
@@ -104,7 +88,7 @@ void gpio_intr_test(void *arg) {
 
 #ifdef PIN_NUM_LED
   // pass on BUSY signal to LED.
-  gpio_set_level(PIN_NUM_LED, 1 - gpio_get_level(PIN_NUM_BUSY));
+  gpio_set_level(PIN_NUM_LED, 1 - gpio_get_level(PIN_NUM_EPD_BUSY));
 #endif // PIN_NUM_LED
 }
 
@@ -238,7 +222,7 @@ app_main(void) {
 
 	/** configure input **/
 	gpio_install_isr_service(0);
-	gpio_isr_handler_add(PIN_NUM_BUSY        , gpio_intr_test, NULL);
+	gpio_isr_handler_add(PIN_NUM_EPD_BUSY    , gpio_intr_test, NULL);
 #ifdef CONFIG_SHA_BADGE_V1
 	gpio_isr_handler_add(PIN_NUM_BUTTON_A    , gpio_intr_test, NULL);
 	gpio_isr_handler_add(PIN_NUM_BUTTON_B    , gpio_intr_test, NULL);
@@ -256,7 +240,7 @@ app_main(void) {
 	io_conf.intr_type = GPIO_INTR_ANYEDGE;
 	io_conf.mode = GPIO_MODE_INPUT;
 	io_conf.pin_bit_mask =
-		(1LL << PIN_NUM_BUSY) |
+		(1LL << PIN_NUM_EPD_BUSY) |
 #ifdef CONFIG_SHA_BADGE_V1
 		(1LL << PIN_NUM_BUTTON_A) |
 		(1LL << PIN_NUM_BUTTON_B) |

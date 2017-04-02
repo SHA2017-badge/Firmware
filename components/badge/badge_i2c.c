@@ -7,15 +7,12 @@
 
 #include "sdkconfig.h"
 
+#include "badge_pins.h"
 #include "badge_i2c.h"
 
-#ifdef CONFIG_SHA_BADGE_V2
+#ifdef PIN_NUM_I2C_CLOCK
 
 //define BADGE_I2C_DEBUG
-
-#define PIN_NUM_I2C_INT      25
-#define PIN_NUM_I2C_DATA     26
-#define PIN_NUM_I2C_CLOCK    27
 
 #define I2C_MASTER_NUM             I2C_NUM_1
 #define I2C_PORTEXP_ID             0x44
@@ -454,4 +451,4 @@ portexp_get_interrupt_status(void)
 	return res;
 }
 
-#endif // CONFIG_SHA_BADGE_V2
+#endif // PIN_NUM_I2C_CLOCK
