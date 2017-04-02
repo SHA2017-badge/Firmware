@@ -30,7 +30,7 @@
 #define NACK_VAL       0x1     /*!< I2C nack value */
 
 // use bit 8 to mark unknown current state due to failed write.
-struct portexp_state_t {
+struct badge_portexp_state_t {
 	uint16_t io_direction;         // default is 0x00
 	uint16_t output_state;         // default is 0x00
 	uint16_t output_high_z;        // default is 0xff
@@ -40,16 +40,30 @@ struct portexp_state_t {
 	uint16_t interrupt_mask;       // default is 0x00
 };
 
-xSemaphoreHandle badge_i2c_mux;
-xSemaphoreHandle portexp_intr_trigger = NULL;
-struct portexp_state_t portexp_state;
+// mutex for accessing the I2C bus
+xSemaphoreHandle badge_i2c_mux = NULL;
+
+// mutex for accessing badge_portexp_state, badge_portexp_handlers, etc..
+xSemaphoreHandle badge_portexp_mux = NULL;
+
+// semaphore to trigger port-expander interrupt handling
+xSemaphoreHandle badge_portexp_intr_trigger = NULL;
+
+// port-expander state
+struct badge_portexp_state_t badge_portexp_state;
+
+// handlers per port-expander port.
+gpio_isr_t badge_portexp_handlers[8] = { NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL};
+void* badge_portexp_arg[8] = { NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL};
 
 extern xQueueHandle evt_queue; // hack
 
 static inline int
-portexp_read_reg(uint8_t reg)
+badge_portexp_read_reg(uint8_t reg)
 {
 	uint8_t value;
+
+	xSemaphoreTake(badge_i2c_mux, portMAX_DELAY);
 
 	i2c_cmd_handle_t cmd = i2c_cmd_link_create();
 	i2c_master_start(cmd);
@@ -64,6 +78,8 @@ portexp_read_reg(uint8_t reg)
 	esp_err_t ret = i2c_master_cmd_begin(I2C_MASTER_NUM, cmd, 1000 / portTICK_RATE_MS);
 	i2c_cmd_link_delete(cmd);
 
+	xSemaphoreGive(badge_i2c_mux);
+
 	if (ret == ESP_OK) {
 #ifdef BADGE_I2C_DEBUG
 		ets_printf("i2c read reg(0x%02x): 0x%02x\n", reg, value);
@@ -76,8 +92,10 @@ portexp_read_reg(uint8_t reg)
 }
 
 static inline int
-portexp_write_reg(uint8_t reg, uint8_t value)
+badge_portexp_write_reg(uint8_t reg, uint8_t value)
 {
+	xSemaphoreTake(badge_i2c_mux, portMAX_DELAY);
+
 	i2c_cmd_handle_t cmd = i2c_cmd_link_create();
 	i2c_master_start(cmd);
 	i2c_master_write_byte(cmd, ( I2C_PORTEXP_ID << 1 ) | WRITE_BIT, ACK_CHECK_EN);
@@ -87,6 +105,8 @@ portexp_write_reg(uint8_t reg, uint8_t value)
 
 	esp_err_t ret = i2c_master_cmd_begin(I2C_MASTER_NUM, cmd, 1000 / portTICK_RATE_MS);
 	i2c_cmd_link_delete(cmd);
+
+	xSemaphoreGive(badge_i2c_mux);
 
 	if (ret == ESP_OK) {
 #ifdef BADGE_I2C_DEBUG
@@ -100,9 +120,11 @@ portexp_write_reg(uint8_t reg, uint8_t value)
 }
 
 static inline int
-touch_read_event(void)
+badge_touch_read_event(void)
 {
 	uint8_t buf[3];
+
+	xSemaphoreTake(badge_i2c_mux, portMAX_DELAY);
 
 	i2c_cmd_handle_t cmd = i2c_cmd_link_create();
 	i2c_master_start(cmd);
@@ -112,6 +134,8 @@ touch_read_event(void)
 
 	esp_err_t ret = i2c_master_cmd_begin(I2C_MASTER_NUM, cmd, 1000 / portTICK_RATE_MS);
 	i2c_cmd_link_delete(cmd);
+
+	xSemaphoreGive(badge_i2c_mux);
 
 	if (ret == ESP_OK) {
 #ifdef BADGE_I2C_DEBUG
@@ -125,22 +149,20 @@ touch_read_event(void)
 }
 
 void
-touch_intr_handler(void *arg)
+badge_touch_intr_handler(void *arg)
 {
 	while (1)
 	{
 		// read touch-controller interrupt line
-		int x = portexp_get_input();
+		int x = badge_portexp_get_input();
 		if (x == -1) // error
 			continue; // retry..
 
-		if ((x & 0x08) != 0) // no events waiting
+		if (x & (1 << 3)) // no events waiting
 			break;
 
 		// event waiting
-		xSemaphoreTake(badge_i2c_mux, portMAX_DELAY);
-		int event = touch_read_event();
-		xSemaphoreGive(badge_i2c_mux);
+		int event = badge_touch_read_event();
 
 		if (event == -1) // error
 			continue;
@@ -163,27 +185,38 @@ touch_intr_handler(void *arg)
 }
 
 void
-portexp_intr_task(void *arg)
+badge_portexp_intr_task(void *arg)
 {
 	// we cannot use I2C in the interrupt handler, so we
 	// create an extra thread for this..
 
 	while (1)
 	{
-		if (xSemaphoreTake(portexp_intr_trigger, portMAX_DELAY))
+		if (xSemaphoreTake(badge_portexp_intr_trigger, portMAX_DELAY))
 		{
-			int ints = portexp_get_interrupt_status();
+			int ints = badge_portexp_get_interrupt_status();
 			// NOTE: if ints = -1, then all handlers will trigger.
 
-			// FIXME: make more generic
-			if (ints & 0x08)
-				touch_intr_handler(NULL);
+			int i;
+			for (i=0; i<8; i++)
+			{
+				if (ints & (1 << i))
+				{
+					xSemaphoreTake(badge_portexp_mux, portMAX_DELAY);
+					gpio_isr_t handler = badge_portexp_handlers[i];
+					void *arg = badge_portexp_arg[i];
+					xSemaphoreGive(badge_portexp_mux);
+
+					if (handler != NULL)
+						handler(arg);
+				}
+			}
 		}
 	}
 }
 
 void
-portexp_intr_handler(void *arg)
+badge_portexp_intr_handler(void *arg)
 {
 
 	int gpio_state = gpio_get_level(PIN_NUM_I2C_INT);
@@ -201,8 +234,74 @@ portexp_intr_handler(void *arg)
 
 	if (gpio_state == 0)
 	{
-		xSemaphoreGiveFromISR(portexp_intr_trigger, NULL);
+		xSemaphoreGiveFromISR(badge_portexp_intr_trigger, NULL);
 	}
+}
+
+void
+badge_touch_init(void)
+{
+	badge_portexp_set_input_default_state(3, 1);
+	badge_portexp_set_interrupt_enable(3, 1);
+	badge_portexp_set_interrupt_handler(3, badge_touch_intr_handler, NULL);
+}
+
+void
+badge_portexp_init(void)
+{
+	badge_portexp_mux = xSemaphoreCreateMutex();
+	badge_portexp_intr_trigger = xSemaphoreCreateBinary();
+	gpio_isr_handler_add(PIN_NUM_I2C_INT, badge_portexp_intr_handler, NULL);
+	gpio_config_t io_conf;
+	io_conf.intr_type = GPIO_INTR_ANYEDGE;
+	io_conf.mode = GPIO_MODE_INPUT;
+	io_conf.pin_bit_mask = 1LL << PIN_NUM_I2C_INT;
+	io_conf.pull_down_en = 0;
+	io_conf.pull_up_en = 1;
+	gpio_config(&io_conf);
+
+//	badge_portexp_write_reg(0x01, 0x01); // sw reset
+	badge_portexp_write_reg(0x03, 0x04);
+	badge_portexp_write_reg(0x05, 0x04);
+	badge_portexp_write_reg(0x07, 0xfb);
+	badge_portexp_write_reg(0x09, 0x08);
+	badge_portexp_write_reg(0x0b, 0xff);
+	badge_portexp_write_reg(0x0d, 0x00);
+	badge_portexp_write_reg(0x11, 0xf7);
+	badge_portexp_write_reg(0x13, 0x00);
+	struct badge_portexp_state_t init_state = {
+		.io_direction        = 0x04,
+		.output_state        = 0x04,
+		.output_high_z       = 0xfb,
+		.input_default_state = 0x08,
+		.pull_enable         = 0xff,
+		.pull_down_up        = 0x00,
+		.interrupt_mask      = 0xf7,
+	};
+	memcpy(&badge_portexp_state, &init_state, sizeof(init_state));
+	xTaskCreate(&badge_portexp_intr_task, "port-expander interrupt task", 4096, NULL, 10, NULL);
+
+	/* configure led output */
+	badge_portexp_set_output_state(2, 1);
+	badge_portexp_set_output_high_z(2, 0);
+	badge_portexp_set_io_direction(2, 1);
+
+	/* configure touch-controller */
+	badge_touch_init();
+
+	// it seems that we need to read some registers to start interrupt handling.. (?)
+	badge_portexp_read_reg(0x01);
+	badge_portexp_read_reg(0x03);
+	badge_portexp_read_reg(0x05);
+	badge_portexp_read_reg(0x07);
+	badge_portexp_read_reg(0x09);
+	badge_portexp_read_reg(0x0b);
+	badge_portexp_read_reg(0x0d);
+	badge_portexp_read_reg(0x0f);
+	badge_portexp_read_reg(0x11);
+	badge_portexp_read_reg(0x13);
+
+	badge_portexp_intr_handler(NULL);
 }
 
 void
@@ -227,252 +326,205 @@ badge_i2c_init(void)
 	i2c_driver_install(I2C_MASTER_NUM, conf.mode, I2C_MASTER_RX_BUF_DISABLE, I2C_MASTER_TX_BUF_DISABLE, 0);
 
 	/* configure port-expander */
-	portexp_intr_trigger = xSemaphoreCreateBinary();
-	gpio_isr_handler_add(PIN_NUM_I2C_INT, portexp_intr_handler, NULL);
-	gpio_config_t io_conf;
-	io_conf.intr_type = GPIO_INTR_ANYEDGE;
-	io_conf.mode = GPIO_MODE_INPUT;
-	io_conf.pin_bit_mask = 1LL << PIN_NUM_I2C_INT;
-	io_conf.pull_down_en = 0;
-	io_conf.pull_up_en = 1;
-	gpio_config(&io_conf);
-
-//	portexp_write_reg(0x01, 0x01); // sw reset
-	portexp_write_reg(0x03, 0x04);
-	portexp_write_reg(0x05, 0x04);
-	portexp_write_reg(0x07, 0xfb);
-	portexp_write_reg(0x09, 0x08);
-	portexp_write_reg(0x0b, 0xff);
-	portexp_write_reg(0x0d, 0x00);
-	portexp_write_reg(0x11, 0xf7);
-	portexp_write_reg(0x13, 0x00);
-	struct portexp_state_t init_state = {
-		.io_direction        = 0x04,
-		.output_state        = 0x04,
-		.output_high_z       = 0xfb,
-		.input_default_state = 0x08,
-		.pull_enable         = 0xff,
-		.pull_down_up        = 0x00,
-		.interrupt_mask      = 0xf7,
-	};
-	memcpy(&portexp_state, &init_state, sizeof(init_state));
-	xTaskCreate(&portexp_intr_task, "port-expander interrupt task", 4096, NULL, 10, NULL);
-
-	/* configure led output */
-	portexp_set_output_state(2, 1);
-	portexp_set_output_high_z(2, 0);
-	portexp_set_io_direction(2, 1);
-
-	/* configure touch-controller */
-	portexp_set_input_default_state(3, 1);
-	portexp_set_interrupt_enable(3, 1);
-
-	// it seems that we need to read some registers to start interrupt handling.. (?)
-	portexp_read_reg(0x01);
-	portexp_read_reg(0x03);
-	portexp_read_reg(0x05);
-	portexp_read_reg(0x07);
-	portexp_read_reg(0x09);
-	portexp_read_reg(0x0b);
-	portexp_read_reg(0x0d);
-	portexp_read_reg(0x0f);
-	portexp_read_reg(0x11);
-	portexp_read_reg(0x13);
-
-	portexp_intr_handler(NULL);
+	badge_portexp_init();
 }
 
 int
-portexp_set_io_direction(uint8_t pin, uint8_t direction)
+badge_portexp_set_io_direction(uint8_t pin, uint8_t direction)
 {
-	xSemaphoreTake(badge_i2c_mux, portMAX_DELAY);
+	xSemaphoreTake(badge_portexp_mux, portMAX_DELAY);
 
-	uint8_t value = portexp_state.io_direction;
+	uint8_t value = badge_portexp_state.io_direction;
 	if (direction)
 		value |= 1 << pin;
 	else
 		value &= ~(1 << pin);
 
 	int res = 0;
-	if (portexp_state.io_direction != value)
+	if (badge_portexp_state.io_direction != value)
 	{
-		portexp_state.io_direction = value;
-		res = portexp_write_reg(0x03, value);
+		badge_portexp_state.io_direction = value;
+		res = badge_portexp_write_reg(0x03, value);
 		if (res == -1)
-			portexp_state.io_direction |= 0x100;
+			badge_portexp_state.io_direction |= 0x100;
 	}
 
-	xSemaphoreGive(badge_i2c_mux);
+	xSemaphoreGive(badge_portexp_mux);
 
 	return res;
 }
 
 int
-portexp_set_output_state(uint8_t pin, uint8_t state)
+badge_portexp_set_output_state(uint8_t pin, uint8_t state)
 {
-	xSemaphoreTake(badge_i2c_mux, portMAX_DELAY);
+	xSemaphoreTake(badge_portexp_mux, portMAX_DELAY);
 
-	uint8_t value = portexp_state.output_state;
+	uint8_t value = badge_portexp_state.output_state;
 	if (state)
 		value |= 1 << pin;
 	else
 		value &= ~(1 << pin);
 
 	int res = 0;
-	if (portexp_state.output_state != value)
+	if (badge_portexp_state.output_state != value)
 	{
-		portexp_state.output_state = value;
-		res = portexp_write_reg(0x05, value);
+		badge_portexp_state.output_state = value;
+		res = badge_portexp_write_reg(0x05, value);
 		if (res == -1)
-			portexp_state.output_state |= 0x100;
+			badge_portexp_state.output_state |= 0x100;
 	}
 
-	xSemaphoreGive(badge_i2c_mux);
+	xSemaphoreGive(badge_portexp_mux);
 
 	return res;
 }
 
 int
-portexp_set_output_high_z(uint8_t pin, uint8_t high_z)
+badge_portexp_set_output_high_z(uint8_t pin, uint8_t high_z)
 {
-	xSemaphoreTake(badge_i2c_mux, portMAX_DELAY);
+	xSemaphoreTake(badge_portexp_mux, portMAX_DELAY);
 
-	uint8_t value = portexp_state.output_high_z;
+	uint8_t value = badge_portexp_state.output_high_z;
 	if (high_z)
 		value |= 1 << pin;
 	else
 		value &= ~(1 << pin);
 
 	int res = 0;
-	if (portexp_state.output_high_z != value)
+	if (badge_portexp_state.output_high_z != value)
 	{
-		portexp_state.output_high_z = value;
-		res = portexp_write_reg(0x07, value);
+		badge_portexp_state.output_high_z = value;
+		res = badge_portexp_write_reg(0x07, value);
 		if (res == -1)
-			portexp_state.output_high_z |= 0x100;
+			badge_portexp_state.output_high_z |= 0x100;
 	}
 
-	xSemaphoreGive(badge_i2c_mux);
+	xSemaphoreGive(badge_portexp_mux);
 
 	return res;
 }
 
 int
-portexp_set_input_default_state(uint8_t pin, uint8_t state)
+badge_portexp_set_input_default_state(uint8_t pin, uint8_t state)
 {
-	xSemaphoreTake(badge_i2c_mux, portMAX_DELAY);
+	xSemaphoreTake(badge_portexp_mux, portMAX_DELAY);
 
-	uint8_t value = portexp_state.input_default_state;
+	uint8_t value = badge_portexp_state.input_default_state;
 	if (state)
 		value |= 1 << pin;
 	else
 		value &= ~(1 << pin);
 
 	int res = 0;
-	if (portexp_state.input_default_state != value)
+	if (badge_portexp_state.input_default_state != value)
 	{
-		portexp_state.input_default_state = value;
-		res = portexp_write_reg(0x09, value);
+		badge_portexp_state.input_default_state = value;
+		res = badge_portexp_write_reg(0x09, value);
 		if (res == -1)
-			portexp_state.input_default_state |= 0x100;
+			badge_portexp_state.input_default_state |= 0x100;
 	}
 
-	xSemaphoreGive(badge_i2c_mux);
+	xSemaphoreGive(badge_portexp_mux);
 
 	return res;
 }
 
 int
-portexp_set_pull_enable(uint8_t pin, uint8_t enable)
+badge_portexp_set_pull_enable(uint8_t pin, uint8_t enable)
 {
-	xSemaphoreTake(badge_i2c_mux, portMAX_DELAY);
+	xSemaphoreTake(badge_portexp_mux, portMAX_DELAY);
 
-	uint8_t value = portexp_state.pull_enable;
+	uint8_t value = badge_portexp_state.pull_enable;
 	if (enable)
 		value |= 1 << pin;
 	else
 		value &= ~(1 << pin);
 
 	int res = 0;
-	if (portexp_state.pull_enable != value)
+	if (badge_portexp_state.pull_enable != value)
 	{
-		portexp_state.pull_enable = value;
-		res = portexp_write_reg(0x0b, value);
+		badge_portexp_state.pull_enable = value;
+		res = badge_portexp_write_reg(0x0b, value);
 		if (res == -1)
-			portexp_state.pull_enable |= 0x100;
+			badge_portexp_state.pull_enable |= 0x100;
 	}
 
-	xSemaphoreGive(badge_i2c_mux);
+	xSemaphoreGive(badge_portexp_mux);
 
 	return res;
 }
 
 int
-portexp_set_pull_down_up(uint8_t pin, uint8_t up)
+badge_portexp_set_pull_down_up(uint8_t pin, uint8_t up)
 {
-	xSemaphoreTake(badge_i2c_mux, portMAX_DELAY);
+	xSemaphoreTake(badge_portexp_mux, portMAX_DELAY);
 
-	uint8_t value = portexp_state.pull_down_up;
+	uint8_t value = badge_portexp_state.pull_down_up;
 	if (up)
 		value |= 1 << pin;
 	else
 		value &= ~(1 << pin);
 
 	int res = 0;
-	if (portexp_state.pull_down_up != value)
+	if (badge_portexp_state.pull_down_up != value)
 	{
-		portexp_state.pull_down_up = value;
-		res = portexp_write_reg(0x0d, value);
+		badge_portexp_state.pull_down_up = value;
+		res = badge_portexp_write_reg(0x0d, value);
 		if (res == -1)
-			portexp_state.pull_down_up |= 0x100;
+			badge_portexp_state.pull_down_up |= 0x100;
 	}
 
-	xSemaphoreGive(badge_i2c_mux);
+	xSemaphoreGive(badge_portexp_mux);
 
 	return res;
 }
 
 int
-portexp_set_interrupt_enable(uint8_t pin, uint8_t enable)
+badge_portexp_set_interrupt_enable(uint8_t pin, uint8_t enable)
 {
-	xSemaphoreTake(badge_i2c_mux, portMAX_DELAY);
+	xSemaphoreTake(badge_portexp_mux, portMAX_DELAY);
 
-	uint8_t value = portexp_state.interrupt_mask;
+	uint8_t value = badge_portexp_state.interrupt_mask;
 	if (enable)
 		value &= ~(1 << pin);
 	else
 		value |= 1 << pin;
 
 	int res = 0;
-	if (portexp_state.interrupt_mask != value)
+	if (badge_portexp_state.interrupt_mask != value)
 	{
-		portexp_state.interrupt_mask = value;
-		res = portexp_write_reg(0x11, value);
+		badge_portexp_state.interrupt_mask = value;
+		res = badge_portexp_write_reg(0x11, value);
 		if (res == -1)
-			portexp_state.interrupt_mask |= 0x100;
+			badge_portexp_state.interrupt_mask |= 0x100;
 	}
 
-	xSemaphoreGive(badge_i2c_mux);
+	xSemaphoreGive(badge_portexp_mux);
 
 	return res;
 }
 
-int
-portexp_get_input(void)
+void
+badge_portexp_set_interrupt_handler(uint8_t pin, gpio_isr_t handler, void *arg)
 {
-	xSemaphoreTake(badge_i2c_mux, portMAX_DELAY);
-	int res = portexp_read_reg(0x0f);
-	xSemaphoreGive(badge_i2c_mux);
-	return res;
+	xSemaphoreTake(badge_portexp_mux, portMAX_DELAY);
+
+	badge_portexp_handlers[pin] = handler;
+	badge_portexp_arg[pin] = arg;
+
+	xSemaphoreGive(badge_portexp_mux);
 }
 
 int
-portexp_get_interrupt_status(void)
+badge_portexp_get_input(void)
 {
-	xSemaphoreTake(badge_i2c_mux, portMAX_DELAY);
-	int res = portexp_read_reg(0x13);
-	xSemaphoreGive(badge_i2c_mux);
-	return res;
+	return badge_portexp_read_reg(0x0f);
+}
+
+int
+badge_portexp_get_interrupt_status(void)
+{
+	return badge_portexp_read_reg(0x13);
 }
 
 #endif // PIN_NUM_I2C_CLOCK
