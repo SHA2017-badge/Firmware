@@ -10,7 +10,7 @@
 #include "badge_pins.h"
 #include "badge_i2c.h"
 
-#ifdef PIN_NUM_I2C_CLOCK
+#ifdef PIN_NUM_I2C_CLK
 
 //define BADGE_I2C_DEBUG
 
@@ -43,7 +43,7 @@ badge_i2c_init(void)
 	conf.sda_io_num = PIN_NUM_I2C_DATA;
 	conf.sda_pullup_en = GPIO_PULLUP_ENABLE;
 //	conf.sda_pullup_en = GPIO_PULLUP_DISABLE;
-	conf.scl_io_num = PIN_NUM_I2C_CLOCK;
+	conf.scl_io_num = PIN_NUM_I2C_CLK;
 	conf.scl_pullup_en = GPIO_PULLUP_ENABLE;
 //	conf.scl_pullup_en = GPIO_PULLUP_DISABLE;
 	conf.master.clk_speed = I2C_MASTER_FREQ_HZ;
@@ -114,4 +114,4 @@ badge_i2c_read_event(uint8_t addr, uint8_t *buf)
 	return ret;
 }
 
-#endif // PIN_NUM_I2C_CLOCK
+#endif // PIN_NUM_I2C_CLK

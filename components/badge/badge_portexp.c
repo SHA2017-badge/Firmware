@@ -16,7 +16,7 @@
 #include "badge_i2c.h"
 #include "badge_portexp.h"
 
-#ifdef PIN_NUM_I2C_CLOCK
+#ifdef PIN_NUM_I2C_CLK
 
 //define BADGE_PORTEXP_DEBUG
 
@@ -114,7 +114,7 @@ void
 badge_portexp_intr_handler(void *arg)
 {
 
-	int gpio_state = gpio_get_level(PIN_NUM_I2C_INT);
+	int gpio_state = gpio_get_level(PIN_NUM_PORTEXP_INT);
 #ifdef BADGE_PORTEXP_DEBUG
 	static int gpio_last_state = -1;
 	if (gpio_last_state != gpio_state)
@@ -138,11 +138,11 @@ badge_portexp_init(void)
 {
 	badge_portexp_mux = xSemaphoreCreateMutex();
 	badge_portexp_intr_trigger = xSemaphoreCreateBinary();
-	gpio_isr_handler_add(PIN_NUM_I2C_INT, badge_portexp_intr_handler, NULL);
+	gpio_isr_handler_add(PIN_NUM_PORTEXP_INT, badge_portexp_intr_handler, NULL);
 	gpio_config_t io_conf;
 	io_conf.intr_type = GPIO_INTR_ANYEDGE;
 	io_conf.mode = GPIO_MODE_INPUT;
-	io_conf.pin_bit_mask = 1LL << PIN_NUM_I2C_INT;
+	io_conf.pin_bit_mask = 1LL << PIN_NUM_PORTEXP_INT;
 	io_conf.pull_down_en = 0;
 	io_conf.pull_up_en = 1;
 	gpio_config(&io_conf);
@@ -381,4 +381,4 @@ badge_portexp_get_interrupt_status(void)
 	return badge_portexp_read_reg(0x13);
 }
 
-#endif // PIN_NUM_I2C_CLOCK
+#endif // PIN_NUM_I2C_CLK

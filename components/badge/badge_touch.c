@@ -13,7 +13,7 @@
 #include "badge_portexp.h"
 #include "badge_touch.h"
 
-#ifdef PIN_NUM_I2C_CLOCK
+#ifdef PIN_NUM_I2C_CLK
 
 //define BADGE_TOUCH_DEBUG
 
@@ -80,4 +80,4 @@ badge_touch_set_event_handler(badge_touch_event_t handler)
 	badge_touch_handler = handler;
 }
 
-#endif // PIN_NUM_I2C_CLOCK
+#endif // PIN_NUM_I2C_CLK
