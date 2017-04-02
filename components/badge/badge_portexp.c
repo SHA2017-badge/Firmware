@@ -168,11 +168,6 @@ badge_portexp_init(void)
 	memcpy(&badge_portexp_state, &init_state, sizeof(init_state));
 	xTaskCreate(&badge_portexp_intr_task, "port-expander interrupt task", 4096, NULL, 10, NULL);
 
-	/* configure led output */
-	badge_portexp_set_output_state(2, 1);
-	badge_portexp_set_output_high_z(2, 0);
-	badge_portexp_set_io_direction(2, 1);
-
 	// it seems that we need to read some registers to start interrupt handling.. (?)
 	badge_portexp_read_reg(0x01);
 	badge_portexp_read_reg(0x03);

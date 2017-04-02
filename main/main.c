@@ -14,6 +14,7 @@
 #include "badge_i2c.h"
 #include "badge_portexp.h"
 #include "badge_touch.h"
+#include "badge_leds.h"
 
 esp_err_t event_handler(void *ctx, system_event_t *event) { return ESP_OK; }
 
@@ -120,6 +121,7 @@ struct menu_item {
 #include "demo_partial_update.h"
 #include "demo_dot1.h"
 #include "demo_test_adc.h"
+#include "demo_leds.h"
 
 const struct menu_item demoMenu[] = {
     {"text demo 1", &demoText1},
@@ -132,6 +134,9 @@ const struct menu_item demoMenu[] = {
     {"partial update test", &demoPartialUpdate},
     {"dot 1", &demoDot1},
     {"ADC test", &demoTestAdc},
+#ifdef CONFIG_SHA_BADGE_V2
+    {"LEDs demo", &demo_leds},
+#endif // CONFIG_SHA_BADGE_V2
     {"tetris?", NULL},
     {"something else", NULL},
     {"test, test, test", NULL},
@@ -280,6 +285,7 @@ app_main(void) {
   badge_portexp_init();
   badge_touch_init();
   badge_touch_set_event_handler(touch_event_handler);
+  badge_leds_init();
 #endif // CONFIG_SHA_BADGE_V2
 
   tcpip_adapter_init();
