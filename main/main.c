@@ -235,7 +235,20 @@ app_main(void) {
 	evt_queue = xQueueCreate(10, sizeof(uint32_t));
 
 	/** configure input **/
-	gpio_isr_register(gpio_intr_test, NULL, 0, NULL);
+	gpio_install_isr_service(0);
+	gpio_isr_handler_add(PIN_NUM_BUSY        , gpio_intr_test, NULL);
+#ifdef CONFIG_SHA_BADGE_V1
+	gpio_isr_handler_add(PIN_NUM_BUTTON_A    , gpio_intr_test, NULL);
+	gpio_isr_handler_add(PIN_NUM_BUTTON_B    , gpio_intr_test, NULL);
+	gpio_isr_handler_add(PIN_NUM_BUTTON_MID  , gpio_intr_test, NULL);
+	gpio_isr_handler_add(PIN_NUM_BUTTON_UP   , gpio_intr_test, NULL);
+	gpio_isr_handler_add(PIN_NUM_BUTTON_DOWN , gpio_intr_test, NULL);
+	gpio_isr_handler_add(PIN_NUM_BUTTON_LEFT , gpio_intr_test, NULL);
+	gpio_isr_handler_add(PIN_NUM_BUTTON_RIGHT, gpio_intr_test, NULL);
+#else
+	gpio_isr_handler_add(PIN_NUM_BUTTON_FLASH, gpio_intr_test, NULL);
+	gpio_isr_handler_add(PIN_NUM_I2C_INT     , gpio_intr_test, NULL);
+#endif // CONFIG_SHA_BADGE_V1
 
 	gpio_config_t io_conf;
 	io_conf.intr_type = GPIO_INTR_ANYEDGE;
