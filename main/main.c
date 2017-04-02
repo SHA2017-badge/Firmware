@@ -70,8 +70,10 @@ void gpio_intr_test(void *arg) {
   uint32_t buttons_up = buttons_new & (~buttons_state);
   buttons_state = buttons_new;
 
+#ifdef CONFIG_SHA_BADGE_V2
   if (buttons_down & (1 << 17))
     portexp_trigger_event();
+#endif // CONFIG_SHA_BADGE_V2
   if (buttons_down != 0)
     xQueueSendFromISR(evt_queue, &buttons_down, NULL);
 
@@ -278,7 +280,9 @@ app_main(void) {
   gpio_set_direction(PIN_NUM_LED, GPIO_MODE_OUTPUT);
 #endif // PIN_NUM_LED
 
+#ifdef CONFIG_SHA_BADGE_V2
   badge_i2c_init();
+#endif // CONFIG_SHA_BADGE_V2
 
   tcpip_adapter_init();
   ESP_ERROR_CHECK(esp_event_loop_init(event_handler, NULL));
