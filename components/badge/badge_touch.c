@@ -17,8 +17,8 @@
 
 //define BADGE_TOUCH_DEBUG
 
-#define I2C_TOUCHPAD_ID   0x78
-#define PORTEXP_TOUCH_ID  3
+#define I2C_TOUCHPAD_ID       0x78
+#define PORTEXP_PIN_NUM_TOUCH 3
 
 badge_touch_event_t badge_touch_handler = NULL;
 
@@ -49,7 +49,7 @@ badge_touch_intr_handler(void *arg)
 		if (x == -1) // error
 			continue; // retry..
 
-		if (x & (1 << PORTEXP_TOUCH_ID)) // no events waiting
+		if (x & (1 << PORTEXP_PIN_NUM_TOUCH)) // no events waiting
 			break;
 
 		// event waiting
@@ -66,9 +66,9 @@ badge_touch_intr_handler(void *arg)
 void
 badge_touch_init(void)
 {
-	badge_portexp_set_input_default_state(PORTEXP_TOUCH_ID, 1);
-	badge_portexp_set_interrupt_enable(PORTEXP_TOUCH_ID, 1);
-	badge_portexp_set_interrupt_handler(PORTEXP_TOUCH_ID, badge_touch_intr_handler, NULL);
+	badge_portexp_set_input_default_state(PORTEXP_PIN_NUM_TOUCH, 1);
+	badge_portexp_set_interrupt_enable(PORTEXP_PIN_NUM_TOUCH, 1);
+	badge_portexp_set_interrupt_handler(PORTEXP_PIN_NUM_TOUCH, badge_touch_intr_handler, NULL);
 
 	// read pending old events
 	badge_touch_intr_handler(NULL);

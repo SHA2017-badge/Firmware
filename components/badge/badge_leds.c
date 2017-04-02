@@ -17,6 +17,8 @@
 
 #ifdef PIN_NUM_I2C_CLOCK
 
+#define PORTEXP_PIN_NUM_LEDS 2
+
 spi_device_handle_t badge_leds_spi = NULL;
 
 int
@@ -53,11 +55,11 @@ badge_leds_set_state(uint8_t *rgb)
 
 	if (k == 0)
 	{
-		return badge_portexp_set_output_state(2, 0);
+		return badge_portexp_set_output_state(PORTEXP_PIN_NUM_LEDS, 0);
 	}
 	else
 	{
-		int res = badge_portexp_set_output_state(2, 1);
+		int res = badge_portexp_set_output_state(PORTEXP_PIN_NUM_LEDS, 1);
 		if (res == -1)
 			return -1;
 
@@ -75,9 +77,9 @@ void
 badge_leds_init(void)
 {
 	// enable power to led-bar
-	badge_portexp_set_output_state(2, 0);
-	badge_portexp_set_output_high_z(2, 0);
-	badge_portexp_set_io_direction(2, 1);
+	badge_portexp_set_output_state(PORTEXP_PIN_NUM_LEDS, 0);
+	badge_portexp_set_output_high_z(PORTEXP_PIN_NUM_LEDS, 0);
+	badge_portexp_set_io_direction(PORTEXP_PIN_NUM_LEDS, 1);
 
 	spi_bus_config_t buscfg = {
 		.mosi_io_num   = PIN_NUM_LEDS,
