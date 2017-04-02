@@ -2,7 +2,6 @@
 #define BADGE_I2C_H
 
 extern void badge_i2c_init(void);
-extern void portexp_trigger_event(void);
 extern int portexp_set_io_direction(uint8_t pin, uint8_t direction);
 extern int portexp_set_output_state(uint8_t pin, uint8_t state);
 extern int portexp_set_output_high_z(uint8_t pin, uint8_t high_z);

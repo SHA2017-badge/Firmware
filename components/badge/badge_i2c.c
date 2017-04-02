@@ -41,7 +41,7 @@ struct portexp_state_t {
 };
 
 xSemaphoreHandle badge_i2c_mux;
-xQueueHandle badge_i2c_trigger = NULL;
+xSemaphoreHandle portexp_intr_trigger = NULL;
 struct portexp_state_t portexp_state;
 
 extern xQueueHandle evt_queue; // hack
@@ -125,57 +125,37 @@ touch_read_event(void)
 }
 
 void
-task_handle_badge_i2c(void *arg)
+touch_intr_handler(void *arg)
 {
-	// we cannot handle interrupts in the interrupt handler, so we
-	// create an extra thread for this..
-
 	while (1)
 	{
-		uint32_t dummy;
-		if (xQueueReceive(badge_i2c_trigger, &dummy, portMAX_DELAY))
-		{
-			while (1)
-			{
-				// read touch-controller interrupt line
-				int x = portexp_get_input();
-				if (x == -1) // error
-					continue; // retry..
+		// read touch-controller interrupt line
+		int x = portexp_get_input();
+		if (x == -1) // error
+			continue; // retry..
 
-				if ((x & 0x08) != 0) // no events waiting
+		if ((x & 0x08) != 0) // no events waiting
+			break;
+
+		// event waiting
+		xSemaphoreTake(badge_i2c_mux, portMAX_DELAY);
+		int event = touch_read_event();
+		xSemaphoreGive(badge_i2c_mux);
+
+		if (event == -1) // error
+			continue;
+
+		// FIXME: should handle this with a callback.
+		// convert into button queue event
+		if (((event >> 16) & 0x0f) == 0x0) { // button down event
+			static const int conv[12] =
+				{ -1, -1, 5, 3, 6, 4, -1, 0, 2, 1, -1, 0 };
+			if (((event >> 8) & 0xff) < 12) {
+				int id = conv[(event >> 8) & 0xff];
+				if (id != -1)
 				{
-					// let port-expander know we have handled this interrupt
-					portexp_get_interrupt_status();
-
-					// double-check to avoid race-conditions
-					int x = portexp_get_input();
-					if (x == -1) // error
-						continue; // retry..
-
-					if ((x & 0x08) != 0) // no events waiting
-						break;
-				}
-
-				// event waiting
-				xSemaphoreTake(badge_i2c_mux, portMAX_DELAY);
-				int event = touch_read_event();
-				xSemaphoreGive(badge_i2c_mux);
-
-				if (event == -1) // error
-					continue;
-
-				// convert into button queue event
-				if (((event >> 16) & 0x0f) == 0x0) { // button down event
-					static const int conv[12] =
-						{ -1, -1, 5, 3, 6, 4, -1, 0, 2, 1, -1, 0 };
-					if (((event >> 8) & 0xff) < 12) {
-						int id = conv[(event >> 8) & 0xff];
-						if (id != -1)
-						{
-							uint32_t buttons_down = 1<<id;
-							xQueueSendFromISR(evt_queue, &buttons_down, NULL);
-						}
-					}
+					uint32_t buttons_down = 1<<id;
+					xQueueSendFromISR(evt_queue, &buttons_down, NULL);
 				}
 			}
 		}
@@ -183,10 +163,46 @@ task_handle_badge_i2c(void *arg)
 }
 
 void
-portexp_trigger_event(void)
+portexp_intr_task(void *arg)
 {
-	uint32_t dummy = 0;
-	xQueueSendFromISR(badge_i2c_trigger, &dummy, NULL);
+	// we cannot use I2C in the interrupt handler, so we
+	// create an extra thread for this..
+
+	while (1)
+	{
+		if (xSemaphoreTake(portexp_intr_trigger, portMAX_DELAY))
+		{
+			int ints = portexp_get_interrupt_status();
+			// NOTE: if ints = -1, then all handlers will trigger.
+
+			// FIXME: make more generic
+			if (ints & 0x08)
+				touch_intr_handler(NULL);
+		}
+	}
+}
+
+void
+portexp_intr_handler(void *arg)
+{
+
+	int gpio_state = gpio_get_level(PIN_NUM_I2C_INT);
+#ifdef BADGE_I2C_DEBUG
+	static int gpio_last_state = -1;
+	if (gpio_last_state != gpio_state)
+	{
+		if (gpio_state == 1)
+			ets_printf("I2C Int down\n");
+		else if (gpio_state == 0)
+			ets_printf("I2C Int up\n");
+	}
+	gpio_last_state = gpio_state;
+#endif // BADGE_I2C_DEBUG
+
+	if (gpio_state == 0)
+	{
+		xSemaphoreGiveFromISR(portexp_intr_trigger, NULL);
+	}
 }
 
 void
@@ -194,7 +210,6 @@ badge_i2c_init(void)
 {
 	// create mutex for I2C bus
 	badge_i2c_mux = xSemaphoreCreateMutex();
-	badge_i2c_trigger = xQueueCreate(10, sizeof(uint32_t));
 
 	// configure I2C
 	i2c_config_t conf;
@@ -212,6 +227,16 @@ badge_i2c_init(void)
 	i2c_driver_install(I2C_MASTER_NUM, conf.mode, I2C_MASTER_RX_BUF_DISABLE, I2C_MASTER_TX_BUF_DISABLE, 0);
 
 	/* configure port-expander */
+	portexp_intr_trigger = xSemaphoreCreateBinary();
+	gpio_isr_handler_add(PIN_NUM_I2C_INT, portexp_intr_handler, NULL);
+	gpio_config_t io_conf;
+	io_conf.intr_type = GPIO_INTR_ANYEDGE;
+	io_conf.mode = GPIO_MODE_INPUT;
+	io_conf.pin_bit_mask = 1LL << PIN_NUM_I2C_INT;
+	io_conf.pull_down_en = 0;
+	io_conf.pull_up_en = 1;
+	gpio_config(&io_conf);
+
 //	portexp_write_reg(0x01, 0x01); // sw reset
 	portexp_write_reg(0x03, 0x04);
 	portexp_write_reg(0x05, 0x04);
@@ -231,6 +256,7 @@ badge_i2c_init(void)
 		.interrupt_mask      = 0xf7,
 	};
 	memcpy(&portexp_state, &init_state, sizeof(init_state));
+	xTaskCreate(&portexp_intr_task, "port-expander interrupt task", 4096, NULL, 10, NULL);
 
 	/* configure led output */
 	portexp_set_output_state(2, 1);
@@ -240,8 +266,6 @@ badge_i2c_init(void)
 	/* configure touch-controller */
 	portexp_set_input_default_state(3, 1);
 	portexp_set_interrupt_enable(3, 1);
-
-	xTaskCreate(&task_handle_badge_i2c, "i2c event task", 4096, NULL, 10, NULL);
 
 	// it seems that we need to read some registers to start interrupt handling.. (?)
 	portexp_read_reg(0x01);
@@ -255,7 +279,7 @@ badge_i2c_init(void)
 	portexp_read_reg(0x11);
 	portexp_read_reg(0x13);
 
-	portexp_trigger_event();
+	portexp_intr_handler(NULL);
 }
 
 int

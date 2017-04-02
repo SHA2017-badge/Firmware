@@ -29,7 +29,6 @@ get_buttons(void)
 	bits |= gpio_get_level(PIN_NUM_BUTTON_RIGHT) <<  6; // RIGHT
 #else // CONFIG_SHA_BADGE_V2
 	bits |= gpio_get_level(PIN_NUM_BUTTON_FLASH) <<  7; // FLASH
-	bits |= gpio_get_level(PIN_NUM_I2C_INT)      << 17; // I2C
 #endif // CONFIG_SHA_BADGE_V1
 	bits |= gpio_get_level(PIN_NUM_EPD_BUSY)     << 16; // GDE BUSY
 	return bits;
@@ -54,10 +53,6 @@ void gpio_intr_test(void *arg) {
   uint32_t buttons_up = buttons_new & (~buttons_state);
   buttons_state = buttons_new;
 
-#ifdef CONFIG_SHA_BADGE_V2
-  if (buttons_down & (1 << 17))
-    portexp_trigger_event();
-#endif // CONFIG_SHA_BADGE_V2
   if (buttons_down != 0)
     xQueueSendFromISR(evt_queue, &buttons_down, NULL);
 
@@ -81,10 +76,6 @@ void gpio_intr_test(void *arg) {
     ets_printf("GDE-Busy down\n");
   if (buttons_up & (1 << 16))
     ets_printf("GDE-Busy up\n");
-  if (buttons_down & (1 << 17))
-    ets_printf("I2C Int down\n");
-  if (buttons_up & (1 << 17))
-    ets_printf("I2C Int up\n");
 
 #ifdef PIN_NUM_LED
   // pass on BUSY signal to LED.
@@ -233,7 +224,6 @@ app_main(void) {
 	gpio_isr_handler_add(PIN_NUM_BUTTON_RIGHT, gpio_intr_test, NULL);
 #else
 	gpio_isr_handler_add(PIN_NUM_BUTTON_FLASH, gpio_intr_test, NULL);
-	gpio_isr_handler_add(PIN_NUM_I2C_INT     , gpio_intr_test, NULL);
 #endif // CONFIG_SHA_BADGE_V1
 
 	gpio_config_t io_conf;
@@ -251,7 +241,6 @@ app_main(void) {
 		(1LL << PIN_NUM_BUTTON_RIGHT) |
 #else
 		(1LL << PIN_NUM_BUTTON_FLASH) |
-		(1LL << PIN_NUM_I2C_INT) |
 #endif // CONFIG_SHA_BADGE_V1
 		0LL;
 	io_conf.pull_down_en = 0;
