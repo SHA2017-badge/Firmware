@@ -20,7 +20,7 @@
 
 //define BADGE_PORTEXP_DEBUG
 
-#define I2C_PORTEXP_ID             0x44
+#define I2C_PORTEXP_ID 0x44
 
 // use bit 8 to mark unknown current state due to failed write.
 struct badge_portexp_state_t {
@@ -148,22 +148,22 @@ badge_portexp_init(void)
 	gpio_config(&io_conf);
 
 //	badge_portexp_write_reg(0x01, 0x01); // sw reset
-	badge_portexp_write_reg(0x03, 0x04);
-	badge_portexp_write_reg(0x05, 0x04);
-	badge_portexp_write_reg(0x07, 0xfb);
-	badge_portexp_write_reg(0x09, 0x08);
+	badge_portexp_write_reg(0x03, 0x00);
+	badge_portexp_write_reg(0x05, 0x00);
+	badge_portexp_write_reg(0x07, 0xff);
+	badge_portexp_write_reg(0x09, 0x00);
 	badge_portexp_write_reg(0x0b, 0xff);
 	badge_portexp_write_reg(0x0d, 0x00);
-	badge_portexp_write_reg(0x11, 0xf7);
+	badge_portexp_write_reg(0x11, 0xff);
 	badge_portexp_write_reg(0x13, 0x00);
 	struct badge_portexp_state_t init_state = {
-		.io_direction        = 0x04,
-		.output_state        = 0x04,
-		.output_high_z       = 0xfb,
-		.input_default_state = 0x08,
+		.io_direction        = 0x00,
+		.output_state        = 0x00,
+		.output_high_z       = 0xff,
+		.input_default_state = 0x00,
 		.pull_enable         = 0xff,
 		.pull_down_up        = 0x00,
-		.interrupt_mask      = 0xf7,
+		.interrupt_mask      = 0xff,
 	};
 	memcpy(&badge_portexp_state, &init_state, sizeof(init_state));
 	xTaskCreate(&badge_portexp_intr_task, "port-expander interrupt task", 4096, NULL, 10, NULL);
