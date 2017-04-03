@@ -66,6 +66,6 @@ void demoText1(void) {
 
   // wait for random keypress
   uint32_t buttons_down = 0;
-  while ((buttons_down & 0x7f) == 0)
+  while ((buttons_down & 0xffff) == 0)
     xQueueReceive(evt_queue, &buttons_down, portMAX_DELAY);
 }

@@ -11,7 +11,7 @@
 #include "soc/spi_reg.h"
 
 #include "gde.h"
-#include "pins.h"
+#include "badge_pins.h"
 
 #define SPI_NUM 0x3
 
@@ -28,13 +28,13 @@
 #endif
 
 void gdeReset(void) {
-  gpio_set_level(PIN_NUM_RESET, LOW);
+  gpio_set_level(PIN_NUM_EPD_RESET, LOW);
   ets_delay_us(200000);
-  gpio_set_level(PIN_NUM_RESET, HIGH);
+  gpio_set_level(PIN_NUM_EPD_RESET, HIGH);
   ets_delay_us(200000);
 }
 
-bool gdeIsBusy(void) { return gpio_get_level(PIN_NUM_BUSY); }
+bool gdeIsBusy(void) { return gpio_get_level(PIN_NUM_EPD_BUSY); }
 
 void gdeBusyWait(void) {
   while (gdeIsBusy()) {
@@ -45,33 +45,33 @@ void gdeBusyWait(void) {
 }
 
 void gdeWriteCommand(uint8_t command) {
-  gpio_set_level(PIN_NUM_CS, HIGH);
-  gpio_set_level(PIN_NUM_CS, LOW);
+  gpio_set_level(PIN_NUM_EPD_CS, HIGH);
+  gpio_set_level(PIN_NUM_EPD_CS, LOW);
   gdeWriteByte(command);
-  gpio_set_level(PIN_NUM_CS, HIGH);
+  gpio_set_level(PIN_NUM_EPD_CS, HIGH);
 }
 
 void gdeWriteCommandInit(uint8_t command) {
-  gpio_set_level(PIN_NUM_CS, HIGH);
-  gpio_set_level(PIN_NUM_CS, LOW);
+  gpio_set_level(PIN_NUM_EPD_CS, HIGH);
+  gpio_set_level(PIN_NUM_EPD_CS, LOW);
   gdeWriteByte(command);
-  gpio_set_level(PIN_NUM_DATA, HIGH);
+  gpio_set_level(PIN_NUM_EPD_DATA, HIGH);
 }
 
 void gdeWriteCommandEnd(void) {
-  gpio_set_level(PIN_NUM_CS, HIGH);
-  gpio_set_level(PIN_NUM_DATA, LOW);
+  gpio_set_level(PIN_NUM_EPD_CS, HIGH);
+  gpio_set_level(PIN_NUM_EPD_DATA, LOW);
 }
 
 void gdeInit(void) {
-  gpio_set_direction(PIN_NUM_CS, GPIO_MODE_OUTPUT);
-  gpio_set_direction(PIN_NUM_DATA, GPIO_MODE_OUTPUT);
-  gpio_set_direction(PIN_NUM_RESET, GPIO_MODE_OUTPUT);
-  gpio_set_direction(PIN_NUM_BUSY, GPIO_MODE_INPUT);
+  gpio_set_direction(PIN_NUM_EPD_CS, GPIO_MODE_OUTPUT);
+  gpio_set_direction(PIN_NUM_EPD_DATA, GPIO_MODE_OUTPUT);
+  gpio_set_direction(PIN_NUM_EPD_RESET, GPIO_MODE_OUTPUT);
+  gpio_set_direction(PIN_NUM_EPD_BUSY, GPIO_MODE_INPUT);
   ets_printf("epd spi pin mux init ...\r\n");
-  gpio_matrix_out(PIN_NUM_MOSI, VSPID_OUT_IDX, 0, 0);
-  gpio_matrix_out(PIN_NUM_CLK, VSPICLK_OUT_IDX, 0, 0);
-  gpio_matrix_out(PIN_NUM_CS, VSPICS0_OUT_IDX, 0, 0);
+  gpio_matrix_out(PIN_NUM_EPD_MOSI, VSPID_OUT_IDX, 0, 0);
+  gpio_matrix_out(PIN_NUM_EPD_CLK, VSPICLK_OUT_IDX, 0, 0);
+  gpio_matrix_out(PIN_NUM_EPD_CS, VSPICS0_OUT_IDX, 0, 0);
   CLEAR_PERI_REG_MASK(SPI_SLAVE_REG(SPI_NUM), SPI_TRANS_DONE << 5);
   SET_PERI_REG_MASK(SPI_USER_REG(SPI_NUM), SPI_CS_SETUP);
   CLEAR_PERI_REG_MASK(SPI_PIN_REG(SPI_NUM), SPI_CK_IDLE_EDGE);

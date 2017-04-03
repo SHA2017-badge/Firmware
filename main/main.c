@@ -11,24 +11,12 @@
 #include <gde.h>
 #include <gdeh029a1.h>
 #include <pictures.h>
-#include <pins.h>
-#include <string.h>
 
-#ifdef CONFIG_SHA_BADGE_V1
-#define PIN_NUM_LED          22
-#define PIN_NUM_BUTTON_A      0
-#define PIN_NUM_BUTTON_B     27
-#define PIN_NUM_BUTTON_MID   25
-#define PIN_NUM_BUTTON_UP    26
-#define PIN_NUM_BUTTON_DOWN  32
-#define PIN_NUM_BUTTON_LEFT  33
-#define PIN_NUM_BUTTON_RIGHT 35
-#else
-#define PIN_NUM_BUTTON_FLASH  0
-#define PIN_NUM_I2C_INT      25
-#define PIN_NUM_I2C_DATA     26
-#define PIN_NUM_I2C_CLOCK    27
-#endif
+#include "badge_pins.h"
+#include "badge_i2c.h"
+#include "badge_portexp.h"
+#include "badge_touch.h"
+#include "badge_leds.h"
 
 //esp_err_t event_handler(void *ctx, system_event_t *event) { return ESP_OK; }
 
@@ -49,6 +37,7 @@ get_buttons(void)
 	bits |= gpio_get_level(PIN_NUM_I2C_INT)      << 9; // I2C
 #endif // CONFIG_SHA_BADGE_V1
 	bits |= gpio_get_level(PIN_NUM_BUSY)         << 8; // GDE BUSY
+
 	return bits;
 }
 
@@ -96,7 +85,6 @@ void gpio_intr_test(void *arg) {
     ets_printf("Button RIGHT\n");
   if (buttons_down & (1 << 7))
     ets_printf("Button FLASH\n");
-
   if (buttons_down & (1 << 8))
     ets_printf("GDE-Busy down\n");
   if (buttons_up & (1 << 8))
@@ -108,9 +96,29 @@ void gpio_intr_test(void *arg) {
 
 #ifdef PIN_NUM_LED
   // pass on BUSY signal to LED.
-  gpio_set_level(PIN_NUM_LED, 1 - gpio_get_level(PIN_NUM_BUSY));
+  gpio_set_level(PIN_NUM_LED, 1 - gpio_get_level(PIN_NUM_EPD_BUSY));
 #endif // PIN_NUM_LED
 }
+
+#ifdef CONFIG_SHA_BADGE_V2
+void
+touch_event_handler(int event)
+{
+	// convert into button queue event
+	if (((event >> 16) & 0x0f) == 0x0) { // button down event
+		static const int conv[12] =
+		{ -1, -1, 5, 3, 6, 4, -1, 0, 2, 1, -1, 0 };
+		if (((event >> 8) & 0xff) < 12) {
+			int id = conv[(event >> 8) & 0xff];
+			if (id != -1)
+			{
+				uint32_t buttons_down = 1<<id;
+				xQueueSend(evt_queue, &buttons_down, 0);
+			}
+		}
+	}
+}
+#endif // CONFIG_SHA_BADGE_V2
 
 struct menu_item {
   const char *title;
@@ -127,6 +135,7 @@ struct menu_item {
 #include "demo_partial_update.h"
 #include "demo_dot1.h"
 #include "demo_test_adc.h"
+#include "demo_leds.h"
 
 const struct menu_item demoMenu[] = {
     {"text demo 1", &demoText1},
@@ -139,6 +148,9 @@ const struct menu_item demoMenu[] = {
     {"partial update test", &demoPartialUpdate},
     {"dot 1", &demoDot1},
     {"ADC test", &demoTestAdc},
+#ifdef CONFIG_SHA_BADGE_V2
+    {"LEDs demo", &demo_leds},
+#endif // CONFIG_SHA_BADGE_V2
     {"tetris?", NULL},
     {"something else", NULL},
     {"test, test, test", NULL},
@@ -491,13 +503,25 @@ app_main(void) {
 	i2c_queue = xQueueCreate(10, sizeof(uint32_t));
 
 	/** configure input **/
-	gpio_isr_register(gpio_intr_test, NULL, 0, NULL);
+	gpio_install_isr_service(0);
+	gpio_isr_handler_add(PIN_NUM_EPD_BUSY    , gpio_intr_test, NULL);
+#ifdef CONFIG_SHA_BADGE_V1
+	gpio_isr_handler_add(PIN_NUM_BUTTON_A    , gpio_intr_test, NULL);
+	gpio_isr_handler_add(PIN_NUM_BUTTON_B    , gpio_intr_test, NULL);
+	gpio_isr_handler_add(PIN_NUM_BUTTON_MID  , gpio_intr_test, NULL);
+	gpio_isr_handler_add(PIN_NUM_BUTTON_UP   , gpio_intr_test, NULL);
+	gpio_isr_handler_add(PIN_NUM_BUTTON_DOWN , gpio_intr_test, NULL);
+	gpio_isr_handler_add(PIN_NUM_BUTTON_LEFT , gpio_intr_test, NULL);
+	gpio_isr_handler_add(PIN_NUM_BUTTON_RIGHT, gpio_intr_test, NULL);
+#else
+	gpio_isr_handler_add(PIN_NUM_BUTTON_FLASH, gpio_intr_test, NULL);
+#endif // CONFIG_SHA_BADGE_V1
 
 	gpio_config_t io_conf;
 	io_conf.intr_type = GPIO_INTR_ANYEDGE;
 	io_conf.mode = GPIO_MODE_INPUT;
 	io_conf.pin_bit_mask =
-		(1LL << PIN_NUM_BUSY) |
+		(1LL << PIN_NUM_EPD_BUSY) |
 #ifdef CONFIG_SHA_BADGE_V1
 		(1LL << PIN_NUM_BUTTON_A) |
 		(1LL << PIN_NUM_BUTTON_B) |
@@ -509,6 +533,7 @@ app_main(void) {
 #else
 		(1LL << PIN_NUM_BUTTON_FLASH) |
 		(1LL << PIN_NUM_I2C_INT) |
+
 #endif // CONFIG_SHA_BADGE_V1
 		0LL;
 	io_conf.pull_down_en = 0;

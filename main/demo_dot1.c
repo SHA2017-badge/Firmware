@@ -52,7 +52,7 @@ void demoDot1(void) {
   while (1) {
     uint32_t buttons_down = 0;
     if (xQueueReceive(evt_queue, &buttons_down, portMAX_DELAY))
-      if ((buttons_down & 0x7f) != 0)
+      if ((buttons_down & 0xffff) != 0)
         return;
 
     /* update dot */
