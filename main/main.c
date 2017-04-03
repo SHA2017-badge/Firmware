@@ -11,6 +11,7 @@
 #include <gde.h>
 #include <gdeh029a1.h>
 #include <pictures.h>
+#include <string.h>
 
 #include "badge_pins.h"
 #include "badge_i2c.h"
@@ -36,7 +37,7 @@ get_buttons(void)
 	bits |= gpio_get_level(PIN_NUM_BUTTON_FLASH) << 7; // FLASH
 	bits |= gpio_get_level(PIN_NUM_I2C_INT)      << 9; // I2C
 #endif // CONFIG_SHA_BADGE_V1
-	bits |= gpio_get_level(PIN_NUM_BUSY)         << 8; // GDE BUSY
+	bits |= gpio_get_level(PIN_NUM_EPD_BUSY)     << 8; // GDE BUSY
 
 	return bits;
 }
