@@ -64,12 +64,12 @@ void demoGreyscaleImg3(void) {
       setRamPointer(0, 0);
       gdeWriteCommandInit(0x24);
       int x, y;
-      const uint8_t *ptr = &img_hacking[sizeof(img_hacking)-1];
+      const uint8_t *ptr = img_hacking;
       for (y = 0; y < DISP_SIZE_Y; y++) {
         uint8_t res = 0;
         for (x = 0; x < DISP_SIZE_X; x++) {
           res <<= 1;
-          uint8_t pixel = *ptr--;
+          uint8_t pixel = *ptr++;
           int j;
           for (j = 0; pixel > lvl_buf[j]; j++)
             ;
@@ -102,9 +102,7 @@ void demoGreyscaleImg3(void) {
   gdeWriteCommand_p1(0x3b, 0x08); // 62us per line
 
   // wait for random keypress
-/*
   uint32_t buttons_down = 0;
-  while ((buttons_down & 0xff) == 0)
+  while ((buttons_down & 0xffff) == 0)
     xQueueReceive(evt_queue, &buttons_down, portMAX_DELAY);
-*/
 }

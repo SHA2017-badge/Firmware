@@ -56,11 +56,6 @@
 #define PIN_NUM_VUSB_SENSE   34
 #define PIN_NUM_VBAT_SENSE   35
 
-#define PIN_NUM_BUTTON_FLASH  0
-#define PIN_NUM_I2C_INT      25
-#define PIN_NUM_I2C_DATA     26
-#define PIN_NUM_I2C_CLOCK    27
-
 #endif
 
 #endif // BADGE_PINS_H
