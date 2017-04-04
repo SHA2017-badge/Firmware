@@ -13,12 +13,9 @@
 #include "badge_portexp.h"
 #include "badge_touch.h"
 
-#ifdef PIN_NUM_I2C_CLK
+#ifdef I2C_TOUCHPAD_ADDR
 
 //define BADGE_TOUCH_DEBUG
-
-#define I2C_TOUCHPAD_ID       0x78
-#define PORTEXP_PIN_NUM_TOUCH 3
 
 badge_touch_event_t badge_touch_handler = NULL;
 
@@ -26,7 +23,7 @@ static inline int
 badge_touch_read_event(void)
 {
 	uint8_t buf[3];
-	esp_err_t ret = badge_i2c_read_event(I2C_TOUCHPAD_ID, buf);
+	esp_err_t ret = badge_i2c_read_event(I2C_TOUCHPAD_ADDR, buf);
 
 	if (ret == ESP_OK) {
 #ifdef BADGE_TOUCH_DEBUG
@@ -80,4 +77,4 @@ badge_touch_set_event_handler(badge_touch_event_t handler)
 	badge_touch_handler = handler;
 }
 
-#endif // PIN_NUM_I2C_CLK
+#endif // I2C_TOUCHPAD_ADDR

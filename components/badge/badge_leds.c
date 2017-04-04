@@ -15,9 +15,7 @@
 #include "badge_i2c.h"
 #include "badge_portexp.h"
 
-#ifdef PIN_NUM_I2C_CLK
-
-#define PORTEXP_PIN_NUM_LEDS 2
+#ifdef PIN_NUM_LEDS
 
 spi_device_handle_t badge_leds_spi = NULL;
 
@@ -102,4 +100,4 @@ badge_leds_init(void)
 	assert( ret == ESP_OK );
 }
 
-#endif // PIN_NUM_I2C_CLK
+#endif // PIN_NUM_LEDS

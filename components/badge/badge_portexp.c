@@ -16,11 +16,9 @@
 #include "badge_i2c.h"
 #include "badge_portexp.h"
 
-#ifdef PIN_NUM_I2C_CLK
+#ifdef I2C_PORTEXP_ADDR
 
 //define BADGE_PORTEXP_DEBUG
-
-#define I2C_PORTEXP_ID 0x44
 
 // use bit 8 to mark unknown current state due to failed write.
 struct badge_portexp_state_t {
@@ -50,7 +48,7 @@ static inline int
 badge_portexp_read_reg(uint8_t reg)
 {
 	uint8_t value;
-	esp_err_t ret = badge_i2c_read_reg(I2C_PORTEXP_ID, reg, &value);
+	esp_err_t ret = badge_i2c_read_reg(I2C_PORTEXP_ADDR, reg, &value);
 
 	if (ret == ESP_OK) {
 #ifdef BADGE_PORTEXP_DEBUG
@@ -66,7 +64,7 @@ badge_portexp_read_reg(uint8_t reg)
 static inline int
 badge_portexp_write_reg(uint8_t reg, uint8_t value)
 {
-	esp_err_t ret = badge_i2c_write_reg(I2C_PORTEXP_ID, reg, value);
+	esp_err_t ret = badge_i2c_write_reg(I2C_PORTEXP_ADDR, reg, value);
 
 	if (ret == ESP_OK) {
 #ifdef BADGE_PORTEXP_DEBUG
@@ -381,4 +379,4 @@ badge_portexp_get_interrupt_status(void)
 	return badge_portexp_read_reg(0x13);
 }
 
-#endif // PIN_NUM_I2C_CLK
+#endif // I2C_PORTEXP_ADDR
