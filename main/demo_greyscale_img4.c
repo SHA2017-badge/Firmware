@@ -1,0 +1,18 @@
+#include "sdkconfig.h"
+#include <freertos/FreeRTOS.h>
+#include <esp_event.h>
+
+#include "badge_eink.h"
+#include "event_queue.h"
+#include "imgv2_hacking.h"
+
+void
+demoGreyscaleImg4(void)
+{
+	badge_eink_display(imgv2_hacking, 0);
+
+	// wait for random keypress
+	uint32_t buttons_down = 0;
+	while ((buttons_down & 0xffff) == 0)
+		xQueueReceive(evt_queue, &buttons_down, portMAX_DELAY);
+}

@@ -118,6 +118,7 @@ struct menu_item {
 #include "demo_greyscale_img1.h"
 #include "demo_greyscale_img2.h"
 #include "demo_greyscale_img3.h"
+#include "demo_greyscale_img4.h"
 #include "demo_partial_update.h"
 #include "demo_dot1.h"
 #include "demo_test_adc.h"
@@ -131,6 +132,7 @@ const struct menu_item demoMenu[] = {
     {"greyscale image 1", &demoGreyscaleImg1},
     {"greyscale image 2", &demoGreyscaleImg2},
     {"greyscale image 3", &demoGreyscaleImg3},
+    {"greyscale image 4", &demoGreyscaleImg4},
     {"partial update test", &demoPartialUpdate},
     {"dot 1", &demoDot1},
     {"ADC test", &demoTestAdc},
