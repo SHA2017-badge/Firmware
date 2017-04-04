@@ -1,6 +1,7 @@
 #ifndef EPD_GDE_H
 #define EPD_GDE_H
 
+#include <stdbool.h>
 #include <stdint.h>
 
 extern void gdeInit(void);
