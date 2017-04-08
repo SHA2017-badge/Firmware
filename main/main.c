@@ -33,7 +33,6 @@ get_buttons(void)
 #else // CONFIG_SHA_BADGE_V2
 	bits |= gpio_get_level(PIN_NUM_BUTTON_FLASH) <<  7; // FLASH
 #endif // CONFIG_SHA_BADGE_V1
-	bits |= gpio_get_level(PIN_NUM_EPD_BUSY)     << 16; // GDE BUSY
 	return bits;
 }
 
@@ -41,7 +40,7 @@ get_buttons(void)
 
 uint32_t buttons_state = 0;
 
-void gpio_intr_test(void *arg) {
+void gpio_intr_buttons(void *arg) {
   // read status to get interrupt status for GPIO 0-31
   uint32_t gpio_intr_status_lo = READ_PERI_REG(GPIO_STATUS_REG);
   // read status to get interrupt status for GPIO 32-39
@@ -53,7 +52,6 @@ void gpio_intr_test(void *arg) {
 
   uint32_t buttons_new = get_buttons();
   uint32_t buttons_down = (~buttons_new) & buttons_state;
-  uint32_t buttons_up = buttons_new & (~buttons_state);
   buttons_state = buttons_new;
 
   if (buttons_down != 0)
@@ -75,15 +73,6 @@ void gpio_intr_test(void *arg) {
     ets_printf("Button RIGHT\n");
   if (buttons_down & (1 << 7))
     ets_printf("Button FLASH\n");
-  if (buttons_down & (1 << 16))
-    ets_printf("GDE-Busy down\n");
-  if (buttons_up & (1 << 16))
-    ets_printf("GDE-Busy up\n");
-
-#ifdef PIN_NUM_LED
-  // pass on BUSY signal to LED.
-  gpio_set_level(PIN_NUM_LED, 1 - gpio_get_level(PIN_NUM_EPD_BUSY));
-#endif // PIN_NUM_LED
 }
 
 #ifdef CONFIG_SHA_BADGE_V2
@@ -237,29 +226,29 @@ void
 app_main(void) {
 	nvs_flash_init();
 
-	/* create event queue */
-	evt_queue = xQueueCreate(10, sizeof(uint32_t));
-
-	/** configure input **/
+	// install isr-service, so we can register interrupt-handlers per
+	// gpio pin.
 	gpio_install_isr_service(0);
-	gpio_isr_handler_add(PIN_NUM_EPD_BUSY    , gpio_intr_test, NULL);
+
+	/* configure buttons input */
+	evt_queue = xQueueCreate(10, sizeof(uint32_t));
 #ifdef CONFIG_SHA_BADGE_V1
-	gpio_isr_handler_add(PIN_NUM_BUTTON_A    , gpio_intr_test, NULL);
-	gpio_isr_handler_add(PIN_NUM_BUTTON_B    , gpio_intr_test, NULL);
-	gpio_isr_handler_add(PIN_NUM_BUTTON_MID  , gpio_intr_test, NULL);
-	gpio_isr_handler_add(PIN_NUM_BUTTON_UP   , gpio_intr_test, NULL);
-	gpio_isr_handler_add(PIN_NUM_BUTTON_DOWN , gpio_intr_test, NULL);
-	gpio_isr_handler_add(PIN_NUM_BUTTON_LEFT , gpio_intr_test, NULL);
-	gpio_isr_handler_add(PIN_NUM_BUTTON_RIGHT, gpio_intr_test, NULL);
+	gpio_isr_handler_add(PIN_NUM_BUTTON_A    , gpio_intr_buttons, NULL);
+	gpio_isr_handler_add(PIN_NUM_BUTTON_B    , gpio_intr_buttons, NULL);
+	gpio_isr_handler_add(PIN_NUM_BUTTON_MID  , gpio_intr_buttons, NULL);
+	gpio_isr_handler_add(PIN_NUM_BUTTON_UP   , gpio_intr_buttons, NULL);
+	gpio_isr_handler_add(PIN_NUM_BUTTON_DOWN , gpio_intr_buttons, NULL);
+	gpio_isr_handler_add(PIN_NUM_BUTTON_LEFT , gpio_intr_buttons, NULL);
+	gpio_isr_handler_add(PIN_NUM_BUTTON_RIGHT, gpio_intr_buttons, NULL);
 #else
-	gpio_isr_handler_add(PIN_NUM_BUTTON_FLASH, gpio_intr_test, NULL);
+	gpio_isr_handler_add(PIN_NUM_BUTTON_FLASH, gpio_intr_buttons, NULL);
 #endif // CONFIG_SHA_BADGE_V1
 
+	// configure button-listener
 	gpio_config_t io_conf;
 	io_conf.intr_type = GPIO_INTR_ANYEDGE;
 	io_conf.mode = GPIO_MODE_INPUT;
 	io_conf.pin_bit_mask =
-		(1LL << PIN_NUM_EPD_BUSY) |
 #ifdef CONFIG_SHA_BADGE_V1
 		(1LL << PIN_NUM_BUTTON_A) |
 		(1LL << PIN_NUM_BUTTON_B) |
@@ -275,12 +264,6 @@ app_main(void) {
 	io_conf.pull_down_en = 0;
 	io_conf.pull_up_en = 1;
 	gpio_config(&io_conf);
-
-	/** configure output **/
-#ifdef PIN_NUM_LED
-  gpio_pad_select_gpio(PIN_NUM_LED);
-  gpio_set_direction(PIN_NUM_LED, GPIO_MODE_OUTPUT);
-#endif // PIN_NUM_LED
 
 #ifdef CONFIG_SHA_BADGE_V2
   badge_i2c_init();
