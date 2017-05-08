@@ -7,7 +7,7 @@
 #include "freertos/FreeRTOS.h"
 #include "nvs_flash.h"
 #include <gde.h>
-#include <gdeh029a1.h>
+#include <depg0290b1.h>
 #include <pictures.h>
 
 #include "badge_pins.h"
@@ -292,73 +292,27 @@ app_main(void) {
   initDisplay(LUT_DEFAULT); // configure slow LUT
 
   int picture_id = 0;
+	ets_printf("Drawimage begin\n");
   drawImage(pictures[picture_id]);
+	ets_printf("Drawimage gedaan");
   updateDisplay();
   gdeBusyWait();
 
-  int selected_lut = LUT_PART;
-  writeLUT(selected_lut); // configure fast LUT
+  //int selected_lut = LUT_PART;
+  //writeLUT(selected_lut); // configure fast LUT
 
   while (1) {
-    uint32_t buttons_down;
-    if (xQueueReceive(evt_queue, &buttons_down, portMAX_DELAY)) {
-      if (buttons_down & (1 << 1)) {
-        ets_printf("Button B handling\n");
-        /* redraw with default LUT */
-        writeLUT(LUT_DEFAULT);
-        drawImage(pictures[picture_id]);
-        updateDisplay();
-        gdeBusyWait();
-        writeLUT(selected_lut);
-      }
-      if (buttons_down & (1 << 2)) {
-        ets_printf("Button MID handling\n");
-        /* open menu */
-        displayMenu("Demo menu", demoMenu);
 
-        writeLUT(selected_lut);
         drawImage(pictures[picture_id]);
         updateDisplay();
         gdeBusyWait();
-      }
-      if (buttons_down & (1 << 3)) {
-        ets_printf("Button UP handling\n");
-        /* switch LUT */
-        selected_lut = (selected_lut + 1) % (LUT_MAX + 1);
-        writeLUT(selected_lut);
-        drawImage(pictures[picture_id]);
-        updateDisplay();
-        gdeBusyWait();
-      }
-      if (buttons_down & (1 << 4)) {
-        ets_printf("Button DOWN handling\n");
-        /* switch LUT */
-        selected_lut = (selected_lut + LUT_MAX) % (LUT_MAX + 1);
-        writeLUT(selected_lut);
-        drawImage(pictures[picture_id]);
-        updateDisplay();
-        gdeBusyWait();
-      }
-      if (buttons_down & (1 << 5)) {
-        ets_printf("Button LEFT handling\n");
-        /* previous picture */
-        if (picture_id > 0) {
-          picture_id--;
-          drawImage(pictures[picture_id]);
-          updateDisplay();
-          gdeBusyWait();
-        }
-      }
-      if (buttons_down & (1 << 6)) {
-        ets_printf("Button RIGHT handling\n");
-        /* next picture */
+
+
         if (picture_id + 1 < NUM_PICTURES) {
           picture_id++;
-          drawImage(pictures[picture_id]);
-          updateDisplay();
-          gdeBusyWait();
-        }
+        } else {
+					picture_id=0;
+				}
+				ets_delay_us(5000000);
       }
-    }
-  }
 }
