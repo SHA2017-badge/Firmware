@@ -75,7 +75,7 @@ void initDisplay(int lut_idx) {
   gdeWriteCommand_p1(0x7E, 0x3B);
 
   // Set display size and driver output control
-  gdeWriteCommand_p3(0x01, 0x01, 0x01, 0x00);
+  gdeWriteCommand_p3(0x01, 0x27, 0x01, 0x00);
 
   // Ram data entry mode
   // Adress counter is updated in Y direction, Y decrement, X increment
@@ -229,14 +229,14 @@ void setRamPointer(uint8_t addrX, uint16_t addrY) {
   // set RAM X address counter
   gdeWriteCommand_p1(0x4e, addrX);
   // set RAM Y address counter
-  gdeWriteCommand_p2(0x4f, addrY & 0xff, addrY >> 8);
+  gdeWriteCommand_p2(0x4f, (addrY+295)& 0xff, (addrY+295) >> 8);
 }
 
 void updateDisplay(void) {
   // enforce full screen update
-  gdeWriteCommand_p3(0x01, (DISP_SIZE_Y - 1) & 0xff, (DISP_SIZE_Y - 1) >> 8,
-                     0x00);
-  gdeWriteCommand_p2(0x0f, 0, 0);
+  //gdeWriteCommand_p3(0x01, (DISP_SIZE_Y - 1) & 0xff, (DISP_SIZE_Y - 1) >> 8,
+  //                   0x00);
+  // gdeWriteCommand_p2(0x0f, 0, 0);
 
   //	gdeWriteCommand_p1(0x22, 0xc7);
   gdeWriteCommand_p1(0x22, 0xc7);
