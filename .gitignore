@@ -1,3 +1,5 @@
 build/
 sdkconfig*
 makeenv
+
+.DS_Store
