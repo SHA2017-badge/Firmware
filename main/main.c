@@ -305,7 +305,7 @@ app_main(void) {
 #endif // CONFIG_WIFI_USE
 
   gdeInit();
-  initDisplay(LUT_DEFAULT); // configure slow LUT
+  initDisplay();
 
   int picture_id = 0;
   badge_eink_display(pictures[picture_id], 0);
