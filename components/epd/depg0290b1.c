@@ -2,7 +2,7 @@
 #include <stdint.h>
 
 #include "gde.h"
-#include "gdeh029a1.h"
+#include "depg0290b1.h"
 
 // GDEH029A1
 // SSD1608
