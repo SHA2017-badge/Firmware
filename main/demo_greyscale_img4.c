@@ -9,7 +9,7 @@
 void
 demoGreyscaleImg4(void)
 {
-	badge_eink_display(imgv2_hacking, 0);
+	badge_eink_display(imgv2_hacking, DISPLAY_FLAG_GREYSCALE);
 
 	// wait for random keypress
 	uint32_t buttons_down = 0;

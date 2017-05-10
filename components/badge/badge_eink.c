@@ -6,7 +6,7 @@
 
 #ifdef CONFIG_SHA_BADGE_V1
  #undef DISPLAY_ROTATE_180
-#else // CONFIG_SHA_BADGE_V2
+#else // CONFIG_SHA_BADGE_V2 || CONFIG_SHA_BADGE_V3
  #define DISPLAY_ROTATE_180
 #endif
 
@@ -35,8 +35,6 @@ static const uint8_t xlat_curve[256] = {
     0xf5,0xf8,0xfb,0xfe,
 };
 
-#define DISPLAY_FLAG_GREYSCALE  1
-#define DISPLAY_FLAG_ROTATE_180 2
 static void
 write_bitplane(const uint8_t *img, int y_start, int y_end, int bit, int flags)
 {
@@ -104,31 +102,49 @@ write_bitplane(const uint8_t *img, int y_start, int y_end, int bit, int flags)
 void
 badge_eink_display(const uint8_t *img, int mode)
 {
+	int lut_mode = 
+		(mode >> DISPLAY_FLAG_LUT_BIT) & ((1 << DISPLAY_FLAG_LUT_SIZE)-1);
+
 	/* update LUT */
-	writeLUT(LUT_DEFAULT);
-	gdeWriteCommand_p1(0x3a, 0x1a); // 26 dummy lines per gate
-	gdeWriteCommand_p1(0x3b, 0x08); // 62us per line
+	if (lut_mode == 0)
+	{
+		writeLUT(LUT_DEFAULT);
+		gdeWriteCommand_p1(0x3a, 0x1a); // 26 dummy lines per gate
+		gdeWriteCommand_p1(0x3b, 0x08); // 62us per line
 
-	// trying to get rid of all ghosting and end with a black screen.
-	int i;
-	for (i = 0; i < 3; i++) {
-		/* draw initial pattern */
-		setRamArea(0, DISP_SIZE_X_B - 1, 0, DISP_SIZE_Y - 1);
-		setRamPointer(0, 0);
-		gdeWriteCommandInit(0x24);
-		int c;
-		for (c = 0; c < DISP_SIZE_X_B * DISP_SIZE_Y; c++)
-			gdeWriteByte((i & 1) ? 0xff : 0x00);
-		gdeWriteCommandEnd();
+		// trying to get rid of all ghosting and end with a black screen.
+		int i;
+		for (i = 0; i < 3; i++) {
+			/* draw initial pattern */
+			setRamArea(0, DISP_SIZE_X_B - 1, 0, DISP_SIZE_Y - 1);
+			setRamPointer(0, 0);
+			gdeWriteCommandInit(0x24);
+			int c;
+			for (c = 0; c < DISP_SIZE_X_B * DISP_SIZE_Y; c++)
+				gdeWriteByte((i & 1) ? 0xff : 0x00);
+			gdeWriteCommandEnd();
 
-		/* update display */
+			/* update display */
+			updateDisplay();
+			gdeBusyWait();
+		}
+	}
+
+	if ((mode & DISPLAY_FLAG_GREYSCALE) == 0)
+	{
+		write_bitplane(img, 0, DISP_SIZE_Y-1, 0, 0);
+		writeLUT(lut_mode > 0 ? lut_mode - 1 : 0);
+		gdeWriteCommand_p1(0x3a, 0x1a); // 26 dummy lines per gate
+		gdeWriteCommand_p1(0x3b, 0x08); // 62us per line
 		updateDisplay();
 		gdeBusyWait();
+		return;
 	}
 
 	gdeWriteCommand_p1(0x3a, 0x00); // no dummy lines per gate
 	gdeWriteCommand_p1(0x3b, 0x00); // 30us per line
 
+	int i;
 	for (i = 64; i > 0; i >>= 1) {
 		int ii = i;
 		int p = 8;

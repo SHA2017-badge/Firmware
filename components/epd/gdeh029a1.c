@@ -51,7 +51,7 @@ void writeLUT(int lut_idx) {
   gdeWriteCommandStream(0x32, LUT_data[lut_idx], 30);
 }
 
-void initDisplay(int lut_idx) {
+void initDisplay(void) {
   gdeReset();
 
   // 01: driver output control
@@ -91,7 +91,7 @@ void initDisplay(int lut_idx) {
   // The device should have a hardcoded list, but reading the
   // temperature sensor or loading the LUT data from non-volatile
   // memory doesn't seem to work.
-  writeLUT(lut_idx);
+  writeLUT(LUT_DEFAULT);
 }
 
 void drawImage(const uint8_t *picture) {

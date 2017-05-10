@@ -3,9 +3,15 @@
 #include <esp_event.h>
 #include <gde.h>
 #include <gdeh029a1.h>
-#include <pictures.h>
 
 #include "event_queue.h"
+
+/* NOTE: bits are ordered different, so this might give a weird result,
+ *       but still shows the effects of 'partial updates'.
+ *       will fix the images later..
+ */
+#include "imgv2_sha.h"
+#include "imgv2_nick.h"
 
 void demoPartialUpdate(void) {
   /* update LUT */
@@ -18,7 +24,7 @@ void demoPartialUpdate(void) {
   int i;
   for (i = 0; i < 8; i++) {
     int j = ((i << 1) | (i >> 2)) & 7;
-    drawImage(gImage_sha);
+    drawImage(imgv2_sha);
     updateDisplayPartial(37 * j, 37 * j + 36);
     gdeBusyWait();
     vTaskDelay(1000 / portTICK_PERIOD_MS);
@@ -26,7 +32,7 @@ void demoPartialUpdate(void) {
 
   for (i = 0; i < 8; i++) {
     int j = ((i << 1) | (i >> 2)) & 7;
-    drawImage(gImage_nick);
+    drawImage(imgv2_nick);
     updateDisplayPartial(37 * j, 37 * j + 36);
     gdeBusyWait();
     vTaskDelay(1000 / portTICK_PERIOD_MS);
