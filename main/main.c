@@ -36,7 +36,7 @@ get_buttons(void)
 	bits |= gpio_get_level(PIN_NUM_BUTTON_DOWN)  <<  4; // DOWN
 	bits |= gpio_get_level(PIN_NUM_BUTTON_LEFT)  <<  5; // LEFT
 	bits |= gpio_get_level(PIN_NUM_BUTTON_RIGHT) <<  6; // RIGHT
-#else // CONFIG_SHA_BADGE_V2
+#else // CONFIG_SHA_BADGE_V2 || CONFIG_SHA_BADGE_V3
 	bits |= gpio_get_level(PIN_NUM_BUTTON_FLASH) <<  7; // FLASH
 #endif // CONFIG_SHA_BADGE_V1
 	return bits;
@@ -81,7 +81,7 @@ void gpio_intr_buttons(void *arg) {
     ets_printf("Button FLASH\n");
 }
 
-#ifdef CONFIG_SHA_BADGE_V2
+#ifndef CONFIG_SHA_BADGE_V1
 void
 touch_event_handler(int event)
 {
@@ -99,7 +99,7 @@ touch_event_handler(int event)
 		}
 	}
 }
-#endif // CONFIG_SHA_BADGE_V2
+#endif // CONFIG_SHA_BADGE_V2 || CONFIG_SHA_BADGE_V3
 
 struct menu_item {
   const char *title;
@@ -131,9 +131,9 @@ const struct menu_item demoMenu[] = {
     {"partial update test", &demoPartialUpdate},
     {"dot 1", &demoDot1},
     {"ADC test", &demoTestAdc},
-#ifdef CONFIG_SHA_BADGE_V2
+#ifndef CONFIG_SHA_BADGE_V1
     {"LEDs demo", &demo_leds},
-#endif // CONFIG_SHA_BADGE_V2
+#endif // CONFIG_SHA_BADGE_V2 || CONFIG_SHA_BADGE_V3
     {"tetris?", NULL},
     {"something else", NULL},
     {"test, test, test", NULL},
@@ -281,13 +281,13 @@ app_main(void) {
 	io_conf.pull_up_en = 1;
 	gpio_config(&io_conf);
 
-#ifdef CONFIG_SHA_BADGE_V2
+#ifndef CONFIG_SHA_BADGE_V1
   badge_i2c_init();
   badge_portexp_init();
   badge_touch_init();
   badge_touch_set_event_handler(touch_event_handler);
   badge_leds_init();
-#endif // CONFIG_SHA_BADGE_V2
+#endif // CONFIG_SHA_BADGE_V2 || CONFIG_SHA_BADGE_V3
 
   tcpip_adapter_init();
   ESP_ERROR_CHECK(esp_event_loop_init(event_handler, NULL));
