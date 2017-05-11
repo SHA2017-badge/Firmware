@@ -31,13 +31,15 @@
 #endif
 
 void gdeReset(void) {
-  gpio_set_level(PIN_NUM_EPD_RESET, LOW);
-  ets_delay_us(200000);
-  gpio_set_level(PIN_NUM_EPD_RESET, HIGH);
-  ets_delay_us(200000);
+	gpio_set_level(PIN_NUM_EPD_RESET, LOW);
+	ets_delay_us(200000);
+	gpio_set_level(PIN_NUM_EPD_RESET, HIGH);
+	ets_delay_us(200000);
 }
 
-bool gdeIsBusy(void) { return gpio_get_level(PIN_NUM_EPD_BUSY); }
+bool gdeIsBusy(void) {
+	return gpio_get_level(PIN_NUM_EPD_BUSY);
+}
 
 // semaphore to trigger on gde-busy signal
 xSemaphoreHandle badge_gde_intr_trigger = NULL;
@@ -77,22 +79,22 @@ badge_gde_intr_handler(void *arg)
 }
 
 void gdeWriteCommand(uint8_t command) {
-  gpio_set_level(PIN_NUM_EPD_CS, HIGH);
-  gpio_set_level(PIN_NUM_EPD_CS, LOW);
-  gdeWriteByte(command);
-  gpio_set_level(PIN_NUM_EPD_CS, HIGH);
+	gpio_set_level(PIN_NUM_EPD_CS, HIGH);
+	gpio_set_level(PIN_NUM_EPD_CS, LOW);
+	gdeWriteByte(command);
+	gpio_set_level(PIN_NUM_EPD_CS, HIGH);
 }
 
 void gdeWriteCommandInit(uint8_t command) {
-  gpio_set_level(PIN_NUM_EPD_CS, HIGH);
-  gpio_set_level(PIN_NUM_EPD_CS, LOW);
-  gdeWriteByte(command);
-  gpio_set_level(PIN_NUM_EPD_DATA, HIGH);
+	gpio_set_level(PIN_NUM_EPD_CS, HIGH);
+	gpio_set_level(PIN_NUM_EPD_CS, LOW);
+	gdeWriteByte(command);
+	gpio_set_level(PIN_NUM_EPD_DATA, HIGH);
 }
 
 void gdeWriteCommandEnd(void) {
-  gpio_set_level(PIN_NUM_EPD_CS, HIGH);
-  gpio_set_level(PIN_NUM_EPD_DATA, LOW);
+	gpio_set_level(PIN_NUM_EPD_CS, HIGH);
+	gpio_set_level(PIN_NUM_EPD_DATA, LOW);
 }
 
 void gdeInit(void) {
@@ -111,56 +113,56 @@ void gdeInit(void) {
 	io_conf.pull_up_en = 1;
 	gpio_config(&io_conf);
 
-  gpio_set_direction(PIN_NUM_EPD_CS, GPIO_MODE_OUTPUT);
-  gpio_set_direction(PIN_NUM_EPD_DATA, GPIO_MODE_OUTPUT);
-  gpio_set_direction(PIN_NUM_EPD_RESET, GPIO_MODE_OUTPUT);
-  gpio_set_direction(PIN_NUM_EPD_BUSY, GPIO_MODE_INPUT);
-  ets_printf("epd spi pin mux init ...\r\n");
-  gpio_matrix_out(PIN_NUM_EPD_MOSI, VSPID_OUT_IDX, 0, 0);
-  gpio_matrix_out(PIN_NUM_EPD_CLK, VSPICLK_OUT_IDX, 0, 0);
-  gpio_matrix_out(PIN_NUM_EPD_CS, VSPICS0_OUT_IDX, 0, 0);
-  CLEAR_PERI_REG_MASK(SPI_SLAVE_REG(SPI_NUM), SPI_TRANS_DONE << 5);
-  SET_PERI_REG_MASK(SPI_USER_REG(SPI_NUM), SPI_CS_SETUP);
-  CLEAR_PERI_REG_MASK(SPI_PIN_REG(SPI_NUM), SPI_CK_IDLE_EDGE);
-  CLEAR_PERI_REG_MASK(SPI_USER_REG(SPI_NUM), SPI_CK_OUT_EDGE);
-  CLEAR_PERI_REG_MASK(SPI_CTRL_REG(SPI_NUM), SPI_WR_BIT_ORDER);
-  CLEAR_PERI_REG_MASK(SPI_CTRL_REG(SPI_NUM), SPI_RD_BIT_ORDER);
-  CLEAR_PERI_REG_MASK(SPI_USER_REG(SPI_NUM), SPI_DOUTDIN);
-  WRITE_PERI_REG(SPI_USER1_REG(SPI_NUM), 0);
-  SET_PERI_REG_BITS(SPI_CTRL2_REG(SPI_NUM), SPI_MISO_DELAY_MODE, 0,
-                    SPI_MISO_DELAY_MODE_S);
-  CLEAR_PERI_REG_MASK(SPI_SLAVE_REG(SPI_NUM), SPI_SLAVE_MODE);
+	gpio_set_direction(PIN_NUM_EPD_CS, GPIO_MODE_OUTPUT);
+	gpio_set_direction(PIN_NUM_EPD_DATA, GPIO_MODE_OUTPUT);
+	gpio_set_direction(PIN_NUM_EPD_RESET, GPIO_MODE_OUTPUT);
+	gpio_set_direction(PIN_NUM_EPD_BUSY, GPIO_MODE_INPUT);
+	ets_printf("epd spi pin mux init ...\r\n");
+	gpio_matrix_out(PIN_NUM_EPD_MOSI, VSPID_OUT_IDX, 0, 0);
+	gpio_matrix_out(PIN_NUM_EPD_CLK, VSPICLK_OUT_IDX, 0, 0);
+	gpio_matrix_out(PIN_NUM_EPD_CS, VSPICS0_OUT_IDX, 0, 0);
+	CLEAR_PERI_REG_MASK(SPI_SLAVE_REG(SPI_NUM), SPI_TRANS_DONE << 5);
+	SET_PERI_REG_MASK(SPI_USER_REG(SPI_NUM), SPI_CS_SETUP);
+	CLEAR_PERI_REG_MASK(SPI_PIN_REG(SPI_NUM), SPI_CK_IDLE_EDGE);
+	CLEAR_PERI_REG_MASK(SPI_USER_REG(SPI_NUM), SPI_CK_OUT_EDGE);
+	CLEAR_PERI_REG_MASK(SPI_CTRL_REG(SPI_NUM), SPI_WR_BIT_ORDER);
+	CLEAR_PERI_REG_MASK(SPI_CTRL_REG(SPI_NUM), SPI_RD_BIT_ORDER);
+	CLEAR_PERI_REG_MASK(SPI_USER_REG(SPI_NUM), SPI_DOUTDIN);
+	WRITE_PERI_REG(SPI_USER1_REG(SPI_NUM), 0);
+	SET_PERI_REG_BITS(SPI_CTRL2_REG(SPI_NUM), SPI_MISO_DELAY_MODE, 0,
+			SPI_MISO_DELAY_MODE_S);
+	CLEAR_PERI_REG_MASK(SPI_SLAVE_REG(SPI_NUM), SPI_SLAVE_MODE);
 
-  WRITE_PERI_REG(SPI_CLOCK_REG(SPI_NUM),
-                 (1 << SPI_CLKCNT_N_S) | (1 << SPI_CLKCNT_L_S)); // 40 MHz
-  //	WRITE_PERI_REG(SPI_CLOCK_REG(SPI_NUM), SPI_CLK_EQU_SYSCLK); // 80Mhz
+	WRITE_PERI_REG(SPI_CLOCK_REG(SPI_NUM),
+			(1 << SPI_CLKCNT_N_S) | (1 << SPI_CLKCNT_L_S)); // 40 MHz
+//	WRITE_PERI_REG(SPI_CLOCK_REG(SPI_NUM), SPI_CLK_EQU_SYSCLK); // 80Mhz
 
-  SET_PERI_REG_MASK(SPI_USER_REG(SPI_NUM),
-                    SPI_CS_SETUP | SPI_CS_HOLD | SPI_USR_MOSI);
-  SET_PERI_REG_MASK(SPI_CTRL2_REG(SPI_NUM),
-                    ((0x4 & SPI_MISO_DELAY_NUM) << SPI_MISO_DELAY_NUM_S));
-  CLEAR_PERI_REG_MASK(SPI_USER_REG(SPI_NUM), SPI_USR_COMMAND);
-  SET_PERI_REG_BITS(SPI_USER2_REG(SPI_NUM), SPI_USR_COMMAND_BITLEN, 0,
-                    SPI_USR_COMMAND_BITLEN_S);
-  CLEAR_PERI_REG_MASK(SPI_USER_REG(SPI_NUM), SPI_USR_ADDR);
-  SET_PERI_REG_BITS(SPI_USER1_REG(SPI_NUM), SPI_USR_ADDR_BITLEN, 0,
-                    SPI_USR_ADDR_BITLEN_S);
-  CLEAR_PERI_REG_MASK(SPI_USER_REG(SPI_NUM), SPI_USR_MISO);
-  SET_PERI_REG_MASK(SPI_USER_REG(SPI_NUM), SPI_USR_MOSI);
+	SET_PERI_REG_MASK(SPI_USER_REG(SPI_NUM),
+			SPI_CS_SETUP | SPI_CS_HOLD | SPI_USR_MOSI);
+	SET_PERI_REG_MASK(SPI_CTRL2_REG(SPI_NUM),
+			((0x4 & SPI_MISO_DELAY_NUM) << SPI_MISO_DELAY_NUM_S));
+	CLEAR_PERI_REG_MASK(SPI_USER_REG(SPI_NUM), SPI_USR_COMMAND);
+	SET_PERI_REG_BITS(SPI_USER2_REG(SPI_NUM), SPI_USR_COMMAND_BITLEN, 0,
+			SPI_USR_COMMAND_BITLEN_S);
+	CLEAR_PERI_REG_MASK(SPI_USER_REG(SPI_NUM), SPI_USR_ADDR);
+	SET_PERI_REG_BITS(SPI_USER1_REG(SPI_NUM), SPI_USR_ADDR_BITLEN, 0,
+			SPI_USR_ADDR_BITLEN_S);
+	CLEAR_PERI_REG_MASK(SPI_USER_REG(SPI_NUM), SPI_USR_MISO);
+	SET_PERI_REG_MASK(SPI_USER_REG(SPI_NUM), SPI_USR_MOSI);
 
-  char i;
-  for (i = 0; i < 16; i++) {
-    WRITE_PERI_REG((SPI_W0_REG(SPI_NUM) + (i << 2)), 0);
-  }
+	char i;
+	for (i = 0; i < 16; i++) {
+		WRITE_PERI_REG((SPI_W0_REG(SPI_NUM) + (i << 2)), 0);
+	}
 }
 
 void gdeWriteByte(uint8_t data) {
-  SET_PERI_REG_BITS(SPI_MOSI_DLEN_REG(SPI_NUM), SPI_USR_MOSI_DBITLEN, 0x7,
-                    SPI_USR_MOSI_DBITLEN_S);
-  WRITE_PERI_REG((SPI_W0_REG(SPI_NUM)), data);
-  SET_PERI_REG_MASK(SPI_CMD_REG(SPI_NUM), SPI_USR);
+	SET_PERI_REG_BITS(SPI_MOSI_DLEN_REG(SPI_NUM), SPI_USR_MOSI_DBITLEN, 0x7,
+			SPI_USR_MOSI_DBITLEN_S);
+	WRITE_PERI_REG((SPI_W0_REG(SPI_NUM)), data);
+	SET_PERI_REG_MASK(SPI_CMD_REG(SPI_NUM), SPI_USR);
 
-  // wait until ready?
-  while (READ_PERI_REG(SPI_CMD_REG(SPI_NUM)) & SPI_USR)
-    ;
+	// wait until ready?
+	while (READ_PERI_REG(SPI_CMD_REG(SPI_NUM)) & SPI_USR)
+		;
 }
