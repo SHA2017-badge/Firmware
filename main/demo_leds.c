@@ -9,7 +9,7 @@
 
 #include "badge_leds.h"
 
-#ifdef CONFIG_SHA_BADGE_V2
+#ifndef CONFIG_SHA_BADGE_V1
 void demo_leds(void)
 {
 	uint8_t rgb[6*3] = {
@@ -53,4 +53,4 @@ void demo_leds(void)
 	memset(rgb, 0, sizeof(rgb));
 	badge_leds_set_state(rgb);
 }
-#endif // CONFIG_SHA_BADGE_V2
+#endif // CONFIG_SHA_BADGE_V2 || CONFIG_SHA_BADGE_V3
