@@ -1,4 +1,6 @@
 #include "sdkconfig.h"
+
+#ifdef CONFIG_SHA_BADGE_EINK_GDEH029A1
 #include <freertos/FreeRTOS.h>
 #include <esp_event.h>
 #include "driver/adc.h"
@@ -58,3 +60,5 @@ void demoTestAdc(void) {
         return;
   }
 }
+
+#endif // CONFIG_SHA_BADGE_EINK_GDEH029A1

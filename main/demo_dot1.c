@@ -1,4 +1,6 @@
 #include "sdkconfig.h"
+
+#ifdef CONFIG_SHA_BADGE_EINK_GDEH029A1
 #include <freertos/FreeRTOS.h>
 #include <esp_event.h>
 #include <gde.h>
@@ -99,3 +101,5 @@ void demoDot1(void) {
     gdeBusyWait();
   }
 }
+
+#endif // CONFIG_SHA_BADGE_EINK_GDEH029A1
