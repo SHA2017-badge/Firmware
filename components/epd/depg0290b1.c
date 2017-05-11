@@ -1,6 +1,6 @@
 #include "sdkconfig.h"
 
-#ifdef CONFIG_SHA_BADGE_EINK_GDEH029A1
+#ifdef CONFIG_SHA_BADGE_EINK_DEPG0290B1
 #include <stdbool.h>
 #include <stdint.h>
 
@@ -14,12 +14,20 @@
 #include "font_8px.h"
 
 /* LUT data without the last 2 bytes */
-const uint8_t LUTDefault_full[30] = {
+const uint8_t LUTDefault_full[70] = {
     /* VS */
-    0x02, 0x02, 0x01, 0x11, 0x12, 0x12, 0x22, 0x22, 0x66, 0x69, 0x69, 0x59,
-    0x58, 0x99, 0x99, 0x88, 0x00, 0x00, 0x00, 0x00,
-    /* TP */
-    0xF8, 0xB4, 0x13, 0x51, 0x35, 0x51, 0x51, 0x19, 0x01, 0x00,
+    0xA0,	0x90,	0x50,	0x0,	0x0,	0x0,	0x0,
+    0x50,	0x90,	0xA0,	0x0,	0x0,	0x0,	0x0,
+    0xA0,	0x90,	0x50,	0x0,	0x0,	0x0,	0x0,
+    0x50,	0x90,	0xA0,	0x0,	0x0,	0x0,	0x0,
+    0x0,	0x0,	0x0,	0x0,	0x0,	0x0,	0x0,
+    0xF,	0xF,	0x0,	0x0,	0x0,
+    0xF,	0xF,	0x0,	0x0,	0x2,
+    0xF,	0xF,	0x0,	0x0,	0x0,
+    0x0,	0x0,	0x0,	0x0,	0x0,
+    0x0,	0x0,	0x0,	0x0,	0x0,
+    0x0,	0x0,	0x0,	0x0,	0x0,
+    0x0,	0x0,	0x0,	0x0,	0x0,
 };
 
 const uint8_t LUTDefault_part[30] = {
@@ -51,54 +59,60 @@ const uint8_t *LUT_data[LUT_MAX + 1] = {
 };
 
 void writeLUT(int lut_idx) {
-  gdeWriteCommandStream(0x32, LUT_data[lut_idx], 30);
+  gdeWriteCommandStream(0x32, LUT_data[lut_idx], 70);
 }
 
 void initDisplay(void) {
+  // Hardware reset
   gdeReset();
+  gdeBusyWait();
 
-  // 01: driver output control
-  gdeWriteCommand_p3(0x01, (DISP_SIZE_Y - 1) & 0xff, (DISP_SIZE_Y - 1) >> 8,
-                     0x00); // DISP_SIZE_Y lines, no interlacing
-  // 03: gate driving voltage control (VGH/VGL)
-  //	gdeWriteCommand_p1(0x03, 0xea); // +22V/-20V (POR)
-  //	gdeWriteCommand_p1(0x03, 0x00); // +15V/-15V (in original source, but
-  //not used)
-  // 04: source driving voltage control (VSH/VSL)
-  //	gdeWriteCommand_p1(0x04, 0x0a); // +15V/-15V (POR) (in original source,
-  //but not used)
-  // 0C: booster soft start control
-  gdeWriteCommand_p3(0x0c, 0xd7, 0xd6, 0x9d);
-  // 2C: write VCOM register
-  gdeWriteCommand_p1(0x2c, 0xa8); // VCOM 7c
-  // 3A: set dummy line period
-  gdeWriteCommand_p1(0x3a, 0x1a); // 26 dummy lines per gate
-  // 3B: set gate line width
-  gdeWriteCommand_p1(0x3b, 0x08); // 2us per line
-  // 3C: border waveform control
-  //	gdeWriteCommand_p1(0x3c, 0x71); // POR
-  //	gdeWriteCommand_p1(0x3c, 0x33); // FIXME: check value (in original
-  //source, but not used)
-  // F0: ???
-  //	gdeWriteCommand_p1(0xf0, 0x1f); // +15V/-15V ?? (in original source, but
-  //not used)
+  // Software reset
+  gdeWriteCommand(0x12);
+  gdeBusyWait();
 
-  // 11: data entry mode setting
-  gdeWriteCommand_p1(0x11, 0x03); // X inc, Y inc
-  // 21: display update control 1
-  //	gdeWriteCommand_p1(0x21, 0x8f); // (in original source, but not used)
-  // 22: display update control 2
-  //	gdeWriteCommand_p1(0x22, 0xf0); // (in original source, but not used)
+  // Set analog block control
+  gdeWriteCommand_p1(0x74, 0x54);
 
-  // configure LUT.
-  // The device should have a hardcoded list, but reading the
-  // temperature sensor or loading the LUT data from non-volatile
-  // memory doesn't seem to work.
+  // Set digital block control
+  gdeWriteCommand_p1(0x7E, 0x3B);
+
+  // Set display size and driver output control
+  gdeWriteCommand_p3(0x01, 0x27, 0x01, 0x00);
+
+  // Ram data entry mode
+  // Adress counter is updated in Y direction, Y decrement, X increment
+  gdeWriteCommand_p1(0x11, 0x01);
+
+  // Set RAM X address (00h to 0Fh)
+  gdeWriteCommand_p2(0x44, 0x00, 0x0F);
+
+  // Set RAM Y address (0127h to 0000h)
+  gdeWriteCommand_p4(0x45, 0x27, 0x01, 0x00, 0x00);
+
+  // Set border waveform for VBD (see datasheet)
+  gdeWriteCommand_p1(0x3C, 0x01);
+
+  // SET VOLTAGE AND LOAD LUT_MAX
+
+  // Set VCOM value
+  gdeWriteCommand_p1(0x2C, 0x26);
+
+  // Gate voltage setting (17h = 20 Volt, ranges from 10v to 21v)
+  gdeWriteCommand_p1(0x03, 0x17);
+
+  // Source voltage setting (15volt, 0 volt and -15 volt)
+  gdeWriteCommand_p3(0x04, 0x41, 0x00, 0x32);
+
+  // Frame setting 50hz
+  gdeWriteCommand_p1(0x3A, 0x30);
+  gdeWriteCommand_p1(0x3B, 0x0A);
+
   writeLUT(LUT_DEFAULT);
 }
 
 void drawImage(const uint8_t *picture) {
-  setRamArea(0, DISP_SIZE_X_B - 1, 0, DISP_SIZE_Y - 1);
+  setRamArea(0, DISP_SIZE_X_B - 1, DISP_SIZE_Y - 1, 0);
   setRamPointer(0, 0);
   gdeWriteCommandStream(0x24, picture, DISP_SIZE_X_B * DISP_SIZE_Y);
 }
@@ -218,14 +232,14 @@ void setRamPointer(uint8_t addrX, uint16_t addrY) {
   // set RAM X address counter
   gdeWriteCommand_p1(0x4e, addrX);
   // set RAM Y address counter
-  gdeWriteCommand_p2(0x4f, addrY & 0xff, addrY >> 8);
+  gdeWriteCommand_p2(0x4f, (addrY+295)& 0xff, (addrY+295) >> 8);
 }
 
 void updateDisplay(void) {
   // enforce full screen update
-  gdeWriteCommand_p3(0x01, (DISP_SIZE_Y - 1) & 0xff, (DISP_SIZE_Y - 1) >> 8,
-                     0x00);
-  gdeWriteCommand_p2(0x0f, 0, 0);
+  //gdeWriteCommand_p3(0x01, (DISP_SIZE_Y - 1) & 0xff, (DISP_SIZE_Y - 1) >> 8,
+  //                   0x00);
+  // gdeWriteCommand_p2(0x0f, 0, 0);
 
   //	gdeWriteCommand_p1(0x22, 0xc7);
   gdeWriteCommand_p1(0x22, 0xc7);
@@ -251,4 +265,4 @@ void updateDisplayPartial(uint16_t yStart, uint16_t yEnd) {
   gdeWriteCommand(0x20);
 }
 
-#endif // CONFIG_SHA_BADGE_EINK_GDEH029A1
+#endif // CONFIG_SHA_BADGE_EINK_DEPG0290B1
