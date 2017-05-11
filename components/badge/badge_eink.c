@@ -181,3 +181,13 @@ badge_eink_display(const uint8_t *img, int mode)
 	gdeWriteCommand_p1(0x3a, 0x1a); // 26 dummy lines per gate
 	gdeWriteCommand_p1(0x3b, 0x08); // 62us per line
 }
+
+void
+badge_eink_init(void)
+{
+	// initialize spi interface to display
+	gdeInit();
+
+	// initialize display
+	initDisplay();
+}
