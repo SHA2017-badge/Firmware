@@ -9,10 +9,10 @@
 #include <gde.h>
 #ifdef DEPG0290B1
 #include <depg0290b1.h>
-#include <pictures.h>
 #else
 #include <gdeh029a1.h>
 #endif
+#include <pictures.h>
 
 #include "badge_pins.h"
 #include "badge_i2c.h"
@@ -41,7 +41,7 @@ get_buttons(void)
 	bits |= gpio_get_level(PIN_NUM_BUTTON_DOWN)  <<  4; // DOWN
 	bits |= gpio_get_level(PIN_NUM_BUTTON_LEFT)  <<  5; // LEFT
 	bits |= gpio_get_level(PIN_NUM_BUTTON_RIGHT) <<  6; // RIGHT
-#else // CONFIG_SHA_BADGE_V2 || CONFIG_SHA_BADGE_V3
+#else // CONFIG_SHA_BADGE_V2
 	bits |= gpio_get_level(PIN_NUM_BUTTON_FLASH) <<  7; // FLASH
 #endif // CONFIG_SHA_BADGE_V1
 	return bits;
@@ -86,7 +86,7 @@ void gpio_intr_buttons(void *arg) {
     ets_printf("Button FLASH\n");
 }
 
-#ifndef CONFIG_SHA_BADGE_V1
+#ifdef CONFIG_SHA_BADGE_V2
 void
 touch_event_handler(int event)
 {
@@ -104,7 +104,7 @@ touch_event_handler(int event)
 		}
 	}
 }
-#endif // CONFIG_SHA_BADGE_V2 || CONFIG_SHA_BADGE_V3
+#endif // CONFIG_SHA_BADGE_V2
 
 struct menu_item {
   const char *title;
@@ -136,9 +136,9 @@ const struct menu_item demoMenu[] = {
     {"partial update test", &demoPartialUpdate},
     {"dot 1", &demoDot1},
     {"ADC test", &demoTestAdc},
-#ifndef CONFIG_SHA_BADGE_V1
+#ifdef CONFIG_SHA_BADGE_V2
     {"LEDs demo", &demo_leds},
-#endif // CONFIG_SHA_BADGE_V2 || CONFIG_SHA_BADGE_V3
+#endif // CONFIG_SHA_BADGE_V2
     {"tetris?", NULL},
     {"something else", NULL},
     {"test, test, test", NULL},
@@ -233,16 +233,6 @@ void displayMenu(const char *menu_title, const struct menu_item *itemlist) {
   }
 }
 
-// pictures
-#define NUM_PICTURES 5
-const uint8_t *pictures[NUM_PICTURES] = {
-	imgv2_sha,
-	imgv2_menu,
-	imgv2_nick,
-	imgv2_weather,
-	imgv2_test,
-};
-
 void
 app_main(void) {
 	nvs_flash_init();
@@ -310,10 +300,9 @@ app_main(void) {
 #endif // CONFIG_WIFI_USE
 
   gdeInit();
-  initDisplay();
+  initDisplay(LUT_DEFAULT); // configure slow LUT
 
   int picture_id = 0;
-#ifndef DEPG0290B1
 	ets_printf("Drawimage begin\n");
   drawImage(pictures[picture_id]);
 	ets_printf("Drawimage gedaan");
@@ -336,52 +325,5 @@ app_main(void) {
 					picture_id=0;
 				}
 				ets_delay_us(5000000);
-#else
-  badge_eink_display(pictures[picture_id], 0);
-
-  int selected_lut = LUT_PART;
-
-  while (1) {
-    uint32_t buttons_down;
-    if (xQueueReceive(evt_queue, &buttons_down, portMAX_DELAY)) {
-      if (buttons_down & (1 << 1)) {
-        ets_printf("Button B handling\n");
-        /* redraw with default LUT */
-		badge_eink_display(pictures[picture_id], 0);
-      }
-      if (buttons_down & (1 << 2)) {
-        ets_printf("Button MID handling\n");
-        /* open menu */
-        displayMenu("Demo menu", demoMenu);
-		badge_eink_display(pictures[picture_id], (selected_lut+1) << DISPLAY_FLAG_LUT_BIT);
-      }
-      if (buttons_down & (1 << 3)) {
-        ets_printf("Button UP handling\n");
-        /* switch LUT */
-        selected_lut = (selected_lut + 1) % (LUT_MAX + 1);
-		badge_eink_display(pictures[picture_id], (selected_lut+1) << DISPLAY_FLAG_LUT_BIT);
-      }
-      if (buttons_down & (1 << 4)) {
-        ets_printf("Button DOWN handling\n");
-        /* switch LUT */
-        selected_lut = (selected_lut + LUT_MAX) % (LUT_MAX + 1);
-		badge_eink_display(pictures[picture_id], (selected_lut+1) << DISPLAY_FLAG_LUT_BIT);
-      }
-      if (buttons_down & (1 << 5)) {
-        ets_printf("Button LEFT handling\n");
-        /* previous picture */
-        if (picture_id > 0) {
-          picture_id--;
-		  badge_eink_display(pictures[picture_id], (selected_lut+1) << DISPLAY_FLAG_LUT_BIT);
-        }
-      }
-      if (buttons_down & (1 << 6)) {
-        ets_printf("Button RIGHT handling\n");
-        /* next picture */
-        if (picture_id + 1 < NUM_PICTURES) {
-          picture_id++;
-		  badge_eink_display(pictures[picture_id], (selected_lut+1) << DISPLAY_FLAG_LUT_BIT);
-        }
-#endif
       }
 }

@@ -51,7 +51,7 @@ void writeLUT(int lut_idx) {
   gdeWriteCommandStream(0x32, LUT_data[lut_idx], 30);
 }
 
-void initDisplay(void) {
+void initDisplay(int lut_idx) {
   gdeReset();
 
   // 01: driver output control
