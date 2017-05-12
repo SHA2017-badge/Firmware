@@ -266,11 +266,11 @@ app_main(void) {
 	gpio_config(&io_conf);
 
 #ifdef CONFIG_SHA_BADGE_V2
-  badge_i2c_init();
-  badge_portexp_init();
-  badge_touch_init();
-  badge_touch_set_event_handler(touch_event_handler);
-  badge_leds_init();
+  //badge_i2c_init();
+  //badge_portexp_init();
+  //badge_touch_init();
+  //badge_touch_set_event_handler(touch_event_handler);
+  //badge_leds_init();
 #endif // CONFIG_SHA_BADGE_V2
 
   tcpip_adapter_init();
