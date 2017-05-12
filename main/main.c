@@ -286,13 +286,13 @@ app_main(void) {
 	io_conf.pull_up_en = 1;
 	gpio_config(&io_conf);
 
-#ifndef CONFIG_SHA_BADGE_V1
-  badge_i2c_init();
-  badge_portexp_init();
-  badge_touch_init();
-  badge_touch_set_event_handler(touch_event_handler);
-  badge_leds_init();
-#endif // CONFIG_SHA_BADGE_V2 || CONFIG_SHA_BADGE_V3
+#ifdef CONFIG_SHA_BADGE_V2
+  //badge_i2c_init();
+  //badge_portexp_init();
+  //badge_touch_init();
+  //badge_touch_set_event_handler(touch_event_handler);
+  //badge_leds_init();
+#endif // CONFIG_SHA_BADGE_V2
 
   tcpip_adapter_init();
   ESP_ERROR_CHECK(esp_event_loop_init(event_handler, NULL));
