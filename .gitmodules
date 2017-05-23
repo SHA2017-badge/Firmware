@@ -8,4 +8,5 @@
 	branch = master
 [submodule "micropython"]
 	path = micropython
-	url = git@github.com:micropython/micropython-esp32.git
+	url = https://github.com/micropython/micropython-esp32.git
+	branch = esp32
