@@ -98,6 +98,7 @@ badge_leds_set_state(uint8_t *rgbw)
 			return -1;
 #elif defined(MPR121_PIN_NUM_LEDS)
 		// FIXME
+		return -1;
 #endif
 
 		spi_transaction_t t;
@@ -113,8 +114,8 @@ badge_leds_set_state(uint8_t *rgbw)
 void
 badge_leds_init(void)
 {
-#ifdef PORTEXP_PIN_NUM_LEDS
 	// enable power to led-bar
+#ifdef PORTEXP_PIN_NUM_LEDS
 	badge_portexp_set_output_state(PORTEXP_PIN_NUM_LEDS, 0);
 	badge_portexp_set_output_high_z(PORTEXP_PIN_NUM_LEDS, 0);
 	badge_portexp_set_io_direction(PORTEXP_PIN_NUM_LEDS, 1);
