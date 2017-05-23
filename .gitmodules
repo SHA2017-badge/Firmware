@@ -6,3 +6,6 @@
 	path = nodemcu-prebuilt-toolchains
 	url = https://github.com/jmattsson/nodemcu-prebuilt-toolchains
 	branch = master
+[submodule "micropython"]
+	path = micropython
+	url = git@github.com:micropython/micropython-esp32.git
