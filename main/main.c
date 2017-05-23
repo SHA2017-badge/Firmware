@@ -158,6 +158,28 @@ const struct menu_item demoMenu[] = {
     {NULL, NULL},
 };
 
+#ifndef CONFIG_SHA_BADGE_EINK_DEPG0290B1
+const uint8_t eink_upd_menu_lut[30] = {
+	0x99, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+	0,    0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+};
+#endif
+
+const struct badge_eink_update eink_upd_menu = {
+#ifndef CONFIG_SHA_BADGE_EINK_DEPG0290B1
+	.lut      = -1,
+	.lut_custom = eink_upd_menu_lut,
+	.reg_0x3a = 2, // 2 dummy lines per gate
+	.reg_0x3b = 0, // 30us per line
+#else
+	.lut      = LUT_FASTEST,
+	.reg_0x3a = 2, // 2 dummy lines per gate
+	.reg_0x3b = 8, // 62us per line
+#endif
+	.y_start  = 0,
+	.y_end    = 295,
+};
+
 #define MENU_UPDATE_CYCLES 8
 uint8_t screen_buf[296*16];
 void displayMenu(const char *menu_title, const struct menu_item *itemlist) {
@@ -193,22 +215,8 @@ void displayMenu(const char *menu_title, const struct menu_item *itemlist) {
 	  if (num_draw < 2)
 		badge_eink_display(screen_buf, DISPLAY_FLAG_NO_UPDATE);
 
-	  if (num_draw == 0) {
-		// init LUT
-		static const uint8_t lut[30] = {
-			0x99, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-			0,    0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-		};
-		gdeWriteCommandStream(0x32, lut, 30);
-		// init timings
-		gdeWriteCommand_p1(0x3a, 0x02); // 2 dummy lines per gate
-		gdeWriteCommand_p1(0x3b, 0x00); // 30us per line
-		//			gdeWriteCommand_p1(0x3a, 0x1a); // 26 dummy
-		//lines per gate
-		//			gdeWriteCommand_p1(0x3b, 0x08); // 62us per line
-	  }
-      updateDisplay();
-      gdeBusyWait();
+	  badge_eink_update(&eink_upd_menu);
+
       num_draw++;
       if (num_draw < MENU_UPDATE_CYCLES)
         xTicksToWait = 0;
