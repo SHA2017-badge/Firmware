@@ -7,7 +7,7 @@
 #include "freertos/FreeRTOS.h"
 #include "nvs_flash.h"
 #include <gde.h>
-#include <gdeh029a1.h>
+#include <gde-driver.h>
 
 #include "badge_pins.h"
 #include "badge_i2c.h"

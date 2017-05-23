@@ -5,7 +5,7 @@
 #include <stdint.h>
 
 #include "gde.h"
-#include "depg0290b1.h"
+#include "gde-driver.h"
 
 // actually 'DEPG0290B01'
 
