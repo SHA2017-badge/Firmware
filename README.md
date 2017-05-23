@@ -5,7 +5,7 @@ Read [project documentation](https://orga.sha2017.org/index.php/Projects:Badge) 
 
 Project updates:
 
-* [Wiki](https://wiki.sha2017.org/w/Projects:Badge) 
+* [Wiki](https://wiki.sha2017.org/w/Projects:Badge)
 * [Documentation](https://wiki.sha2017.org/w/Projects:Badge/Documentation)
 * [Firmware](https://github.com/SHA2017-badge/Firmware)
 * [PCB](https://github.com/SHA2017-badge/PCB)
@@ -30,4 +30,14 @@ Compiling and flashing
 git submodule update --init --recursive
 make defconfig
 make flash
+```
+
+MicroPython
+-----------
+
+```
+cd micropython/mpy-cross
+make
+cd ../esp32
+make deploy
 ```
