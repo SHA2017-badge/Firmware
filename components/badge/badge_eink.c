@@ -94,20 +94,49 @@ write_bitplane(const uint8_t *img, int y_start, int y_end, int bit, int flags)
 	gdeWriteCommandEnd();
 }
 
+const struct badge_eink_update eink_upd_default = {
+	.lut      = LUT_DEFAULT,
+	.reg_0x3a = 26,   // 26 dummy lines per gate
+	.reg_0x3b = 0x08, // 62us per line
+	.y_start  = 0,
+	.y_end    = 295,
+};
+
+void
+badge_eink_update(const struct badge_eink_update *upd_conf)
+{
+	if (upd_conf->lut == -1)
+	{
+#ifndef CONFIG_SHA_BADGE_EINK_DEPG0290B1
+		gdeWriteCommandStream(0x32, upd_conf->lut_custom, 30);
+#else
+		gdeWriteCommandStream(0x32, upd_conf->lut_custom, 70);
+#endif
+	}
+	else
+	{
+		writeLUT(upd_conf->lut);
+	}
+	gdeWriteCommand_p1(0x3a, upd_conf->reg_0x3a);
+	gdeWriteCommand_p1(0x3b, upd_conf->reg_0x3b);
+
+	uint16_t y_len = upd_conf->y_end - upd_conf->y_start;
+	gdeWriteCommand_p3(0x01, y_len & 0xff, y_len >> 8, 0x00);
+	gdeWriteCommand_p2(0x0f, upd_conf->y_start & 0xff, upd_conf->y_start >> 8);
+	gdeWriteCommand_p1(0x22, 0xc7);
+	gdeWriteCommand(0x20);
+	gdeBusyWait();
+}
+
 void
 badge_eink_display(const uint8_t *img, int mode)
 {
 	int lut_mode = 
 		(mode >> DISPLAY_FLAG_LUT_BIT) & ((1 << DISPLAY_FLAG_LUT_SIZE)-1);
 
-	/* update LUT */
-	if (lut_mode == 0)
+	// trying to get rid of all ghosting and end with a black screen.
+	if (((mode & DISPLAY_FLAG_NO_UPDATE) == 0) && lut_mode == 0)
 	{
-		writeLUT(LUT_DEFAULT);
-		gdeWriteCommand_p1(0x3a, 0x1a); // 26 dummy lines per gate
-		gdeWriteCommand_p1(0x3b, 0x08); // 62us per line
-
-		// trying to get rid of all ghosting and end with a black screen.
 		int i;
 		for (i = 0; i < 3; i++) {
 			/* draw initial pattern */
@@ -120,24 +149,27 @@ badge_eink_display(const uint8_t *img, int mode)
 			gdeWriteCommandEnd();
 
 			/* update display */
-			updateDisplay();
-			gdeBusyWait();
+			badge_eink_update(&eink_upd_default);
 		}
 	}
 
+	// is it a 1 bit per pixel image?
 	if ((mode & DISPLAY_FLAG_GREYSCALE) == 0)
 	{
-		write_bitplane(img, 0, DISP_SIZE_Y-1, 0, 0);
-		writeLUT(lut_mode > 0 ? lut_mode - 1 : 0);
-		gdeWriteCommand_p1(0x3a, 0x1a); // 26 dummy lines per gate
-		gdeWriteCommand_p1(0x3b, 0x08); // 62us per line
-		updateDisplay();
-		gdeBusyWait();
+		write_bitplane(img, 0, DISP_SIZE_Y-1, 0, (mode & DISPLAY_FLAG_ROTATE_180));
+		if ((mode & DISPLAY_FLAG_NO_UPDATE) == 0)
+		{
+			struct badge_eink_update eink_upd = {
+				.lut      = lut_mode > 0 ? lut_mode - 1 : 0,
+				.reg_0x3a = 26,   // 26 dummy lines per gate
+				.reg_0x3b = 0x08, // 62us per line
+				.y_start  = 0,
+				.y_end    = 295,
+			};
+			badge_eink_update(&eink_upd);
+		}
 		return;
 	}
-
-	gdeWriteCommand_p1(0x3a, 0x00); // no dummy lines per gate
-	gdeWriteCommand_p1(0x3b, 0x00); // 30us per line
 
 	int i;
 	for (i = 64; i > 0; i >>= 1) {
@@ -154,7 +186,7 @@ badge_eink_display(const uint8_t *img, int mode)
 			int y_start = 0 + j * (DISP_SIZE_Y / p);
 			int y_end = y_start + (DISP_SIZE_Y / p) - 1;
 
-			write_bitplane(img, y_start, y_end, i << 1, DISPLAY_FLAG_GREYSCALE);
+			write_bitplane(img, y_start, y_end, i << 1, DISPLAY_FLAG_GREYSCALE|(mode & DISPLAY_FLAG_ROTATE_180));
 
 #ifndef CONFIG_SHA_BADGE_EINK_DEPG0290B1
 			// LUT:
@@ -166,14 +198,21 @@ badge_eink_display(const uint8_t *img, int mode)
 				0, 0x88, 0, 0, 0,         0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 				0, 0   , 0, 0, 0, (ii<<4)|1, 1, 0, 0, 0, 0, 0, 0, 0, 0,
 			};
-			gdeWriteCommandStream(0x32, lut, 30);
 #else // CONFIG_SHA_BADGE_EINK_DEPG0290B1
 			/* FIXME: fix LUT for DEPG */
+			uint8_t lut[70] = { };
 #endif // CONFIG_SHA_BADGE_EINK_DEPG0290B1
 
 			/* update display */
-			updateDisplayPartial(y_start, y_end + 1);
-			gdeBusyWait();
+			struct badge_eink_update eink_upd = {
+				.lut        = -1,
+				.lut_custom = lut,
+				.reg_0x3a   = 0, // no dummy lines per gate
+				.reg_0x3b   = 0, // 30us per line
+				.y_start    = y_start,
+				.y_end      = y_end + 1,
+			};
+			badge_eink_update(&eink_upd);
 		}
 	}
 
