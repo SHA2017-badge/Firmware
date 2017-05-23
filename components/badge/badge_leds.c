@@ -20,10 +20,14 @@
 spi_device_handle_t badge_leds_spi = NULL;
 
 int
-badge_leds_set_state(uint8_t *rgb)
+badge_leds_set_state(uint8_t *rgbw)
 {
 	const uint8_t conv[4] = { 0x11, 0x13, 0x31, 0x33 };
-	uint8_t data[75];
+#ifdef SK6812RGBW
+	uint8_t data[6*16 + 3];
+#else
+	uint8_t data[6*12 + 3];
+#endif
 	int i,j;
 	j=0;
 	// 3 * 24 us 'reset'
@@ -32,11 +36,36 @@ badge_leds_set_state(uint8_t *rgb)
 	data[j++] = 0;
 	int k=0;
 	for (i=5; i>=0; i--) {
-		int r = rgb[i*3+0];
-		int g = rgb[i*3+1];
-		int b = rgb[i*3+2];
-		if (r || g || b)
+		int r = rgbw[i*4+0];
+		int g = rgbw[i*4+1];
+		int b = rgbw[i*4+2];
+		int w = rgbw[i*4+3];
+		if (r || g || b || w)
 			k++;
+
+#ifdef SK6812RGBW
+		data[j++] = conv[(r>>6)&3];
+		data[j++] = conv[(r>>4)&3];
+		data[j++] = conv[(r>>2)&3];
+		data[j++] = conv[(r>>0)&3];
+		data[j++] = conv[(g>>6)&3];
+		data[j++] = conv[(g>>4)&3];
+		data[j++] = conv[(g>>2)&3];
+		data[j++] = conv[(g>>0)&3];
+		data[j++] = conv[(b>>6)&3];
+		data[j++] = conv[(b>>4)&3];
+		data[j++] = conv[(b>>2)&3];
+		data[j++] = conv[(b>>0)&3];
+		data[j++] = conv[(w>>6)&3];
+		data[j++] = conv[(w>>4)&3];
+		data[j++] = conv[(w>>2)&3];
+		data[j++] = conv[(w>>0)&3];
+#else
+		// we don't have a white led; evenly distribute over other leds
+		r += w; if (r>255) r=255;
+		g += w; if (g>255) g=255;
+		b += w; if (b>255) b=255;
+
 		data[j++] = conv[(g>>6)&3];
 		data[j++] = conv[(g>>4)&3];
 		data[j++] = conv[(g>>2)&3];
@@ -49,13 +78,14 @@ badge_leds_set_state(uint8_t *rgb)
 		data[j++] = conv[(b>>4)&3];
 		data[j++] = conv[(b>>2)&3];
 		data[j++] = conv[(b>>0)&3];
+#endif
 	}
 
 	if (k == 0)
 	{
 #ifdef PORTEXP_PIN_NUM_LEDS
 		return badge_portexp_set_output_state(PORTEXP_PIN_NUM_LEDS, 0);
-#else
+#elif defined(MPR121_PIN_NUM_LEDS)
 		// FIXME
 		return -1;
 #endif
@@ -66,7 +96,7 @@ badge_leds_set_state(uint8_t *rgb)
 		int res = badge_portexp_set_output_state(PORTEXP_PIN_NUM_LEDS, 1);
 		if (res == -1)
 			return -1;
-#else
+#elif defined(MPR121_PIN_NUM_LEDS)
 		// FIXME
 		return -1;
 #endif
@@ -89,7 +119,7 @@ badge_leds_init(void)
 	badge_portexp_set_output_state(PORTEXP_PIN_NUM_LEDS, 0);
 	badge_portexp_set_output_high_z(PORTEXP_PIN_NUM_LEDS, 0);
 	badge_portexp_set_io_direction(PORTEXP_PIN_NUM_LEDS, 1);
-#else
+#elif defined(MPR121_PIN_NUM_LEDS)
 	// FIXME
 #endif
 

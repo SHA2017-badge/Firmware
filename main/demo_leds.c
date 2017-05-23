@@ -7,26 +7,27 @@
 
 #include "event_queue.h"
 
+#include "badge_pins.h"
 #include "badge_leds.h"
 
-#ifndef CONFIG_SHA_BADGE_V1
+#ifdef PIN_NUM_LEDS
 void demo_leds(void)
 {
-	uint8_t rgb[6*3] = {
-		 21,  42,  63,
-		 42,  63,  42,
-		 63,  42,  21,
-		 42,  21,   0,
-		 21,   0,  21,
-		  0,  21,  42,
+	uint8_t rgbw[6*4] = {
+		 21,  42,  63, 1,
+		 42,  63,  42, 1,
+		 63,  42,  21, 1,
+		 42,  21,   0, 1,
+		 21,   0,  21, 1,
+		  0,  21,  42, 1,
 	};
-	int8_t dir[6*3] = {
-		+1, +1, -1,
-		+1, -1, -1,
-		-1, -1, -1,
-		-1, -1, +1,
-		-1, +1, +1,
-		+1, +1, +1,
+	int8_t dir[6*4] = {
+		+1, +1, -1, 0,
+		+1, -1, -1, 0,
+		-1, -1, -1, 0,
+		-1, -1, +1, 0,
+		-1, +1, +1, 0,
+		+1, +1, +1, 0,
 	};
 
 	while (1) {
@@ -38,19 +39,19 @@ void demo_leds(void)
 				break;
 		}
 
-		badge_leds_set_state(rgb);
+		badge_leds_set_state(rgbw);
 
 		int i;
-		for (i=0; i<6*3; i++) {
-			rgb[i] += dir[i];
-			if (rgb[i] == 0)
+		for (i=0; i<6*4; i++) {
+			rgbw[i] += dir[i];
+			if (rgbw[i] == 0)
 				dir[i] = +1;
-			if (rgb[i] == 63)
+			if (rgbw[i] == 63)
 				dir[i] = -1;
 		}
 	}
 
-	memset(rgb, 0, sizeof(rgb));
-	badge_leds_set_state(rgb);
+	memset(rgbw, 0, sizeof(rgbw));
+	badge_leds_set_state(rgbw);
 }
-#endif // CONFIG_SHA_BADGE_V2 || CONFIG_SHA_BADGE_V3
+#endif // PIN_NUM_LEDS
