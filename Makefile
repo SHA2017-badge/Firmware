@@ -7,7 +7,7 @@
 IGNORE := $(shell bash -c "source set_env.sh; env | sed 's/=/:=/' | sed 's/^/export /' > makeenv")
 include makeenv
 
-PROJECT_NAME := esp32-amepd
+PROJECT_NAME := sha2017-badge-test
 
 include $(IDF_PATH)/make/project.mk
 
