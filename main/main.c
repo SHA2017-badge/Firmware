@@ -141,8 +141,8 @@ const struct menu_item demoMenu[] = {
     {"greyscale image 3", &demoGreyscaleImg3},
 #endif // CONFIG_SHA_BADGE_EINK_GDEH029A1
     {"greyscale image 4", &demoGreyscaleImg4},
-#ifdef CONFIG_SHA_BADGE_EINK_GDEH029A1
     {"partial update test", &demoPartialUpdate},
+#ifdef CONFIG_SHA_BADGE_EINK_GDEH029A1
     {"dot 1", &demoDot1},
 #endif // CONFIG_SHA_BADGE_EINK_GDEH029A1
     {"ADC test", &demoTestAdc},
@@ -156,6 +156,28 @@ const struct menu_item demoMenu[] = {
     {"dot 2", NULL},
     {"dot 3", NULL},
     {NULL, NULL},
+};
+
+#ifndef CONFIG_SHA_BADGE_EINK_DEPG0290B1
+const uint8_t eink_upd_menu_lut[30] = {
+	0x99, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+	0,    0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+};
+#endif
+
+const struct badge_eink_update eink_upd_menu = {
+#ifndef CONFIG_SHA_BADGE_EINK_DEPG0290B1
+	.lut      = -1,
+	.lut_custom = eink_upd_menu_lut,
+	.reg_0x3a = 2, // 2 dummy lines per gate
+	.reg_0x3b = 0, // 30us per line
+#else
+	.lut      = LUT_FASTEST,
+	.reg_0x3a = 2, // 2 dummy lines per gate
+	.reg_0x3b = 8, // 62us per line
+#endif
+	.y_start  = 0,
+	.y_end    = 295,
 };
 
 #define MENU_UPDATE_CYCLES 8
@@ -172,36 +194,27 @@ void displayMenu(const char *menu_title, const struct menu_item *itemlist) {
     TickType_t xTicksToWait = portMAX_DELAY;
 
     /* draw menu */
-    if (num_draw < 2) {
-      // init buffer
-      draw_font(screen_buf, 0, 0, BADGE_EINK_WIDTH, menu_title,
-               FONT_16PX | FONT_INVERT | FONT_FULL_WIDTH | FONT_UNDERLINE_2);
-      int i;
-      for (i = 0; i < 7; i++) {
-        int pos = scroll_pos + i;
-        draw_font(screen_buf, 0, 16+16*i, BADGE_EINK_WIDTH,
-                 (pos < num_items) ? itemlist[pos].title : "",
-                 FONT_16PX | FONT_FULL_WIDTH |
-                     ((pos == item_pos) ? 0 : FONT_INVERT));
-      }
-      badge_eink_display(screen_buf, DISPLAY_FLAG_NO_UPDATE);
-    }
     if (num_draw < MENU_UPDATE_CYCLES) {
-	  if (num_draw == 0) {
-		// init LUT
-		static const uint8_t lut[30] = {
-			0x99, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-			0,    0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-		};
-		gdeWriteCommandStream(0x32, lut, 30);
-		// init timings
-		gdeWriteCommand_p1(0x3a, 0x02); // 2 dummy lines per gate
-		gdeWriteCommand_p1(0x3b, 0x00); // 30us per line
-		// gdeWriteCommand_p1(0x3a, 0x1a); // 26 dummy
-		// gdeWriteCommand_p1(0x3b, 0x08); // 62us per line
+		if (num_draw == 0) {
+		  // init buffer
+		  draw_font(screen_buf, 0, 0, BADGE_EINK_WIDTH, menu_title,
+				   FONT_16PX | FONT_INVERT | FONT_FULL_WIDTH | FONT_UNDERLINE_2);
+		  int i;
+		  for (i = 0; i < 7; i++) {
+			int pos = scroll_pos + i;
+			draw_font(screen_buf, 0, 16+16*i, BADGE_EINK_WIDTH,
+					 (pos < num_items) ? itemlist[pos].title : "",
+					 FONT_16PX | FONT_FULL_WIDTH |
+						 ((pos == item_pos) ? 0 : FONT_INVERT));
+		  }
 	  }
-      updateDisplay();
-      gdeBusyWait();
+
+	  // all eink displays have 2 'pages'; after writing the second one,
+	  // we don't have to write the image itself anymore.
+	  if (num_draw < 2)
+		  badge_eink_display(screen_buf, DISPLAY_FLAG_NO_UPDATE);
+
+	  badge_eink_update(&eink_upd_menu);
       num_draw++;
       if (num_draw < MENU_UPDATE_CYCLES)
         xTicksToWait = 0;

@@ -14,6 +14,18 @@
 
 extern void badge_eink_init(void);
 
+struct badge_eink_update {
+	int lut;
+	uint8_t *lut_custom;
+	int reg_0x3a;
+	int reg_0x3b;
+	int y_start;
+	int y_end;
+};
+extern const struct badge_eink_update eink_upd_default;
+
+extern void badge_eink_update(const struct badge_eink_update *upd_conf);
+
 /*
  * display image on badge
  *
