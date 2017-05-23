@@ -6,6 +6,8 @@
 #include <gde.h>
 #include <gde-driver.h>
 
+#include <badge_eink.h>
+
 #include "event_queue.h"
 
 /* NOTE: bits are ordered different, so this might give a weird result,
@@ -26,7 +28,10 @@ void demoPartialUpdate(void) {
   int i;
   for (i = 0; i < 8; i++) {
     int j = ((i << 1) | (i >> 2)) & 7;
-    drawImage(imgv2_sha);
+//  drawImage(imgv2_sha);
+		badge_eink_display(imgv2_sha, DISPLAY_FLAG_NO_UPDATE|(1 << DISPLAY_FLAG_LUT_BIT));
+		gdeWriteCommand_p1(0x3a, 0x3f); // 63 dummy lines per gate
+		gdeWriteCommand_p1(0x3b, 0x0f); // 208us per line
     updateDisplayPartial(37 * j, 37 * j + 36);
     gdeBusyWait();
     vTaskDelay(1000 / portTICK_PERIOD_MS);
@@ -34,7 +39,10 @@ void demoPartialUpdate(void) {
 
   for (i = 0; i < 8; i++) {
     int j = ((i << 1) | (i >> 2)) & 7;
-    drawImage(imgv2_nick);
+//  drawImage(imgv2_nick);
+		badge_eink_display(imgv2_nick, DISPLAY_FLAG_NO_UPDATE|(1 << DISPLAY_FLAG_LUT_BIT));
+		gdeWriteCommand_p1(0x3a, 0x3f); // 63 dummy lines per gate
+		gdeWriteCommand_p1(0x3b, 0x0f); // 208us per line
     updateDisplayPartial(37 * j, 37 * j + 36);
     gdeBusyWait();
     vTaskDelay(1000 / portTICK_PERIOD_MS);

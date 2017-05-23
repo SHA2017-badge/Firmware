@@ -3,12 +3,13 @@
 
 #include <stdint.h>
 
-#define BADGE_EINK_WIDTH 296
+#define BADGE_EINK_WIDTH  296
 #define BADGE_EINK_HEIGHT 128
 
 #define DISPLAY_FLAG_GREYSCALE  1
 #define DISPLAY_FLAG_ROTATE_180 2
-#define DISPLAY_FLAG_LUT_BIT    2
+#define DISPLAY_FLAG_NO_UPDATE  4
+#define DISPLAY_FLAG_LUT_BIT    3
 #define DISPLAY_FLAG_LUT_SIZE   4
 
 extern void badge_eink_init(void);

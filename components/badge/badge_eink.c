@@ -127,12 +127,15 @@ badge_eink_display(const uint8_t *img, int mode)
 
 	if ((mode & DISPLAY_FLAG_GREYSCALE) == 0)
 	{
-		write_bitplane(img, 0, DISP_SIZE_Y-1, 0, 0);
+		write_bitplane(img, 0, DISP_SIZE_Y-1, 0, (mode & DISPLAY_FLAG_ROTATE_180));
 		writeLUT(lut_mode > 0 ? lut_mode - 1 : 0);
 		gdeWriteCommand_p1(0x3a, 0x1a); // 26 dummy lines per gate
 		gdeWriteCommand_p1(0x3b, 0x08); // 62us per line
-		updateDisplay();
-		gdeBusyWait();
+		if ((mode & DISPLAY_FLAG_NO_UPDATE) == 0)
+		{
+			updateDisplay();
+			gdeBusyWait();
+		}
 		return;
 	}
 
@@ -154,7 +157,7 @@ badge_eink_display(const uint8_t *img, int mode)
 			int y_start = 0 + j * (DISP_SIZE_Y / p);
 			int y_end = y_start + (DISP_SIZE_Y / p) - 1;
 
-			write_bitplane(img, y_start, y_end, i << 1, DISPLAY_FLAG_GREYSCALE);
+			write_bitplane(img, y_start, y_end, i << 1, DISPLAY_FLAG_GREYSCALE|(mode & DISPLAY_FLAG_ROTATE_180));
 
 #ifndef CONFIG_SHA_BADGE_EINK_DEPG0290B1
 			// LUT:
