@@ -37,7 +37,7 @@ get_buttons(void)
 	bits |= gpio_get_level(PIN_NUM_BUTTON_DOWN)  <<  4; // DOWN
 	bits |= gpio_get_level(PIN_NUM_BUTTON_LEFT)  <<  5; // LEFT
 	bits |= gpio_get_level(PIN_NUM_BUTTON_RIGHT) <<  6; // RIGHT
-#else // ! PIN_NUM_BUTTON_A
+#else
 	bits |= gpio_get_level(PIN_NUM_BUTTON_FLASH) <<  7; // FLASH
 #endif // ! PIN_NUM_BUTTON_A
 	return bits;
