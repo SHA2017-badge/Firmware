@@ -35,12 +35,4 @@ extern void setRamPointer(unsigned char addrX, unsigned short addrY);
 extern void updateDisplay(void);
 extern void updateDisplayPartial(unsigned short yStart, unsigned short yEnd);
 
-/*
-void partialDisplay(unsigned char RAM_XST, unsigned char RAM_XEND,
-                    unsigned short RAM_YST, unsigned short RAM_YEND);
-void writeRam(void);
-void powerOff(void);
-void powerOn(void);
-*/
-
 #endif
