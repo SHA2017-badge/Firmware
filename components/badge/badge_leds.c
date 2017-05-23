@@ -20,7 +20,7 @@
 spi_device_handle_t badge_leds_spi = NULL;
 
 int
-badge_leds_set_state(uint8_t *rgb)
+badge_leds_set_state(uint8_t *rgbw)
 {
 	const uint8_t conv[4] = { 0x11, 0x13, 0x31, 0x33 };
 #ifdef SK6812RGBW
@@ -36,13 +36,14 @@ badge_leds_set_state(uint8_t *rgb)
 	data[j++] = 0;
 	int k=0;
 	for (i=5; i>=0; i--) {
-#ifdef SK6812RGBW
-		int r = rgb[i*4+0];
-		int g = rgb[i*4+1];
-		int b = rgb[i*4+2];
-		int w = rgb[i*4+3];
+		int r = rgbw[i*4+0];
+		int g = rgbw[i*4+1];
+		int b = rgbw[i*4+2];
+		int w = rgbw[i*4+3];
 		if (r || g || b || w)
 			k++;
+
+#ifdef SK6812RGBW
 		data[j++] = conv[(r>>6)&3];
 		data[j++] = conv[(r>>4)&3];
 		data[j++] = conv[(r>>2)&3];
@@ -60,11 +61,11 @@ badge_leds_set_state(uint8_t *rgb)
 		data[j++] = conv[(w>>2)&3];
 		data[j++] = conv[(w>>0)&3];
 #else
-		int r = rgb[i*3+0];
-		int g = rgb[i*3+1];
-		int b = rgb[i*3+2];
-		if (r || g || b)
-			k++;
+		// we don't have a white led; evenly distribute over other leds
+		r += w; if (r>255) r=255;
+		g += w; if (g>255) g=255;
+		b += w; if (b>255) b=255;
+
 		data[j++] = conv[(g>>6)&3];
 		data[j++] = conv[(g>>4)&3];
 		data[j++] = conv[(g>>2)&3];
