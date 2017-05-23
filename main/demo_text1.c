@@ -1,75 +1,77 @@
 #include "sdkconfig.h"
 
-#ifdef CONFIG_SHA_BADGE_EINK_GDEH029A1
+#include <string.h>
 #include <freertos/FreeRTOS.h>
 #include <esp_event.h>
 #include <gde.h>
 #include <gde-driver.h>
 
+#include <badge_eink.h>
+#include <font.h>
+
 #include "event_queue.h"
 
-void demoText1(void) {
-  /* update LUT */
-  writeLUT(LUT_DEFAULT);
+// re-use screen_buf from main.c
+extern uint8_t screen_buf[296*16];
 
-  /* draw test pattern */
-  setRamArea(0, DISP_SIZE_X_B - 1, 0, DISP_SIZE_Y - 1);
-  setRamPointer(0, 0);
-  gdeWriteCommandInit(0x24);
-  {
-    int x, y;
-    for (y = 0; y < DISP_SIZE_Y; y++) {
-      for (x = 0; x < 16; x++)
-        gdeWriteByte((y & 1) ? 0x55 : 0xaa);
-    }
-  }
-  gdeWriteCommandEnd();
+void
+demoText1(void) {
+	/* draw test pattern */
+	{
+		int y;
+		for (y=0; y<BADGE_EINK_HEIGHT; y++)
+		{
+			memset(&screen_buf[y * (BADGE_EINK_WIDTH/8)], (y&1) ? 0x55 : 0xaa, (BADGE_EINK_WIDTH/8));
+		}
 
-  /* draw text with 8px font */
-  const char *line_1 = "esp-idf supports compiling multiple files in parallel, "
-                       "so all of the above commands can be run as `make -jN` "
-                       "where `N` is the number of parallel make processes to "
-                       "run (generally N should be equal to or one more than "
-                       "the number of CPU cores in your system.)";
+		badge_eink_display(screen_buf, (1 << DISPLAY_FLAG_LUT_BIT));
+	}
 
-  int pos = 0;
-  int row = 14;
-  while (line_1[pos]) {
-    int num =
-        drawText(row, 16, -16, &line_1[pos], FONT_INVERT | FONT_FULL_WIDTH);
-    if (num == 0)
-      break;
-    pos += num;
-    row--;
-  }
-  drawText(row, 16, -16, "", FONT_INVERT | FONT_FULL_WIDTH);
-  row--;
+	/* draw text with 8px font */
+	const char *line_1 =
+		"esp-idf supports compiling multiple files in parallel, "
+		"so all of the above commands can be run as `make -jN` "
+		"where `N` is the number of parallel make processes to "
+		"run (generally N should be equal to or one more than "
+		"the number of CPU cores in your system.)";
 
-  const char *line_2 = "Multiple make functions can be combined into one. For "
-                       "example: to build the app & bootloader using 5 jobs in "
-                       "parallel, then flash everything, and then display "
-                       "serial output from the ESP32 run:";
-  pos = 0;
-  while (line_2[pos]) {
-    int num =
-        drawText(row, 16, -16, &line_2[pos], FONT_INVERT | FONT_FULL_WIDTH);
-    if (num == 0)
-      break;
-    pos += num;
-    row--;
-  }
+	int pos = 0;
+	int row = 8;
+	while (line_1[pos]) {
+		int num =
+			draw_font(screen_buf, 16, row, BADGE_EINK_WIDTH-32, &line_1[pos], FONT_INVERT | FONT_FULL_WIDTH);
+		if (num == 0)
+			break;
+		pos += num;
+		row += 8;
+	}
+	draw_font(screen_buf, 16, row, BADGE_EINK_WIDTH-32, "", FONT_INVERT | FONT_FULL_WIDTH);
 
-  // try monospace
-  drawText(0, 0, 0, " Just a status line. Wifi status: not connected",
-           FONT_FULL_WIDTH | FONT_MONOSPACE);
+	row += 8;
 
-  updateDisplay();
-  gdeBusyWait();
+	const char *line_2 =
+		"Multiple make functions can be combined into one. For "
+		"example: to build the app & bootloader using 5 jobs in "
+		"parallel, then flash everything, and then display "
+		"serial output from the ESP32 run:";
+	pos = 0;
+	while (line_2[pos]) {
+		int num =
+			draw_font(screen_buf, 16, row, BADGE_EINK_WIDTH-32, &line_2[pos], FONT_INVERT | FONT_FULL_WIDTH);
+		if (num == 0)
+			break;
+		pos += num;
+		row += 8;
+	}
 
-  // wait for random keypress
-  uint32_t buttons_down = 0;
-  while ((buttons_down & 0xffff) == 0)
-    xQueueReceive(evt_queue, &buttons_down, portMAX_DELAY);
+	// try monospace
+	draw_font(screen_buf, 0, 120, BADGE_EINK_WIDTH, " Just a status line. Wifi status: not connected",
+			FONT_FULL_WIDTH | FONT_MONOSPACE);
+
+	badge_eink_display(screen_buf, (1 << DISPLAY_FLAG_LUT_BIT));
+
+	// wait for random keypress
+	uint32_t buttons_down = 0;
+	while ((buttons_down & 0xffff) == 0)
+		xQueueReceive(evt_queue, &buttons_down, portMAX_DELAY);
 }
-
-#endif // CONFIG_SHA_BADGE_EINK_GDEH029A1
