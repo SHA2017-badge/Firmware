@@ -121,6 +121,7 @@ struct menu_item {
 #include "demo_leds.h"
 
 const struct menu_item demoMenu[] = {
+#ifdef CONFIG_SHA_BADGE_EINK_GDEH029A1
     {"text demo 1", &demoText1},
     {"text demo 2", &demoText2},
     {"greyscale 1", &demoGreyscale1},
@@ -128,10 +129,13 @@ const struct menu_item demoMenu[] = {
     {"greyscale image 1", &demoGreyscaleImg1},
     {"greyscale image 2", &demoGreyscaleImg2},
     {"greyscale image 3", &demoGreyscaleImg3},
+#endif // CONFIG_SHA_BADGE_EINK_GDEH029A1
     {"greyscale image 4", &demoGreyscaleImg4},
+#ifdef CONFIG_SHA_BADGE_EINK_GDEH029A1
     {"partial update test", &demoPartialUpdate},
     {"dot 1", &demoDot1},
     {"ADC test", &demoTestAdc},
+#endif // CONFIG_SHA_BADGE_EINK_GDEH029A1
 #ifdef CONFIG_SHA_BADGE_V2
     {"LEDs demo", &demo_leds},
 #endif // CONFIG_SHA_BADGE_V2
