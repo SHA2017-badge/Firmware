@@ -1,52 +1,52 @@
 #include "sdkconfig.h"
 
-#ifdef CONFIG_SHA_BADGE_EINK_GDEH029A1
 #include <freertos/FreeRTOS.h>
 #include <esp_event.h>
 #include <gde.h>
 #include <gde-driver.h>
 
+#include <badge_eink.h>
+
 #include "event_queue.h"
 
-/* NOTE: bits are ordered different, so this might give a weird result,
- *       but still shows the effects of 'partial updates'.
- *       will fix the images later..
- */
 #include "imgv2_sha.h"
 #include "imgv2_nick.h"
 
-void demoPartialUpdate(void) {
-  /* update LUT */
-  writeLUT(LUT_DEFAULT);
+void
+demoPartialUpdate(void) {
+	struct badge_eink_update eink_upd = {
+		.lut      = LUT_DEFAULT,
+//		.reg_0x3a = 26,   // 26 dummy lines per gate
+		.reg_0x3a = 63,   // 63 dummy lines per gate
+//		.reg_0x3b = 0x08, // 62us per line
+		.reg_0x3b = 0x0f, // 208us per line
+		.y_start  = 0,
+		.y_end    = 295,
+	};
 
-  // tweak timing a bit.. (FIXME)
-  gdeWriteCommand_p1(0x3a, 0x3f); // 63 dummy lines per gate
-  gdeWriteCommand_p1(0x3b, 0x0f); // 208us per line
+	int i;
+	for (i = 0; i < 8; i++) {
+		int j = ((i << 1) | (i >> 2)) & 7;
+		badge_eink_display(imgv2_sha, DISPLAY_FLAG_NO_UPDATE);
+		eink_upd.y_start = 37 * j;
+		eink_upd.y_end   = 37 * j + 36;
+		badge_eink_update(&eink_upd);
 
-  int i;
-  for (i = 0; i < 8; i++) {
-    int j = ((i << 1) | (i >> 2)) & 7;
-    drawImage(imgv2_sha);
-    updateDisplayPartial(37 * j, 37 * j + 36);
-    gdeBusyWait();
-    vTaskDelay(1000 / portTICK_PERIOD_MS);
-  }
+		vTaskDelay(1000 / portTICK_PERIOD_MS);
+	}
 
-  for (i = 0; i < 8; i++) {
-    int j = ((i << 1) | (i >> 2)) & 7;
-    drawImage(imgv2_nick);
-    updateDisplayPartial(37 * j, 37 * j + 36);
-    gdeBusyWait();
-    vTaskDelay(1000 / portTICK_PERIOD_MS);
-  }
+	for (i = 0; i < 8; i++) {
+		int j = ((i << 1) | (i >> 2)) & 7;
+		badge_eink_display(imgv2_nick, DISPLAY_FLAG_NO_UPDATE);
+		eink_upd.y_start = 37 * j;
+		eink_upd.y_end   = 37 * j + 36;
+		badge_eink_update(&eink_upd);
 
-  gdeWriteCommand_p1(0x3a, 0x1a); // 26 dummy lines per gate
-  gdeWriteCommand_p1(0x3b, 0x08); // 62us per line
+		vTaskDelay(1000 / portTICK_PERIOD_MS);
+	}
 
-  // wait for random keypress
-  uint32_t buttons_down = 0;
-  while ((buttons_down & 0xffff) == 0)
-    xQueueReceive(evt_queue, &buttons_down, portMAX_DELAY);
+	// wait for random keypress
+	uint32_t buttons_down = 0;
+	while ((buttons_down & 0xffff) == 0)
+		xQueueReceive(evt_queue, &buttons_down, portMAX_DELAY);
 }
-
-#endif // CONFIG_SHA_BADGE_EINK_GDEH029A1
