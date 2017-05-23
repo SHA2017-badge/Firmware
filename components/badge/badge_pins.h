@@ -36,6 +36,7 @@
 #define PIN_NUM_EPD_DATA     21
 #define PIN_NUM_EPD_RESET    23
 #define PIN_NUM_EPD_BUSY     22
+#define EPD_ROTATED_180
 
 #define PIN_NUM_I2C_CLK      27
 #define PIN_NUM_I2C_DATA     26
@@ -83,6 +84,7 @@
 #define PIN_NUM_EPD_DATA     21
 #define PIN_NUM_EPD_RESET    23
 #define PIN_NUM_EPD_BUSY     22
+#define EPD_ROTATED_180
 
 #define PIN_NUM_I2C_CLK      27
 #define PIN_NUM_I2C_DATA     26

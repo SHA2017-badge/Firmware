@@ -2,13 +2,8 @@
 #include <gde.h>
 #include <gdeh029a1.h>
 
+#include "badge_pins.h"
 #include "badge_eink.h"
-
-#ifdef CONFIG_SHA_BADGE_V1
- #undef DISPLAY_ROTATE_180
-#else // CONFIG_SHA_BADGE_V2 || CONFIG_SHA_BADGE_V3
- #define DISPLAY_ROTATE_180
-#endif
 
 static const uint8_t xlat_curve[256] = {
     0x00,0x01,0x01,0x02,0x02,0x03,0x03,0x03,0x04,0x04,0x05,0x05,
@@ -38,7 +33,7 @@ static const uint8_t xlat_curve[256] = {
 static void
 write_bitplane(const uint8_t *img, int y_start, int y_end, int bit, int flags)
 {
-#ifdef DISPLAY_ROTATE_180
+#ifdef EPD_ROTATED_180
 	flags ^= DISPLAY_FLAG_ROTATE_180;
 #endif
 	setRamArea(0, DISP_SIZE_X_B - 1, 0, DISP_SIZE_Y - 1);
