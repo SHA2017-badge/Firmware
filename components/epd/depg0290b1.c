@@ -10,9 +10,6 @@
 
 // DEPG0290B01
 
-#include "font_16px.h"
-#include "font_8px.h"
-
 /* LUT data without the last 2 bytes */
 const uint8_t LUTDefault_full[70] = {
 	// Voltages and other settings? Timing?
@@ -148,116 +145,6 @@ void initDisplay(void) {
   gdeWriteCommand_p1(0x3B, 0x0A);
 
   writeLUT(LUT_DEFAULT);
-}
-
-void drawImage(const uint8_t *picture) {
-  setRamArea(0, DISP_SIZE_X_B - 1, DISP_SIZE_Y - 1, 0);
-  setRamPointer(0, 0);
-  gdeWriteCommandStream(0x24, picture, DISP_SIZE_X_B * DISP_SIZE_Y);
-}
-
-int drawText(int x, int y, int y_len, const char *text, uint8_t flags) {
-  // select font definitions
-  const uint8_t *font_data;
-  const uint8_t *font_width;
-  int font_FIRST, font_LAST, font_WIDTH, font_HEIGHT;
-
-  if (flags & FONT_16PX) {
-    font_data = font_16px_data;
-    font_width = font_16px_width;
-    font_FIRST = FONT_16PX_FIRST;
-    font_LAST = FONT_16PX_LAST;
-    font_WIDTH = FONT_16PX_WIDTH;
-    font_HEIGHT = FONT_16PX_HEIGHT;
-  } else {
-    font_data = font_8px_data;
-    font_width = font_8px_width;
-    font_FIRST = FONT_8PX_FIRST;
-    font_LAST = FONT_8PX_LAST;
-    font_WIDTH = FONT_8PX_WIDTH;
-    font_HEIGHT = FONT_8PX_HEIGHT;
-  }
-
-  if (x < 0)
-    return 0;
-  if (x > DISP_SIZE_X_B - font_HEIGHT)
-    return 0;
-
-  if (y < 0)
-    return 0;
-  if (y >= DISP_SIZE_Y)
-    return 0;
-
-  if (y_len <= 0)
-    y_len += DISP_SIZE_Y - y;
-  if (y_len <= 0)
-    return 0;
-  if (y_len > DISP_SIZE_Y - y)
-    y_len = DISP_SIZE_Y - y;
-
-  int y_max = y_len + y;
-  setRamArea(x, x + font_HEIGHT - 1, y, y_max - 1);
-  setRamPointer(x, y);
-
-  gdeWriteCommandInit(0x24); // write RAM
-
-  uint8_t ch_ul = 0x00;
-  if (flags & FONT_UNDERLINE_1)
-    ch_ul |= 0x80;
-  if (flags & FONT_UNDERLINE_2)
-    ch_ul |= 0x40;
-
-  int numChars = 0;
-  while (*text != 0 && y < y_max) {
-    int ch = *text;
-    if (ch < font_FIRST || ch > font_LAST)
-      ch = 0;
-    else
-      ch -= font_FIRST;
-
-    uint8_t ch_width;
-    unsigned int f_index = ch * (font_WIDTH * font_HEIGHT);
-    if (flags & FONT_MONOSPACE) {
-      ch_width = font_WIDTH;
-    } else {
-      ch_width = font_width[ch];
-      f_index += (ch_width >> 4) * font_HEIGHT;
-      ch_width &= 0x0f;
-    }
-
-    if (y + ch_width >= y_max)
-      break; // not enough space for full character
-
-    while (ch_width > 0 && y < y_max) {
-      int ch_x;
-      for (ch_x = 0; ch_x < font_HEIGHT; ch_x++) {
-        uint8_t ch = font_data[f_index++];
-        if (flags & FONT_INVERT)
-          ch = ~ch;
-        gdeWriteByte(ch ^ (ch_x == 0 ? ch_ul : 0));
-      }
-      y++;
-      ch_width--;
-    }
-    text = &text[1];
-    numChars++;
-  }
-
-  if (flags & FONT_FULL_WIDTH) {
-    uint8_t ch = 0;
-    if (flags & FONT_INVERT)
-      ch = ~ch;
-    while (y < y_max) {
-      int ch_x;
-      for (ch_x = 0; ch_x < font_HEIGHT; ch_x++)
-        gdeWriteByte(ch ^ (ch_x == 0 ? ch_ul : 0));
-      y++;
-    }
-  }
-
-  gdeWriteCommandEnd();
-
-  return numChars;
 }
 
 void setRamArea(uint8_t Xstart, uint8_t Xend, uint16_t Ystart, uint16_t Yend) {
