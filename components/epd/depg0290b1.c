@@ -246,7 +246,7 @@ void setRamArea(uint8_t Xstart, uint8_t Xend, uint16_t Ystart, uint16_t Yend) {
   // set RAM X - address Start / End position
   gdeWriteCommand_p2(0x44, Xstart, Xend);
   // set RAM Y - address Start / End position
-  gdeWriteCommand_p4(0x45, Yend & 0xff, Yend >> 8, Ystart & 0xff, Ystart >> 8);
+  gdeWriteCommand_p4(0x45, Ystart & 0xff, Ystart >> 8, Yend & 0xff, Yend >> 8);
 }
 
 void setRamPointer(uint8_t addrX, uint16_t addrY) {
