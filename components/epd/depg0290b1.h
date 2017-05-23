@@ -1,6 +1,5 @@
 #ifndef EPD_GDE_DRIVER_H
 #define EPD_GDE_DRIVER_H
-#define DEPG290B1
 
 #include <stdbool.h>
 #include <stdint.h>
