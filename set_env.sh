@@ -1,5 +1,6 @@
 cd esp-idf
 export IDF_PATH=`pwd`
+esport ESPIDF=`pwd`
 source add_path.sh
 cd -
 

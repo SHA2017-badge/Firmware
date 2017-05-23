@@ -28,6 +28,12 @@ script:
   - make defconfig
   # Build project from the git repository
   - make
+  # Build the mpy-cross compiler
+  - cd micropython/mpy-cross
+  - make
+  # Build the micropython firmware
+  - cd ../esp32
+  - make
 
 notifications:
   irc:
