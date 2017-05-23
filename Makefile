@@ -10,5 +10,3 @@ include makeenv
 PROJECT_NAME := sha2017-badge-test
 
 include $(IDF_PATH)/make/project.mk
-
-
