@@ -1,3 +1,7 @@
+#include "sdkconfig.h"
+
+#ifdef CONFIG_SHA_BADGE_EINK_GDEH029A1
+
 #include <stdbool.h>
 #include <stdint.h>
 
@@ -247,3 +251,5 @@ void updateDisplayPartial(uint16_t yStart, uint16_t yEnd) {
   gdeWriteCommand_p1(0x22, 0xc7);
   gdeWriteCommand(0x20);
 }
+
+#endif // CONFIG_SHA_BADGE_EINK_GDEH029A1

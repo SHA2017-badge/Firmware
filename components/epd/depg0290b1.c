@@ -1,3 +1,7 @@
+#include "sdkconfig.h"
+
+#ifdef CONFIG_SHA_BADGE_EINK_DEPG0290B1
+
 #include <stdbool.h>
 #include <stdint.h>
 
@@ -72,7 +76,7 @@ const uint8_t LUTDefault_fastest[70] = {
 };
 
 const uint8_t *LUT_data[LUT_MAX + 1] = {
-    LUTDefault_full, LUTDefault_fastest,
+	LUTDefault_full, LUTDefault_fastest,
 };
 
 void writeLUT(int lut_idx) {
@@ -281,3 +285,5 @@ void updateDisplayPartial(uint16_t yStart, uint16_t yEnd) {
   gdeWriteCommand_p1(0x22, 0xc7);
   gdeWriteCommand(0x20);
 }
+
+#endif // CONFIG_SHA_BADGE_EINK_DEPG0290B1
