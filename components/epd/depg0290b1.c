@@ -1,13 +1,14 @@
 #include "sdkconfig.h"
 
 #ifdef CONFIG_SHA_BADGE_EINK_DEPG0290B1
+
 #include <stdbool.h>
 #include <stdint.h>
 
 #include "gde.h"
 #include "gde-driver.h"
 
-// actually 'DEPG0290B01'
+// DEPG0290B01
 
 #include "font_16px.h"
 #include "font_8px.h"
