@@ -5,10 +5,9 @@
 #include <stdint.h>
 
 #include "gde.h"
-#include "gdeh029a1.h"
+#include "depg0290b1.h"
 
-// GDEH029A1
-// SSD1608
+// actually 'DEPG0290B01'
 
 #include "font_16px.h"
 #include "font_8px.h"
@@ -33,7 +32,7 @@ const uint8_t LUTDefault_full[70] = {
 	// First two bytes denote Intensity (range 0x00 to 0x0F)
 	// Second two bytes denote lenght of each 'pulse' (range 0x00 to 0xFF)
 	// Last byte denotes number of repeats (0 = line runs 1 time, range 0x00 to 0xFF)
-	// If you don't want a line to do anything, set all bytes to 0x0.
+	// If you don't want a line to do anything, set all bytes to 0x00.
 	// This way you can make a quick update cycle between two screens.
 	// Maybe not as pretty/crisp but nice and fast is also awesome!
 
@@ -119,14 +118,14 @@ void initDisplay(void) {
   gdeWriteCommand_p3(0x01, 0x27, 0x01, 0x00);
 
   // Ram data entry mode
-  // Adress counter is updated in Y direction, Y decrement, X increment
-  gdeWriteCommand_p1(0x11, 0x01);
+  // Adress counter is updated in Y direction, Y increment, X increment
+  gdeWriteCommand_p1(0x11, 0x03);
 
   // Set RAM X address (00h to 0Fh)
   gdeWriteCommand_p2(0x44, 0x00, 0x0F);
 
   // Set RAM Y address (0127h to 0000h)
-  gdeWriteCommand_p4(0x45, 0x27, 0x01, 0x00, 0x00);
+  gdeWriteCommand_p4(0x45, 0x00, 0x00, 0x27, 0x01);
 
   // Set border waveform for VBD (see datasheet)
   gdeWriteCommand_p1(0x3C, 0x01);
@@ -270,7 +269,7 @@ void setRamPointer(uint8_t addrX, uint16_t addrY) {
   // set RAM X address counter
   gdeWriteCommand_p1(0x4e, addrX);
   // set RAM Y address counter
-  gdeWriteCommand_p2(0x4f, (addrY+295)& 0xff, (addrY+295) >> 8);
+  gdeWriteCommand_p2(0x4f, addrY & 0xff, addrY >> 8);
 }
 
 void updateDisplay(void) {
