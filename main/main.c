@@ -346,50 +346,62 @@ app_main(void) {
   int picture_id = 0;
   badge_eink_display(pictures[picture_id], 0);
 
-  int selected_lut = LUT_PART;
+  int selected_lut = LUT_MAX;
+
+	ets_delay_us(500000);
 
   while (1) {
-    uint32_t buttons_down;
-    if (xQueueReceive(evt_queue, &buttons_down, portMAX_DELAY)) {
-      if (buttons_down & (1 << 1)) {
-        ets_printf("Button B handling\n");
-        /* redraw with default LUT */
-		badge_eink_display(pictures[picture_id], 0);
-      }
-      if (buttons_down & (1 << 2)) {
-        ets_printf("Button MID handling\n");
-        /* open menu */
-        displayMenu("Demo menu", demoMenu);
+  //   uint32_t buttons_down;
+  //   if (xQueueReceive(evt_queue, &buttons_down, portMAX_DELAY)) {
+  //     if (buttons_down & (1 << 1)) {
+  //       ets_printf("Button B handling\n");
+  //       /* redraw with default LUT */
+	// 	badge_eink_display(pictures[picture_id], 0);
+  //     }
+  //     if (buttons_down & (1 << 2)) {
+  //       ets_printf("Button MID handling\n");
+  //       /* open menu */
+  //       displayMenu("Demo menu", demoMenu);
+	// 	badge_eink_display(pictures[picture_id], (selected_lut+1) << DISPLAY_FLAG_LUT_BIT);
+  //     }
+  //     if (buttons_down & (1 << 3)) {
+  //       ets_printf("Button UP handling\n");
+  //       /* switch LUT */
+  //       selected_lut = (selected_lut + 1) % (LUT_MAX + 1);
+	// 	badge_eink_display(pictures[picture_id], (selected_lut+1) << DISPLAY_FLAG_LUT_BIT);
+  //     }
+  //     if (buttons_down & (1 << 4)) {
+  //       ets_printf("Button DOWN handling\n");
+  //       /* switch LUT */
+  //       selected_lut = (selected_lut + LUT_MAX) % (LUT_MAX + 1);
+	// 	badge_eink_display(pictures[picture_id], (selected_lut+1) << DISPLAY_FLAG_LUT_BIT);
+  //     }
+  //     if (buttons_down & (1 << 5)) {
+  //       ets_printf("Button LEFT handling\n");
+  //       /* previous picture */
+  //       if (picture_id > 0) {
+  //         picture_id--;
+	// 	  badge_eink_display(pictures[picture_id], (selected_lut+1) << DISPLAY_FLAG_LUT_BIT);
+  //       }
+  //     }
+  //     if (buttons_down & (1 << 6)) {
+  //       ets_printf("Button RIGHT handling\n");
+  //       /* next picture */
+  //       if (picture_id + 1 < NUM_PICTURES) {
+  //         picture_id++;
+	// 	  badge_eink_display(pictures[picture_id], (selected_lut+1) << DISPLAY_FLAG_LUT_BIT);
+  //       }
+  //     }
+  //   }
+  // }
+
 		badge_eink_display(pictures[picture_id], (selected_lut+1) << DISPLAY_FLAG_LUT_BIT);
-      }
-      if (buttons_down & (1 << 3)) {
-        ets_printf("Button UP handling\n");
-        /* switch LUT */
-        selected_lut = (selected_lut + 1) % (LUT_MAX + 1);
-		badge_eink_display(pictures[picture_id], (selected_lut+1) << DISPLAY_FLAG_LUT_BIT);
-      }
-      if (buttons_down & (1 << 4)) {
-        ets_printf("Button DOWN handling\n");
-        /* switch LUT */
-        selected_lut = (selected_lut + LUT_MAX) % (LUT_MAX + 1);
-		badge_eink_display(pictures[picture_id], (selected_lut+1) << DISPLAY_FLAG_LUT_BIT);
-      }
-      if (buttons_down & (1 << 5)) {
-        ets_printf("Button LEFT handling\n");
-        /* previous picture */
-        if (picture_id > 0) {
-          picture_id--;
-		  badge_eink_display(pictures[picture_id], (selected_lut+1) << DISPLAY_FLAG_LUT_BIT);
-        }
-      }
-      if (buttons_down & (1 << 6)) {
-        ets_printf("Button RIGHT handling\n");
-        /* next picture */
-        if (picture_id + 1 < NUM_PICTURES) {
-          picture_id++;
-		  badge_eink_display(pictures[picture_id], (selected_lut+1) << DISPLAY_FLAG_LUT_BIT);
-        }
-      }
-    }
+
+    if (picture_id + 1 < NUM_PICTURES) {
+      picture_id++;
+    } else {
+			picture_id=0;
+		}
+		//ets_delay_us(500);
   }
 }
