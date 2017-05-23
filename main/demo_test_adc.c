@@ -3,7 +3,7 @@
 #include <esp_event.h>
 #include "driver/adc.h"
 #include <gde.h>
-#include <gdeh029a1.h>
+#include <gde-driver.h>
 
 #include "event_queue.h"
 
