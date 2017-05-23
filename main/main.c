@@ -13,6 +13,7 @@
 #include "badge_pins.h"
 #include "badge_i2c.h"
 #include "badge_portexp.h"
+#include "badge_mpr121.h"
 #include "badge_touch.h"
 #include "badge_leds.h"
 #include "badge_eink.h"
@@ -29,7 +30,7 @@ uint32_t
 get_buttons(void)
 {
 	uint32_t bits = 0;
-#ifdef CONFIG_SHA_BADGE_V1
+#ifdef PIN_NUM_BUTTON_A
 	bits |= gpio_get_level(PIN_NUM_BUTTON_A)     <<  0; // A
 	bits |= gpio_get_level(PIN_NUM_BUTTON_B)     <<  1; // B
 	bits |= gpio_get_level(PIN_NUM_BUTTON_MID)   <<  2; // MID
@@ -37,9 +38,9 @@ get_buttons(void)
 	bits |= gpio_get_level(PIN_NUM_BUTTON_DOWN)  <<  4; // DOWN
 	bits |= gpio_get_level(PIN_NUM_BUTTON_LEFT)  <<  5; // LEFT
 	bits |= gpio_get_level(PIN_NUM_BUTTON_RIGHT) <<  6; // RIGHT
-#else // CONFIG_SHA_BADGE_V2
+#else
 	bits |= gpio_get_level(PIN_NUM_BUTTON_FLASH) <<  7; // FLASH
-#endif // CONFIG_SHA_BADGE_V1
+#endif // ! PIN_NUM_BUTTON_A
 	return bits;
 }
 
@@ -82,7 +83,7 @@ void gpio_intr_buttons(void *arg) {
     ets_printf("Button FLASH\n");
 }
 
-#ifdef CONFIG_SHA_BADGE_V2
+#ifdef I2C_TOUCHPAD_ADDR
 void
 touch_event_handler(int event)
 {
@@ -100,7 +101,16 @@ touch_event_handler(int event)
 		}
 	}
 }
-#endif // CONFIG_SHA_BADGE_V2
+#endif // I2C_TOUCHPAD_ADDR
+
+#ifdef I2C_MPR121_ADDR
+void
+mpr121_event_handler(void *b)
+{
+	int button = (int) b;
+	xQueueSend(evt_queue, &button, 0);
+}
+#endif // I2C_MPR121_ADDR
 
 struct menu_item {
   const char *title;
@@ -136,9 +146,9 @@ const struct menu_item demoMenu[] = {
     {"dot 1", &demoDot1},
     {"ADC test", &demoTestAdc},
 #endif // CONFIG_SHA_BADGE_EINK_GDEH029A1
-#ifdef CONFIG_SHA_BADGE_V2
+#ifdef PIN_NUM_LEDS
     {"LEDs demo", &demo_leds},
-#endif // CONFIG_SHA_BADGE_V2
+#endif // PIN_NUM_LEDS
     {"tetris?", NULL},
     {"something else", NULL},
     {"test, test, test", NULL},
@@ -243,7 +253,7 @@ app_main(void) {
 
 	/* configure buttons input */
 	evt_queue = xQueueCreate(10, sizeof(uint32_t));
-#ifdef CONFIG_SHA_BADGE_V1
+#ifdef PIN_NUM_BUTTON_A
 	gpio_isr_handler_add(PIN_NUM_BUTTON_A    , gpio_intr_buttons, NULL);
 	gpio_isr_handler_add(PIN_NUM_BUTTON_B    , gpio_intr_buttons, NULL);
 	gpio_isr_handler_add(PIN_NUM_BUTTON_MID  , gpio_intr_buttons, NULL);
@@ -253,14 +263,14 @@ app_main(void) {
 	gpio_isr_handler_add(PIN_NUM_BUTTON_RIGHT, gpio_intr_buttons, NULL);
 #else
 	gpio_isr_handler_add(PIN_NUM_BUTTON_FLASH, gpio_intr_buttons, NULL);
-#endif // CONFIG_SHA_BADGE_V1
+#endif // ! PIN_NUM_BUTTON_A
 
 	// configure button-listener
 	gpio_config_t io_conf;
 	io_conf.intr_type = GPIO_INTR_ANYEDGE;
 	io_conf.mode = GPIO_MODE_INPUT;
 	io_conf.pin_bit_mask =
-#ifdef CONFIG_SHA_BADGE_V1
+#ifdef PIN_NUM_BUTTON_A
 		(1LL << PIN_NUM_BUTTON_A) |
 		(1LL << PIN_NUM_BUTTON_B) |
 		(1LL << PIN_NUM_BUTTON_MID) |
@@ -270,19 +280,40 @@ app_main(void) {
 		(1LL << PIN_NUM_BUTTON_RIGHT) |
 #else
 		(1LL << PIN_NUM_BUTTON_FLASH) |
-#endif // CONFIG_SHA_BADGE_V1
+#endif // ! PIN_NUM_BUTTON_A
 		0LL;
 	io_conf.pull_down_en = 0;
 	io_conf.pull_up_en = 1;
 	gpio_config(&io_conf);
 
-#ifdef CONFIG_SHA_BADGE_V2
-  //badge_i2c_init();
-  //badge_portexp_init();
-  //badge_touch_init();
-  //badge_touch_set_event_handler(touch_event_handler);
-  //badge_leds_init();
-#endif // CONFIG_SHA_BADGE_V2
+#ifdef PIN_NUM_I2C_CLK
+	badge_i2c_init();
+#endif // PIN_NUM_I2C_CLK
+
+#ifdef I2C_PORTEXP_ADDR
+	badge_portexp_init();
+#endif // I2C_PORTEXP_ADDR
+
+#ifdef I2C_MPR121_ADDR
+	badge_mpr121_init();
+	badge_mpr121_set_interrupt_handler(MPR121_PIN_NUM_A     , mpr121_event_handler, (void*) (1<<0));
+	badge_mpr121_set_interrupt_handler(MPR121_PIN_NUM_B     , mpr121_event_handler, (void*) (1<<1));
+//	badge_mpr121_set_interrupt_handler(MPR121_PIN_NUM_START , mpr121_event_handler, (void*) (1<<0));
+	badge_mpr121_set_interrupt_handler(MPR121_PIN_NUM_SELECT, mpr121_event_handler, (void*) (1<<2));
+	badge_mpr121_set_interrupt_handler(MPR121_PIN_NUM_DOWN  , mpr121_event_handler, (void*) (1<<4));
+	badge_mpr121_set_interrupt_handler(MPR121_PIN_NUM_RIGHT , mpr121_event_handler, (void*) (1<<6));
+	badge_mpr121_set_interrupt_handler(MPR121_PIN_NUM_UP    , mpr121_event_handler, (void*) (1<<3));
+	badge_mpr121_set_interrupt_handler(MPR121_PIN_NUM_LEFT  , mpr121_event_handler, (void*) (1<<5));
+#endif // I2C_MPR121_ADDR
+
+#ifdef I2C_TOUCHPAD_ADDR
+	badge_touch_init();
+	badge_touch_set_event_handler(touch_event_handler);
+#endif // I2C_TOUCHPAD_ADDR
+
+#ifdef PIN_NUM_LEDS
+	badge_leds_init();
+#endif // PIN_NUM_LEDS
 
   tcpip_adapter_init();
   ESP_ERROR_CHECK(esp_event_loop_init(event_handler, NULL));
