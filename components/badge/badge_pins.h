@@ -73,6 +73,7 @@
 
 // Badge revision 1.0.x
 #define PIN_NUM_LEDS         32
+#define SK6812RGBW
 
 #define PIN_NUM_BUTTON_FLASH  0
 

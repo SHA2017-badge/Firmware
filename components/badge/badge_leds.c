@@ -23,7 +23,11 @@ int
 badge_leds_set_state(uint8_t *rgb)
 {
 	const uint8_t conv[4] = { 0x11, 0x13, 0x31, 0x33 };
-	uint8_t data[75];
+#ifdef SK6812RGBW
+	uint8_t data[6*16 + 3];
+#else
+	uint8_t data[6*12 + 3];
+#endif
 	int i,j;
 	j=0;
 	// 3 * 24 us 'reset'
@@ -32,6 +36,30 @@ badge_leds_set_state(uint8_t *rgb)
 	data[j++] = 0;
 	int k=0;
 	for (i=5; i>=0; i--) {
+#ifdef SK6812RGBW
+		int r = rgb[i*4+0];
+		int g = rgb[i*4+1];
+		int b = rgb[i*4+2];
+		int w = rgb[i*4+3];
+		if (r || g || b || w)
+			k++;
+		data[j++] = conv[(r>>6)&3];
+		data[j++] = conv[(r>>4)&3];
+		data[j++] = conv[(r>>2)&3];
+		data[j++] = conv[(r>>0)&3];
+		data[j++] = conv[(g>>6)&3];
+		data[j++] = conv[(g>>4)&3];
+		data[j++] = conv[(g>>2)&3];
+		data[j++] = conv[(g>>0)&3];
+		data[j++] = conv[(b>>6)&3];
+		data[j++] = conv[(b>>4)&3];
+		data[j++] = conv[(b>>2)&3];
+		data[j++] = conv[(b>>0)&3];
+		data[j++] = conv[(w>>6)&3];
+		data[j++] = conv[(w>>4)&3];
+		data[j++] = conv[(w>>2)&3];
+		data[j++] = conv[(w>>0)&3];
+#else
 		int r = rgb[i*3+0];
 		int g = rgb[i*3+1];
 		int b = rgb[i*3+2];
@@ -49,17 +77,27 @@ badge_leds_set_state(uint8_t *rgb)
 		data[j++] = conv[(b>>4)&3];
 		data[j++] = conv[(b>>2)&3];
 		data[j++] = conv[(b>>0)&3];
+#endif
 	}
 
 	if (k == 0)
 	{
+#ifdef PORTEXP_PIN_NUM_LEDS
 		return badge_portexp_set_output_state(PORTEXP_PIN_NUM_LEDS, 0);
+#elif defined(MPR121_PIN_NUM_LEDS)
+		// FIXME
+		return -1;
+#endif
 	}
 	else
 	{
+#ifdef PORTEXP_PIN_NUM_LEDS
 		int res = badge_portexp_set_output_state(PORTEXP_PIN_NUM_LEDS, 1);
 		if (res == -1)
 			return -1;
+#elif defined(MPR121_PIN_NUM_LEDS)
+		// FIXME
+#endif
 
 		spi_transaction_t t;
 		memset(&t, 0, sizeof(t));
@@ -74,10 +112,14 @@ badge_leds_set_state(uint8_t *rgb)
 void
 badge_leds_init(void)
 {
+#ifdef PORTEXP_PIN_NUM_LEDS
 	// enable power to led-bar
 	badge_portexp_set_output_state(PORTEXP_PIN_NUM_LEDS, 0);
 	badge_portexp_set_output_high_z(PORTEXP_PIN_NUM_LEDS, 0);
 	badge_portexp_set_io_direction(PORTEXP_PIN_NUM_LEDS, 1);
+#elif defined(MPR121_PIN_NUM_LEDS)
+	// FIXME
+#endif
 
 	spi_bus_config_t buscfg = {
 		.mosi_io_num   = PIN_NUM_LEDS,
