@@ -8,7 +8,6 @@
 #include "nvs_flash.h"
 #include <gde.h>
 #include <gde-driver.h>
-#include <pictures.h>
 
 #include "badge_pins.h"
 #include "badge_i2c.h"
@@ -243,6 +242,16 @@ void displayMenu(const char *menu_title, const struct menu_item *itemlist) {
   }
 }
 
+// pictures
+#define NUM_PICTURES 5
+const uint8_t *pictures[NUM_PICTURES] = {
+	imgv2_sha,
+	imgv2_menu,
+	imgv2_nick,
+	imgv2_weather,
+	imgv2_test,
+};
+
 void
 app_main(void) {
 	nvs_flash_init();
@@ -334,19 +343,15 @@ app_main(void) {
 
   int picture_id = 0;
 	ets_printf("Drawimage begin\n");
-  drawImage(pictures[picture_id]);
+  badge_eink_display(pictures[picture_id], 0);
 	ets_printf("Drawimage gedaan");
-  updateDisplay();
-  gdeBusyWait();
 
   //int selected_lut = LUT_PART;
   //writeLUT(selected_lut); // configure fast LUT
 
   while (1) {
 
-        drawImage(pictures[picture_id]);
-        updateDisplay();
-        gdeBusyWait();
+        badge_eink_display(pictures[picture_id], 0);
 
 
         if (picture_id + 1 < NUM_PICTURES) {
