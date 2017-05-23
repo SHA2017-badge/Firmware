@@ -15,7 +15,7 @@
 #define LUT_FASTER 2
 #define LUT_FASTEST 3
 #define LUT_MAX 3
-extern void initDisplay(int lut_idx);
+extern void initDisplay(void);
 extern void writeLUT(int lut_idx);
 
 extern void drawImage(const unsigned char *picture);

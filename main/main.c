@@ -300,7 +300,7 @@ app_main(void) {
 #endif // CONFIG_WIFI_USE
 
   gdeInit();
-  initDisplay(LUT_DEFAULT); // configure slow LUT
+  initDisplay();
 
   int picture_id = 0;
 	ets_printf("Drawimage begin\n");

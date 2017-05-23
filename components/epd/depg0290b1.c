@@ -79,7 +79,7 @@ void writeLUT(int lut_idx) {
   gdeWriteCommandStream(0x32, LUT_data[lut_idx], 70);
 }
 
-void initDisplay(int lut_idx) {
+void initDisplay(void) {
   // Hardware reset
   gdeReset();
   gdeBusyWait();
@@ -98,7 +98,7 @@ void initDisplay(int lut_idx) {
   gdeWriteCommand_p3(0x01, 0x27, 0x01, 0x00);
 
   // Ram data entry mode
-  // Adress counter is updated in Y direction, Y decrement, X increment
+  // Adress counter is updated in Y direction, Y increment, X increment
   gdeWriteCommand_p1(0x11, 0x03);
 
   // Set RAM X address (00h to 0Fh)
@@ -125,7 +125,7 @@ void initDisplay(int lut_idx) {
   gdeWriteCommand_p1(0x3A, 0x30);
   gdeWriteCommand_p1(0x3B, 0x0A);
 
-  writeLUT(lut_idx);
+  writeLUT(LUT_DEFAULT);
 }
 
 void drawImage(const uint8_t *picture) {
