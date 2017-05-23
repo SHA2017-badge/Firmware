@@ -18,7 +18,7 @@
 
 #ifdef I2C_MPR121_ADDR
 
-#define BADGE_MPR121_DEBUG
+// define BADGE_MPR121_DEBUG
 
 // mutex for accessing badge_mpr121_state, badge_mpr121_handlers, etc..
 xSemaphoreHandle badge_mpr121_mux = NULL;
@@ -137,7 +137,6 @@ badge_mpr121_init(void)
 	badge_mpr121_write_reg(0x7e, 100); // auto-config
 	badge_mpr121_write_reg(0x7f, 180); // auto-config
 	badge_mpr121_write_reg(0x5e, 0x08); // enable run-mode
-	badge_mpr121_read_reg(0x5d); // just checking..
 
 	xTaskCreate(&badge_mpr121_intr_task, "MPR121 interrupt task", 4096, NULL, 10, NULL);
 
