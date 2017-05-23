@@ -359,6 +359,8 @@ app_main(void) {
   int picture_id = 0;
   badge_eink_display(pictures[picture_id], 0);
 
+	demoGreyscaleImg1();
+
   int selected_lut = LUT_MAX;
 
 	ets_delay_us(500000);
@@ -415,6 +417,8 @@ app_main(void) {
     } else {
 			picture_id=0;
 		}
+
+		// demo_leds();
 		//ets_delay_us(500);
   }
 }
