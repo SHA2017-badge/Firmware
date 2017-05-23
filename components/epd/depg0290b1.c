@@ -129,12 +129,6 @@ void initDisplay(void) {
   writeLUT(LUT_DEFAULT);
 }
 
-void drawImage(const uint8_t *picture) {
-  setRamArea(0, DISP_SIZE_X_B - 1, DISP_SIZE_Y - 1, 0);
-  setRamPointer(0, 0);
-  gdeWriteCommandStream(0x24, picture, DISP_SIZE_X_B * DISP_SIZE_Y);
-}
-
 void setRamArea(uint8_t Xstart, uint8_t Xend, uint16_t Ystart, uint16_t Yend) {
   // set RAM X - address Start / End position
   gdeWriteCommand_p2(0x44, Xstart, Xend);

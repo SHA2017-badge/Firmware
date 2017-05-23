@@ -18,8 +18,6 @@
 extern void initDisplay(void);
 extern void writeLUT(int lut_idx);
 
-extern void drawImage(const unsigned char *picture);
-
 extern void setRamArea(unsigned char Xstart, unsigned char Xend,
                        unsigned short Ystart, unsigned short Yend);
 extern void setRamPointer(unsigned char addrX, unsigned short addrY);
