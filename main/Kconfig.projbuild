@@ -10,8 +10,8 @@ choice SHA_BADGE_REV
           (december 2016)
         - Rev0.1.0 Dev: Improved badge.
           (february 2017)
-	- Rev1.0.0 Dev: Release candidate
-	  (may 2017)
+        - Rev1.0.0 Dev: Release candidate
+          (may 2017)
 
 config SHA_BADGE_V1
     bool "Rev0.0.1 Dev"
@@ -40,26 +40,26 @@ config SHA_BADGE_EINK_DEPG0290B1
 endchoice
 
 config WIFI_USE
-	bool "Use WiFi on badge"
-	depends on WIFI_ENABLED
-	default false
-	help
-		Let the badge use wifi
+    bool "Use WiFi on badge"
+    depends on WIFI_ENABLED
+    default false
+    help
+        Let the badge use wifi
 
 config WIFI_SSID
     string "WiFi SSID"
-	depends on WIFI_USE
-	default "myssid"
-	help
-		SSID (network name) for the example to connect to.
+    depends on WIFI_USE
+    default "myssid"
+    help
+        SSID (network name) for the example to connect to.
 
 config WIFI_PASSWORD
     string "WiFi Password"
-	depends on WIFI_USE
-	default "myssid"
-	help
-		WiFi password (WPA or WPA2) for the example to use.
+    depends on WIFI_USE
+    default "myssid"
+    help
+        WiFi password (WPA or WPA2) for the example to use.
 
-		Can be left blank if the network has no security set.
+        Can be left blank if the network has no security set.
 
 endmenu
