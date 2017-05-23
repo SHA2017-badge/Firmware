@@ -161,6 +161,7 @@ badge_eink_display(const uint8_t *img, int mode)
 
 			write_bitplane(img, y_start, y_end, i << 1, DISPLAY_FLAG_GREYSCALE);
 
+#ifndef CONFIG_SHA_BADGE_EINK_DEPG0290B1
 			// LUT:
 			//   Ignore old state;
 			//   Do nothing when bit is not set;
@@ -171,6 +172,9 @@ badge_eink_display(const uint8_t *img, int mode)
 				0, 0   , 0, 0, 0, (ii<<4)|1, 1, 0, 0, 0, 0, 0, 0, 0, 0,
 			};
 			gdeWriteCommandStream(0x32, lut, 30);
+#else // CONFIG_SHA_BADGE_EINK_DEPG0290B1
+			/* FIXME: fix LUT for DEPG */
+#endif // CONFIG_SHA_BADGE_EINK_DEPG0290B1
 
 			/* update display */
 			updateDisplayPartial(y_start, y_end + 1);
