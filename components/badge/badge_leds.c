@@ -53,13 +53,23 @@ badge_leds_set_state(uint8_t *rgb)
 
 	if (k == 0)
 	{
+#ifdef PORTEXP_PIN_NUM_LEDS
 		return badge_portexp_set_output_state(PORTEXP_PIN_NUM_LEDS, 0);
+#else
+		// FIXME
+		return -1;
+#endif
 	}
 	else
 	{
+#ifdef PORTEXP_PIN_NUM_LEDS
 		int res = badge_portexp_set_output_state(PORTEXP_PIN_NUM_LEDS, 1);
 		if (res == -1)
 			return -1;
+#else
+		// FIXME
+		return -1;
+#endif
 
 		spi_transaction_t t;
 		memset(&t, 0, sizeof(t));
@@ -75,9 +85,13 @@ void
 badge_leds_init(void)
 {
 	// enable power to led-bar
+#ifdef PORTEXP_PIN_NUM_LEDS
 	badge_portexp_set_output_state(PORTEXP_PIN_NUM_LEDS, 0);
 	badge_portexp_set_output_high_z(PORTEXP_PIN_NUM_LEDS, 0);
 	badge_portexp_set_io_direction(PORTEXP_PIN_NUM_LEDS, 1);
+#else
+	// FIXME
+#endif
 
 	spi_bus_config_t buscfg = {
 		.mosi_io_num   = PIN_NUM_LEDS,
