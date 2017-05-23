@@ -32,12 +32,26 @@ make defconfig
 make flash
 ```
 
+Configuration
+-------------
+```
+make menuconfig
+```
+
+Interacting via serial
+----------------------
+```
+make monitor
+```
+
 MicroPython
 -----------
 
 ```
 cd micropython/mpy-cross
 make
-cd ../esp32
+cd ../..
+source set_env.sh
+cd micropython/esp32
 make deploy
 ```

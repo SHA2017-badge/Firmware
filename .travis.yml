@@ -32,7 +32,9 @@ script:
   - cd micropython/mpy-cross
   - make
   # Build the micropython firmware
-  - cd ../esp32
+  - cd ../..
+  - source set_env.sh  
+  - cd micropython/esp32
   - make
 
 notifications:
