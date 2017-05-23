@@ -8,6 +8,7 @@
 #include "nvs_flash.h"
 #include <gde.h>
 #include <gde-driver.h>
+#include <font.h>
 
 #include "badge_pins.h"
 #include "badge_i2c.h"
@@ -158,6 +159,7 @@ const struct menu_item demoMenu[] = {
 };
 
 #define MENU_UPDATE_CYCLES 8
+uint8_t screen_buf[296*16];
 void displayMenu(const char *menu_title, const struct menu_item *itemlist) {
   int num_items = 0;
   while (itemlist[num_items].title != NULL)
@@ -170,34 +172,41 @@ void displayMenu(const char *menu_title, const struct menu_item *itemlist) {
     TickType_t xTicksToWait = portMAX_DELAY;
 
     /* draw menu */
-    if (num_draw < 2) {
-      // init buffer
-      drawText(14, 0, DISP_SIZE_Y, menu_title,
-               FONT_16PX | FONT_INVERT | FONT_FULL_WIDTH | FONT_UNDERLINE_2);
-      int i;
-      for (i = 0; i < 7; i++) {
-        int pos = scroll_pos + i;
-        drawText(12 - 2 * i, 0, DISP_SIZE_Y,
-                 (pos < num_items) ? itemlist[pos].title : "",
-                 FONT_16PX | FONT_FULL_WIDTH |
-                     ((pos == item_pos) ? 0 : FONT_INVERT));
-      }
-    }
-    if (num_draw == 0) {
-      // init LUT
-      static const uint8_t lut[30] = {
-          0x99, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-          0,    0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-      };
-      gdeWriteCommandStream(0x32, lut, 30);
-      // init timings
-      gdeWriteCommand_p1(0x3a, 0x02); // 2 dummy lines per gate
-      gdeWriteCommand_p1(0x3b, 0x00); // 30us per line
-      //			gdeWriteCommand_p1(0x3a, 0x1a); // 26 dummy
-      //lines per gate
-      //			gdeWriteCommand_p1(0x3b, 0x08); // 62us per line
-    }
     if (num_draw < MENU_UPDATE_CYCLES) {
+	  if (num_draw == 0) {
+		// init buffer
+		draw_font(screen_buf, 0, 0, BADGE_EINK_WIDTH, menu_title,
+			FONT_16PX | FONT_INVERT | FONT_FULL_WIDTH | FONT_UNDERLINE_2);
+
+		int i;
+		for (i = 0; i < 7; i++) {
+		  int pos = scroll_pos + i;
+		  draw_font(screen_buf, 0, 16+16*i, BADGE_EINK_WIDTH,
+			  (pos < num_items) ? itemlist[pos].title : "",
+			  FONT_16PX | FONT_FULL_WIDTH |
+			  ((pos == item_pos) ? 0 : FONT_INVERT));
+		}
+	  }
+
+	  // all eink displays have 2 'pages'; after writing the second one,
+	  // we don't have to write the image itself anymore.
+	  if (num_draw < 2)
+		badge_eink_display(screen_buf, DISPLAY_FLAG_NO_UPDATE);
+
+	  if (num_draw == 0) {
+		// init LUT
+		static const uint8_t lut[30] = {
+			0x99, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+			0,    0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+		};
+		gdeWriteCommandStream(0x32, lut, 30);
+		// init timings
+		gdeWriteCommand_p1(0x3a, 0x02); // 2 dummy lines per gate
+		gdeWriteCommand_p1(0x3b, 0x00); // 30us per line
+		//			gdeWriteCommand_p1(0x3a, 0x1a); // 26 dummy
+		//lines per gate
+		//			gdeWriteCommand_p1(0x3b, 0x08); // 62us per line
+	  }
       updateDisplay();
       gdeBusyWait();
       num_draw++;
