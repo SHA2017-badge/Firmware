@@ -29,7 +29,7 @@ uint32_t
 get_buttons(void)
 {
 	uint32_t bits = 0;
-#ifdef CONFIG_SHA_BADGE_V1
+#ifdef PIN_NUM_BUTTON_A
 	bits |= gpio_get_level(PIN_NUM_BUTTON_A)     <<  0; // A
 	bits |= gpio_get_level(PIN_NUM_BUTTON_B)     <<  1; // B
 	bits |= gpio_get_level(PIN_NUM_BUTTON_MID)   <<  2; // MID
@@ -37,9 +37,9 @@ get_buttons(void)
 	bits |= gpio_get_level(PIN_NUM_BUTTON_DOWN)  <<  4; // DOWN
 	bits |= gpio_get_level(PIN_NUM_BUTTON_LEFT)  <<  5; // LEFT
 	bits |= gpio_get_level(PIN_NUM_BUTTON_RIGHT) <<  6; // RIGHT
-#else // CONFIG_SHA_BADGE_V2 || CONFIG_SHA_BADGE_V3
+#else // ! PIN_NUM_BUTTON_A
 	bits |= gpio_get_level(PIN_NUM_BUTTON_FLASH) <<  7; // FLASH
-#endif // CONFIG_SHA_BADGE_V1
+#endif // ! PIN_NUM_BUTTON_A
 	return bits;
 }
 
@@ -145,9 +145,9 @@ const struct menu_item demoMenu[] = {
     {"dot 1", &demoDot1},
     {"ADC test", &demoTestAdc},
 #endif // CONFIG_SHA_BADGE_EINK_GDEH029A1
-#ifndef CONFIG_SHA_BADGE_V1
+#ifdef PIN_NUM_LEDS
     {"LEDs demo", &demo_leds},
-#endif // CONFIG_SHA_BADGE_V2 || CONFIG_SHA_BADGE_V3
+#endif // PIN_NUM_LEDS
     {"tetris?", NULL},
     {"something else", NULL},
     {"test, test, test", NULL},
@@ -262,7 +262,7 @@ app_main(void) {
 
 	/* configure buttons input */
 	evt_queue = xQueueCreate(10, sizeof(uint32_t));
-#ifdef CONFIG_SHA_BADGE_V1
+#ifdef PIN_NUM_BUTTON_A
 	gpio_isr_handler_add(PIN_NUM_BUTTON_A    , gpio_intr_buttons, NULL);
 	gpio_isr_handler_add(PIN_NUM_BUTTON_B    , gpio_intr_buttons, NULL);
 	gpio_isr_handler_add(PIN_NUM_BUTTON_MID  , gpio_intr_buttons, NULL);
@@ -272,14 +272,14 @@ app_main(void) {
 	gpio_isr_handler_add(PIN_NUM_BUTTON_RIGHT, gpio_intr_buttons, NULL);
 #else
 	gpio_isr_handler_add(PIN_NUM_BUTTON_FLASH, gpio_intr_buttons, NULL);
-#endif // CONFIG_SHA_BADGE_V1
+#endif // ! PIN_NUM_BUTTON_A
 
 	// configure button-listener
 	gpio_config_t io_conf;
 	io_conf.intr_type = GPIO_INTR_ANYEDGE;
 	io_conf.mode = GPIO_MODE_INPUT;
 	io_conf.pin_bit_mask =
-#ifdef CONFIG_SHA_BADGE_V1
+#ifdef PIN_NUM_BUTTON_A
 		(1LL << PIN_NUM_BUTTON_A) |
 		(1LL << PIN_NUM_BUTTON_B) |
 		(1LL << PIN_NUM_BUTTON_MID) |
@@ -289,7 +289,7 @@ app_main(void) {
 		(1LL << PIN_NUM_BUTTON_RIGHT) |
 #else
 		(1LL << PIN_NUM_BUTTON_FLASH) |
-#endif // CONFIG_SHA_BADGE_V1
+#endif // ! PIN_NUM_BUTTON_A
 		0LL;
 	io_conf.pull_down_en = 0;
 	io_conf.pull_up_en = 1;
