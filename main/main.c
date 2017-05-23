@@ -299,8 +299,7 @@ app_main(void) {
   ESP_ERROR_CHECK(esp_wifi_connect());
 #endif // CONFIG_WIFI_USE
 
-  gdeInit();
-  initDisplay();
+  badge_eink_init();
 
   int picture_id = 0;
 	ets_printf("Drawimage begin\n");
