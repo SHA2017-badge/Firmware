@@ -9,6 +9,7 @@
 #include <gde.h>
 #include <gde-driver.h>
 #include <font.h>
+#include <string.h>
 
 #include "badge_pins.h"
 #include "badge_i2c.h"
@@ -268,6 +269,20 @@ const uint8_t *pictures[NUM_PICTURES] = {
 };
 
 void
+display_picture(int picture_id, int selected_lut)
+{
+	memcpy(screen_buf, pictures[picture_id], 296*128/8);
+	char str[30];
+	if (selected_lut == -1)
+		sprintf(str, "[ pic %d, full update ]", picture_id);
+	else
+		sprintf(str, "[ pic %d, lut %d ]", picture_id, selected_lut);
+	draw_font(screen_buf, 8, 4, BADGE_EINK_WIDTH, str, FONT_INVERT);
+
+	badge_eink_display(screen_buf, (selected_lut+1) << DISPLAY_FLAG_LUT_BIT);
+}
+
+void
 app_main(void) {
 	nvs_flash_init();
 
@@ -360,11 +375,11 @@ app_main(void) {
 #if 0
 	// simple test-mode
 	ets_printf("start drawing image\n");
-	badge_eink_display(pictures[picture_id], 0);
+	display_picture(picture_id, -1);
 	ets_printf("done drawing image\n");
 
 	while (1) {
-		badge_eink_display(pictures[picture_id], 0);
+		display_picture(picture_id, -1);
 		if (picture_id + 1 < NUM_PICTURES) {
 			picture_id++;
 		} else {
@@ -373,7 +388,7 @@ app_main(void) {
 		ets_delay_us(5000000);
 	}
 #else
-  badge_eink_display(pictures[picture_id], 0);
+  display_picture(picture_id, -1);
   int selected_lut = LUT_PART;
 
   while (1) {
@@ -382,32 +397,32 @@ app_main(void) {
       if (buttons_down & (1 << 1)) {
         ets_printf("Button B handling\n");
         /* redraw with default LUT */
-		badge_eink_display(pictures[picture_id], 0);
+		display_picture(picture_id, -1);
       }
       if (buttons_down & (1 << 2)) {
         ets_printf("Button MID handling\n");
         /* open menu */
         displayMenu("Demo menu", demoMenu);
-		badge_eink_display(pictures[picture_id], (selected_lut+1) << DISPLAY_FLAG_LUT_BIT);
+		display_picture(picture_id, selected_lut);
       }
       if (buttons_down & (1 << 3)) {
         ets_printf("Button UP handling\n");
         /* switch LUT */
         selected_lut = (selected_lut + 1) % (LUT_MAX + 1);
-		badge_eink_display(pictures[picture_id], (selected_lut+1) << DISPLAY_FLAG_LUT_BIT);
+		display_picture(picture_id, selected_lut);
       }
       if (buttons_down & (1 << 4)) {
         ets_printf("Button DOWN handling\n");
         /* switch LUT */
         selected_lut = (selected_lut + LUT_MAX) % (LUT_MAX + 1);
-		badge_eink_display(pictures[picture_id], (selected_lut+1) << DISPLAY_FLAG_LUT_BIT);
+		display_picture(picture_id, selected_lut);
       }
       if (buttons_down & (1 << 5)) {
         ets_printf("Button LEFT handling\n");
         /* previous picture */
         if (picture_id > 0) {
           picture_id--;
-		  badge_eink_display(pictures[picture_id], (selected_lut+1) << DISPLAY_FLAG_LUT_BIT);
+		  display_picture(picture_id, selected_lut);
         }
       }
       if (buttons_down & (1 << 6)) {
@@ -415,7 +430,7 @@ app_main(void) {
         /* next picture */
         if (picture_id + 1 < NUM_PICTURES) {
           picture_id++;
-		  badge_eink_display(pictures[picture_id], (selected_lut+1) << DISPLAY_FLAG_LUT_BIT);
+		  display_picture(picture_id, selected_lut);
         }
       }
     }
