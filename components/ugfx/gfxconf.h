@@ -72,7 +72,7 @@
 //#define GDISP_NEED_TIMERFLUSH                        FALSE
 //#define GDISP_NEED_VALIDATION                        TRUE
 //#define GDISP_NEED_CLIP                              TRUE
-//#define GDISP_NEED_CIRCLE                            FALSE
+#define GDISP_NEED_CIRCLE                            TRUE
 //#define GDISP_NEED_DUALCIRCLE                        FALSE
 //#define GDISP_NEED_ELLIPSE                           FALSE
 //#define GDISP_NEED_ARC                               FALSE

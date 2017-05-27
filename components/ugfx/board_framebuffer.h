@@ -53,14 +53,14 @@ uint8_t* target_buffer;
 			ets_printf("First byte: %d\n", framebuffer[0]);
 			for (int i = 0; i < BADGE_EINK_WIDTH * BADGE_EINK_HEIGHT / 8; i++) {
 				target_buffer[i] =
-					framebuffer[i * 8] << 7 |
-					framebuffer[i * 8 + 1] << 6 |
-					framebuffer[i * 8 + 2] << 5 |
-					framebuffer[i * 8 + 3] << 4 |
-					framebuffer[i * 8 + 4] << 3 |
-					framebuffer[i * 8 + 5] << 2 |
-					framebuffer[i * 8 + 6] << 1 |
-					framebuffer[i * 8 + 7];
+					framebuffer[i * 8 + 7] << 7 |
+					framebuffer[i * 8 + 6] << 6 |
+					framebuffer[i * 8 + 5] << 5 |
+					framebuffer[i * 8 + 4] << 4 |
+					framebuffer[i * 8 + 3] << 3 |
+					framebuffer[i * 8 + 2] << 2 |
+					framebuffer[i * 8 + 1] << 1 |
+					framebuffer[i * 8];
 			}
 			badge_eink_display(target_buffer, DISPLAY_FLAG_BITMAP);
 			ets_printf("Flushed framebuffer!\n");
