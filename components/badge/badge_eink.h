@@ -6,9 +6,12 @@
 #define BADGE_EINK_WIDTH  296
 #define BADGE_EINK_HEIGHT 128
 
+/* badge_eink_display 'mode' settings */
+// bitmapped flags:
 #define DISPLAY_FLAG_GREYSCALE  1
 #define DISPLAY_FLAG_ROTATE_180 2
 #define DISPLAY_FLAG_NO_UPDATE  4
+// fields and sizes:
 #define DISPLAY_FLAG_LUT_BIT    8
 #define DISPLAY_FLAG_LUT_SIZE   4
 
@@ -16,7 +19,7 @@ extern void badge_eink_init(void);
 
 struct badge_eink_update {
 	int lut;
-	uint8_t *lut_custom;
+	const uint8_t *lut_custom;
 	int reg_0x3a;
 	int reg_0x3b;
 	int y_start;
