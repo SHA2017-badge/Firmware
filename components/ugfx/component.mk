@@ -6,4 +6,4 @@
 # in the build directory. This behaviour is entirely configurable,
 # please read the ESP-IDF documents if you need to do this.
 #
-COMPONENT_EXTRA_INCLUDES = $(PROJECT_PATH)/components/ugfx $(PROJECT_PATH)/ugfx $(PROJECT_PATH)/ugfx/src $(PROJECT_PATH)/ugfx/drivers/gdisp/framebuffer $(PROJECT_PATH)/esp-idf/components/freertos/include/freertos
+COMPONENT_EXTRA_INCLUDES = $(PROJECT_PATH)/components/ugfx $(PROJECT_PATH)/ugfx/src/gdisp/mcufont $(PROJECT_PATH)/ugfx $(PROJECT_PATH)/ugfx/src $(PROJECT_PATH)/ugfx/drivers/gdisp/framebuffer $(PROJECT_PATH)/esp-idf/components/freertos/include/freertos
