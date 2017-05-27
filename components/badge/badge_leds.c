@@ -14,6 +14,7 @@
 #include "badge_pins.h"
 #include "badge_i2c.h"
 #include "badge_portexp.h"
+#include "badge_mpr121.h"
 
 #ifdef PIN_NUM_LEDS
 
@@ -86,8 +87,7 @@ badge_leds_set_state(uint8_t *rgbw)
 #ifdef PORTEXP_PIN_NUM_LEDS
 		return badge_portexp_set_output_state(PORTEXP_PIN_NUM_LEDS, 0);
 #elif defined(MPR121_PIN_NUM_LEDS)
-		// FIXME
-		return -1;
+		return badge_mpr121_set_gpio_level(MPR121_PIN_NUM_LEDS, 0);
 #endif
 	}
 	else
@@ -97,8 +97,9 @@ badge_leds_set_state(uint8_t *rgbw)
 		if (res == -1)
 			return -1;
 #elif defined(MPR121_PIN_NUM_LEDS)
-		// FIXME
-		return -1;
+		int res = badge_mpr121_set_gpio_level(MPR121_PIN_NUM_LEDS, 1);
+		if (res == -1)
+			return -1;
 #endif
 
 		spi_transaction_t t;
@@ -120,7 +121,7 @@ badge_leds_init(void)
 	badge_portexp_set_output_high_z(PORTEXP_PIN_NUM_LEDS, 0);
 	badge_portexp_set_io_direction(PORTEXP_PIN_NUM_LEDS, 1);
 #elif defined(MPR121_PIN_NUM_LEDS)
-	// FIXME
+	badge_mpr121_configure_gpio(MPR121_PIN_NUM_LEDS, MPR121_OUTPUT);
 #endif
 
 	spi_bus_config_t buscfg = {
