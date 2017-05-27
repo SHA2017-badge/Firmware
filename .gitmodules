@@ -6,3 +6,6 @@
 	path = nodemcu-prebuilt-toolchains
 	url = https://github.com/jmattsson/nodemcu-prebuilt-toolchains
 	branch = master
+[submodule "ugfx"]
+	path = ugfx
+	url = https://git.ugfx.io/ugfx/ugfx.git

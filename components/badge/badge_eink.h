@@ -39,7 +39,6 @@ extern void badge_eink_update(const struct badge_eink_update *upd_conf);
  * - fast update
  * - slow/full update
  * - greyscale update
- *
  */
 extern void badge_eink_display(const uint8_t *img, int mode);
 

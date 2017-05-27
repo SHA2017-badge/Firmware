@@ -1,5 +1,5 @@
 #
-# Main component makefile.
+# Ugfx component makefile.
 #
 # This Makefile can be left empty. By default, it will take the sources in the 
 # src/ directory, compile them and link them into lib(subdirectory_name).a 
