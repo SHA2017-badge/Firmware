@@ -20,6 +20,26 @@
 
 // define BADGE_MPR121_DEBUG
 
+#define MPR121_BASELINE_0   0x1E
+#define MPR121_MHDR         0x2B
+#define MPR121_NHDR         0x2C
+#define MPR121_NCLR         0x2D
+#define MPR121_FDLR         0x2E
+#define MPR121_MHDF         0x2F
+#define MPR121_NHDF         0x30
+#define MPR121_NCLF         0x31
+#define MPR121_FDLF         0x32
+#define MPR121_NHDT         0x33
+#define MPR121_NCLT         0x34
+#define MPR121_FDLT         0x35
+
+#define MPR121_TOUCHTH_0    0x41
+#define MPR121_RELEASETH_0  0x42
+#define MPR121_DEBOUNCE     0x5B
+#define MPR121_CONFIG1      0x5C
+#define MPR121_CONFIG2      0x5D
+
+
 // mutex for accessing badge_mpr121_state, badge_mpr121_handlers, etc..
 xSemaphoreHandle badge_mpr121_mux = NULL;
 
@@ -131,13 +151,38 @@ badge_mpr121_init(void)
 	io_conf.pull_up_en = 1;
 	gpio_config(&io_conf);
 
-	badge_mpr121_write_reg(0x80, 0x63); // soft reset
-	badge_mpr121_write_reg(0x7b, 0x33); // auto-config
-	badge_mpr121_write_reg(0x7d, 200); // auto-config
-	badge_mpr121_write_reg(0x7e, 100); // auto-config
-	badge_mpr121_write_reg(0x7f, 180); // auto-config
+	// soft reset
+	badge_mpr121_write_reg(0x80, 0x63);
 
-	badge_mpr121_write_reg(0x5e, 0x08); // enable run-mode
+	// set baseline filters
+	badge_mpr121_write_reg(MPR121_MHDR, 0x01);
+	badge_mpr121_write_reg(MPR121_NHDR, 0x01);
+	badge_mpr121_write_reg(MPR121_NCLR, 0x0E);
+	badge_mpr121_write_reg(MPR121_FDLR, 0x00);
+
+	badge_mpr121_write_reg(MPR121_MHDF, 0x01);
+	badge_mpr121_write_reg(MPR121_NHDF, 0x05);
+	badge_mpr121_write_reg(MPR121_NCLF, 0x01);
+	badge_mpr121_write_reg(MPR121_FDLF, 0x00);
+
+	badge_mpr121_write_reg(MPR121_NHDT, 0x00);
+	badge_mpr121_write_reg(MPR121_NCLT, 0x00);
+	badge_mpr121_write_reg(MPR121_FDLT, 0x00);
+
+	badge_mpr121_write_reg(MPR121_DEBOUNCE, 0x00);
+	badge_mpr121_write_reg(MPR121_CONFIG1, 0x10); // default, 16µA charge current
+	badge_mpr121_write_reg(MPR121_CONFIG2, 0x20); // 0x5µs encoding, 1ms period
+
+	// set thresholds
+	int i;
+	for (i=0; i<8; i++)
+	{
+		badge_mpr121_write_reg(MPR121_TOUCHTH_0   + 2*i, 48); // touch
+		badge_mpr121_write_reg(MPR121_RELEASETH_0 + 2*i,  6); // release
+	}
+
+	// enable run-mode, set base-line tracking
+	badge_mpr121_write_reg(0x5e, 0x88);
 
 	xTaskCreate(&badge_mpr121_intr_task, "MPR121 interrupt task", 4096, NULL, 10, NULL);
 
