@@ -24,6 +24,7 @@
 // For now we simply keep the current state of the framebuffer in memory, and
 // encode it and send it to the badge_eink driver on flush
 uint8_t* framebuffer;
+uint8_t* target_buffer;
 
 #ifdef GDISP_DRIVER_VMT
 
@@ -32,6 +33,7 @@ uint8_t* framebuffer;
 
 		// Careful: this is never freed, so don't initialize the board multiple times!
 		framebuffer = malloc(BADGE_EINK_WIDTH * BADGE_EINK_HEIGHT);
+		target_buffer = malloc(BADGE_EINK_WIDTH * BADGE_EINK_HEIGHT / 8);
 
     ets_printf("Initializing eink ugfx driver!\n");
 		ets_printf("sizeof(COLOR_TYPE): %d", sizeof(COLOR_TYPE));
@@ -47,10 +49,20 @@ uint8_t* framebuffer;
 	#if GDISP_HARDWARE_FLUSH
 		static void board_flush(GDisplay *g) {
 			(void) g;
-			// TODO we likely have to convert our 'internal' buffer into the format expected by badge_eink here
 			ets_printf("Flushing framebuffer!\n");
 			ets_printf("First byte: %d\n", framebuffer[0]);
-			badge_eink_display(framebuffer, DISPLAY_FLAG_BITMAP);
+			for (int i = 0; i < BADGE_EINK_WIDTH * BADGE_EINK_HEIGHT / 8; i++) {
+				target_buffer[i] =
+					framebuffer[i * 8] << 7 |
+					framebuffer[i * 8 + 1] << 6 |
+					framebuffer[i * 8 + 2] << 5 |
+					framebuffer[i * 8 + 3] << 4 |
+					framebuffer[i * 8 + 4] << 3 |
+					framebuffer[i * 8 + 5] << 2 |
+					framebuffer[i * 8 + 6] << 1 |
+					framebuffer[i * 8 + 7];
+			}
+			badge_eink_display(target_buffer, DISPLAY_FLAG_BITMAP);
 			ets_printf("Flushed framebuffer!\n");
 		}
 	#endif
