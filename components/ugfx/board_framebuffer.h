@@ -62,7 +62,7 @@ uint8_t* target_buffer;
 					framebuffer[i * 8 + 1] << 1 |
 					framebuffer[i * 8];
 			}
-			badge_eink_display(target_buffer, DISPLAY_FLAG_BITMAP);
+			badge_eink_display(target_buffer, 3 << DISPLAY_FLAG_LUT_BIT);
 			ets_printf("Flushed framebuffer!\n");
 		}
 	#endif
