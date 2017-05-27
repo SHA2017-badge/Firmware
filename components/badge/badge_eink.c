@@ -56,7 +56,7 @@ write_bitplane(const uint8_t *img, int y_start, int y_end, int bit, int flags)
 	for (y = 0; y < DISP_SIZE_Y; y++) {
 		if (y < y_start || y > y_end)
 		{
-			for (x = 0; x < DISP_SIZE_X_B;) {
+			for (x = 0; x < DISP_SIZE_X_B; x++) {
 				gdeWriteByte(0);
 			}
 			pos += dx * DISP_SIZE_X;
