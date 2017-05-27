@@ -8,9 +8,11 @@ void demoUgfx() {
   while (1) {
     ets_printf("Clearing white\n");
     gdispClear(White);
+    gdispFlush();
     ets_delay_us(5000000);
     ets_printf("Clearing black\n");
     gdispClear(Black);
+    gdispFlush();
     ets_delay_us(5000000);
   }
 }
