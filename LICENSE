@@ -6,6 +6,8 @@ respective original licenses.
 
 Notably:
 
+* 'permanent marker' font: Apache License 2.0
+* 'roboto' font: Apache License 2.0
 * esp-idf: Apache License 2.0
 * nodemcu-prebuilt-toolchains: GNU GPL v3+
 * ugfx: free for non-commercial use, https://ugfx.io/license.html
