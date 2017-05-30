@@ -28,6 +28,7 @@ Compiling and flashing
 
 ```
 git submodule update --init --recursive
+source set_env.sh
 make defconfig
 make flash
 ```
