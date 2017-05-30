@@ -51,8 +51,6 @@ MicroPython
 ```
 cd micropython/mpy-cross
 make
-cd ../..
-source set_env.sh
-cd micropython/esp32
+cd ../esp32
 make deploy
 ```
