@@ -25,6 +25,8 @@ install:
 
 script:
   # Update configuration so that kconfig doesn't start interactive mode
+  - make --version
+  - source set_env.sh
   - make defconfig
   # Build project from the git repository
   - make
