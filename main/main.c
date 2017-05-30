@@ -9,6 +9,7 @@
 #include <gde.h>
 #include <gde-driver.h>
 #include <font.h>
+#include <string.h>
 
 #include "badge_pins.h"
 #include "badge_i2c.h"
@@ -129,6 +130,7 @@ struct menu_item {
 #include "demo_dot1.h"
 #include "demo_test_adc.h"
 #include "demo_leds.h"
+#include "demo_ugfx.h"
 
 const struct menu_item demoMenu[] = {
     {"text demo 1", &demoText1},
@@ -149,6 +151,7 @@ const struct menu_item demoMenu[] = {
 #ifdef PIN_NUM_LEDS
     {"LEDs demo", &demo_leds},
 #endif // PIN_NUM_LEDS
+    {"uGFX demo", &demoUgfx},
     {"tetris?", NULL},
     {"something else", NULL},
     {"test, test, test", NULL},
@@ -199,7 +202,6 @@ void displayMenu(const char *menu_title, const struct menu_item *itemlist) {
 		// init buffer
 		draw_font(screen_buf, 0, 0, BADGE_EINK_WIDTH, menu_title,
 			FONT_16PX | FONT_INVERT | FONT_FULL_WIDTH | FONT_UNDERLINE_2);
-
 		int i;
 		for (i = 0; i < 7; i++) {
 		  int pos = scroll_pos + i;
@@ -216,7 +218,6 @@ void displayMenu(const char *menu_title, const struct menu_item *itemlist) {
 		badge_eink_display(screen_buf, DISPLAY_FLAG_NO_UPDATE);
 
 	  badge_eink_update(&eink_upd_menu);
-
       num_draw++;
       if (num_draw < MENU_UPDATE_CYCLES)
         xTicksToWait = 0;
@@ -268,6 +269,20 @@ const uint8_t *pictures[NUM_PICTURES] = {
 	imgv2_weather,
 	imgv2_test,
 };
+
+void
+display_picture(int picture_id, int selected_lut)
+{
+	memcpy(screen_buf, pictures[picture_id], 296*128/8);
+	char str[30];
+	if (selected_lut == -1)
+		sprintf(str, "[ pic %d, full update ]", picture_id);
+	else
+		sprintf(str, "[ pic %d, lut %d ]", picture_id, selected_lut);
+	draw_font(screen_buf, 8, 4, BADGE_EINK_WIDTH, str, FONT_INVERT);
+
+	badge_eink_display(screen_buf, (selected_lut+1) << DISPLAY_FLAG_LUT_BIT);
+}
 
 void
 app_main(void) {
@@ -359,23 +374,68 @@ app_main(void) {
   badge_eink_init();
 
   int picture_id = 0;
-	ets_printf("Drawimage begin\n");
-  badge_eink_display(pictures[picture_id], 0);
-	ets_printf("Drawimage gedaan");
+#if 0
+	// simple test-mode
+	ets_printf("start drawing image\n");
+	display_picture(picture_id, -1);
+	ets_printf("done drawing image\n");
 
-  //int selected_lut = LUT_PART;
-  //writeLUT(selected_lut); // configure fast LUT
+	while (1) {
+		display_picture(picture_id, -1);
+		if (picture_id + 1 < NUM_PICTURES) {
+			picture_id++;
+		} else {
+			picture_id=0;
+		}
+		ets_delay_us(5000000);
+	}
+#else
+  display_picture(picture_id, -1);
+  int selected_lut = LUT_PART;
 
   while (1) {
-
-        badge_eink_display(pictures[picture_id], 0);
-
-
+    uint32_t buttons_down;
+    if (xQueueReceive(evt_queue, &buttons_down, portMAX_DELAY)) {
+      if (buttons_down & (1 << 1)) {
+        ets_printf("Button B handling\n");
+        /* redraw with default LUT */
+		display_picture(picture_id, -1);
+      }
+      if (buttons_down & (1 << 2)) {
+        ets_printf("Button MID handling\n");
+        /* open menu */
+        displayMenu("Demo menu", demoMenu);
+		display_picture(picture_id, selected_lut);
+      }
+      if (buttons_down & (1 << 3)) {
+        ets_printf("Button UP handling\n");
+        /* switch LUT */
+        selected_lut = (selected_lut + 1) % (LUT_MAX + 1);
+		display_picture(picture_id, selected_lut);
+      }
+      if (buttons_down & (1 << 4)) {
+        ets_printf("Button DOWN handling\n");
+        /* switch LUT */
+        selected_lut = (selected_lut + LUT_MAX) % (LUT_MAX + 1);
+		display_picture(picture_id, selected_lut);
+      }
+      if (buttons_down & (1 << 5)) {
+        ets_printf("Button LEFT handling\n");
+        /* previous picture */
+        if (picture_id > 0) {
+          picture_id--;
+		  display_picture(picture_id, selected_lut);
+        }
+      }
+      if (buttons_down & (1 << 6)) {
+        ets_printf("Button RIGHT handling\n");
+        /* next picture */
         if (picture_id + 1 < NUM_PICTURES) {
           picture_id++;
-        } else {
-					picture_id=0;
-				}
-				ets_delay_us(5000000);
+		  display_picture(picture_id, selected_lut);
+        }
       }
+    }
+  }
+#endif
 }

@@ -11,23 +11,36 @@
 #include "badge_leds.h"
 
 #ifdef PIN_NUM_LEDS
+
+#if 0
+ #define L0  0
+ #define L1 21
+ #define L2 42
+ #define L3 63
+#else
+ #define L0  0
+ #define L1 10
+ #define L2 20
+ #define L3 30
+#endif
+
 void demo_leds(void)
 {
 	uint8_t rgbw[6*4] = {
-		 21,  42,  63, 1,
-		 42,  63,  42, 1,
-		 63,  42,  21, 1,
-		 42,  21,   0, 1,
-		 21,   0,  21, 1,
-		  0,  21,  42, 1,
+		 L1,  L2,  L3, L2,
+		 L2,  L3,  L2, L1,
+		 L3,  L2,  L1, L0,
+		 L2,  L1,  L0, L1,
+		 L1,  L0,  L1, L2,
+		 L0,  L1,  L2, L3,
 	};
 	int8_t dir[6*4] = {
-		+1, +1, -1, 0,
-		+1, -1, -1, 0,
-		-1, -1, -1, 0,
-		-1, -1, +1, 0,
-		-1, +1, +1, 0,
-		+1, +1, +1, 0,
+		+1, +1, -1, -1,
+		+1, -1, -1, -1,
+		-1, -1, -1, +1,
+		-1, -1, +1, +1,
+		-1, +1, +1, +1,
+		+1, +1, +1, -1,
 	};
 
 	while (1) {
@@ -44,9 +57,9 @@ void demo_leds(void)
 		int i;
 		for (i=0; i<6*4; i++) {
 			rgbw[i] += dir[i];
-			if (rgbw[i] == 0)
+			if (rgbw[i] == L0)
 				dir[i] = +1;
-			if (rgbw[i] == 63)
+			if (rgbw[i] == L3)
 				dir[i] = -1;
 		}
 	}
