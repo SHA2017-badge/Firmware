@@ -5,7 +5,7 @@ Read [project documentation](https://orga.sha2017.org/index.php/Projects:Badge) 
 
 Project updates:
 
-* [Wiki](https://wiki.sha2017.org/w/Projects:Badge) 
+* [Wiki](https://wiki.sha2017.org/w/Projects:Badge)
 * [Documentation](https://wiki.sha2017.org/w/Projects:Badge/Documentation)
 * [Firmware](https://github.com/SHA2017-badge/Firmware)
 * [PCB](https://github.com/SHA2017-badge/PCB)
@@ -31,4 +31,34 @@ git submodule update --init --recursive
 source set_env.sh
 make defconfig
 make flash
+```
+
+Configuration
+-------------
+```
+make menuconfig
+```
+
+MicroPython
+-----------
+
+```
+cd micropython/mpy-cross
+make
+cd ../esp32
+make deploy
+```
+
+Interacting via serial
+----------------------
+```
+make monitor
+```
+
+MicroPython
+-----------
+```
+import badge
+badge.eink_init()
+badge.display_picture(1,-1)
 ```
