@@ -39,12 +39,6 @@ Configuration
 make menuconfig
 ```
 
-Interacting via serial
-----------------------
-```
-make monitor
-```
-
 MicroPython
 -----------
 
@@ -53,4 +47,18 @@ cd micropython/mpy-cross
 make
 cd ../esp32
 make deploy
+```
+
+Interacting via serial
+----------------------
+```
+make monitor
+```
+
+MicroPython
+-----------
+```
+import badge
+badge.eink_init()
+badge.display_picture(1,-1)
 ```
