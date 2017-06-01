@@ -6,8 +6,20 @@
 
 - Merge tsd's changes . . [\#2](https://github.com/SHA2017-badge/Firmware/pull/2) ([annejan](https://github.com/annejan))
 
+**Closed issues:**
+
+- Intermittent build failures: no rule to make target .../bootloader.bin [\#13](https://github.com/SHA2017-badge/Firmware/issues/13)
+- Add Roboto as ugfx external font [\#11](https://github.com/SHA2017-badge/Firmware/issues/11)
+- Question: New distribution technique [\#8](https://github.com/SHA2017-badge/Firmware/issues/8)
+
 **Merged pull requests:**
 
+- Attempt to stabalize build \(fixes \#13\) [\#16](https://github.com/SHA2017-badge/Firmware/pull/16) ([annejan](https://github.com/annejan))
+- Log Make version [\#14](https://github.com/SHA2017-badge/Firmware/pull/14) ([raboof](https://github.com/raboof))
+- Add support for SHA-style fonts \(fixes \#11\) [\#12](https://github.com/SHA2017-badge/Firmware/pull/12) ([raboof](https://github.com/raboof))
+- ugfx integration [\#10](https://github.com/SHA2017-badge/Firmware/pull/10) ([raboof](https://github.com/raboof))
+- Micropython [\#9](https://github.com/SHA2017-badge/Firmware/pull/9) ([annejan](https://github.com/annejan))
+- Basvs update because it looks nicer :D [\#7](https://github.com/SHA2017-badge/Firmware/pull/7) ([annejan](https://github.com/annejan))
 - greyscale image code improvement; add demo 3 [\#6](https://github.com/SHA2017-badge/Firmware/pull/6) ([annejan](https://github.com/annejan))
 - Greyscale awesomeness!! [\#5](https://github.com/SHA2017-badge/Firmware/pull/5) ([annejan](https://github.com/annejan))
 - Menu and demo's [\#4](https://github.com/SHA2017-badge/Firmware/pull/4) ([annejan](https://github.com/annejan))
