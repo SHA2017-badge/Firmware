@@ -439,3 +439,7 @@ app_main(void) {
   }
 #endif
 }
+
+void vPortCleanUpTCB ( void *pxTCB ) {
+	// place clean up code here
+}

@@ -39,10 +39,23 @@ config SHA_BADGE_EINK_DEPG0290B1
     bool "DEPG0290B1"
 endchoice
 
+config SUPPORT_STATIC_ALLOCATION
+    bool "Support static allocation"
+    default y
+    help
+       MicroPython currently seems to need this
+
+config ENABLE_STATIC_TASK_CLEAN_UP_HOOK
+    bool "Enable static task clean up hook"
+    depends on SUPPORT_STATIC_ALLOCATION
+    default y
+    help
+       MicroPython currently seems to need this
+
 config WIFI_USE
     bool "Use WiFi on badge"
     depends on WIFI_ENABLED
-    default false
+    default n
     help
         Let the badge use wifi
 
