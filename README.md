@@ -39,14 +39,15 @@ Configuration
 make menuconfig
 ```
 
-MicroPython
------------
+Compiling and flashing MicroPython
+----------------------------------
 
 ```
 cd micropython/mpy-cross
 make
 cd ../esp32
 make deploy
+cd ../..
 ```
 
 Interacting via serial
@@ -60,5 +61,5 @@ MicroPython
 ```
 import badge
 badge.eink_init()
-badge.display_picture(1,-1)
+badge.display_picture(0,-1)
 ```
