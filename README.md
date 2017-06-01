@@ -65,4 +65,6 @@ badge.eink_init()
 badge.display_picture(0,-1)
 badge.ugfx_init()
 badge.ugfx_demo("HACKING")
+badge.thickline(1,1,100,100,badge.BLACK,10,5)
+badge.flush()
 ```
