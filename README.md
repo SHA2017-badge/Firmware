@@ -63,4 +63,6 @@ MicroPython
 import badge
 badge.eink_init()
 badge.display_picture(0,-1)
+badge.ugfx_init()
+badge.ugfx_demo("HACKING")
 ```
