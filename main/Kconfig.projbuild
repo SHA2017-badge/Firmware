@@ -83,4 +83,11 @@ config FREERTOS_THREAD_LOCAL_STORAGE_POINTERS
     help
        MicroPython currently seems to need this set to two! 
 
+config ESP32_DEEP_SLEEP_WAKEUP_DELAY
+    int "Extra delay in deep sleep wake stub (in us)"
+    default 2000
+    range 0 5000
+    help
+       MicroPython currently seems to need this set to 2000!
+
 endmenu

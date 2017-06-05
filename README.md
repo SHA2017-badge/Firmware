@@ -76,3 +76,4 @@ badge.line(140 + len, 52, 140 + len, 70, badge.WHITE)
 badge.string(140,75,"Anyway","Roboto_BlackItalic24",badge.WHITE)
 badge.flush()
 ```
+More info on the [https://wiki.sha2017.org/w/Projects:Badge/MicroPython MicroPython badge module]
