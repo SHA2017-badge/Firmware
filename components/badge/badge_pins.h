@@ -56,6 +56,8 @@
 
 #define PIN_NUM_VUSB_SENSE   34
 #define PIN_NUM_VBAT_SENSE   35
+#define ADC1_CHAN_VUSB_SENSE  6
+#define ADC1_CHAN_VBAT_SENSE  7
 
 #define I2C_PORTEXP_ADDR     0x44
 #define I2C_TOUCHPAD_ADDR    0x78
@@ -103,6 +105,8 @@
 
 #define PIN_NUM_VUSB_SENSE   34
 #define PIN_NUM_VBAT_SENSE   35
+#define ADC1_CHAN_VUSB_SENSE  6
+#define ADC1_CHAN_VBAT_SENSE  7
 
 #define I2C_MPR121_ADDR      0x5a
 
