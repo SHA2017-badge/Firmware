@@ -4,6 +4,7 @@
 
 #include <freertos/FreeRTOS.h>
 
+#include <badge_pins.h>
 #include <badge_eink.h>
 #include <badge_power.h>
 #include <font.h>
@@ -23,9 +24,21 @@ demoPower(void) {
 
 	while (1)
 	{
+#if defined(PORTEXP_PIN_NUM_CHRGSTAT) || defined(MPR121_PIN_NUM_CHRGSTAT)
 		bool new_bat_cs = badge_battery_charge_status();
+#else
+		bool new_bat_cs = false;
+#endif
+#ifdef ADC1_CHAN_VBAT_SENSE
 		int new_v_bat = badge_battery_volt_sense();
+#else
+		int new_v_bat = 0;
+#endif
+#ifdef ADC1_CHAN_VBAT_SENSE
 		int new_v_usb = badge_usb_volt_sense();
+#else
+		int new_v_usb = 0;
+#endif
 
 		if (bat_cs != new_bat_cs ||
 			v_bat != new_v_bat || v_usb != new_v_usb)
