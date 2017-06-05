@@ -132,6 +132,7 @@ struct menu_item {
 #include "demo_test_adc.h"
 #include "demo_leds.h"
 #include "demo_ugfx.h"
+#include "demo_power.h"
 
 const struct menu_item demoMenu[] = {
     {"text demo 1", &demoText1},
@@ -153,6 +154,7 @@ const struct menu_item demoMenu[] = {
     {"LEDs demo", &demo_leds},
 #endif // PIN_NUM_LEDS
     {"uGFX demo", &demoUgfx},
+    {"charging demo", &demoPower},
     {"tetris?", NULL},
     {"something else", NULL},
     {"test, test, test", NULL},
