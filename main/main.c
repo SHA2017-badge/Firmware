@@ -18,6 +18,7 @@
 #include "badge_touch.h"
 #include "badge_leds.h"
 #include "badge_eink.h"
+#include "badge_power.h"
 
 #include "imgv2_sha.h"
 #include "imgv2_menu.h"
@@ -351,6 +352,8 @@ app_main(void) {
 	badge_touch_init();
 	badge_touch_set_event_handler(touch_event_handler);
 #endif // I2C_TOUCHPAD_ADDR
+
+	badge_power_init();
 
 #ifdef PIN_NUM_LEDS
 	badge_leds_init();
