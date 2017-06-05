@@ -395,6 +395,9 @@ app_main(void) {
 		ets_delay_us(5000000);
 	}
 #else
+
+	demoPower();
+
   display_picture(picture_id, -1);
   int selected_lut = LUT_PART;
 
