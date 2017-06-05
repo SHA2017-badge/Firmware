@@ -1,5 +1,6 @@
 build/
 sdkconfig*
 makeenv
+custom_env.sh
 
 .DS_Store

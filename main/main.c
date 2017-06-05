@@ -18,6 +18,7 @@
 #include "badge_touch.h"
 #include "badge_leds.h"
 #include "badge_eink.h"
+#include "badge_power.h"
 
 #include "imgv2_sha.h"
 #include "imgv2_menu.h"
@@ -131,6 +132,7 @@ struct menu_item {
 #include "demo_test_adc.h"
 #include "demo_leds.h"
 #include "demo_ugfx.h"
+#include "demo_power.h"
 
 const struct menu_item demoMenu[] = {
     {"text demo 1", &demoText1},
@@ -152,6 +154,7 @@ const struct menu_item demoMenu[] = {
     {"LEDs demo", &demo_leds},
 #endif // PIN_NUM_LEDS
     {"uGFX demo", &demoUgfx},
+    {"charging demo", &demoPower},
     {"tetris?", NULL},
     {"something else", NULL},
     {"test, test, test", NULL},
@@ -351,6 +354,8 @@ app_main(void) {
 	badge_touch_init();
 	badge_touch_set_event_handler(touch_event_handler);
 #endif // I2C_TOUCHPAD_ADDR
+
+	badge_power_init();
 
 #ifdef PIN_NUM_LEDS
 	badge_leds_init();
