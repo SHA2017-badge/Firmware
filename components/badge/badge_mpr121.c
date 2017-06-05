@@ -39,7 +39,6 @@
 #define MPR121_CONFIG1      0x5C
 #define MPR121_CONFIG2      0x5D
 
-
 // mutex for accessing badge_mpr121_state, badge_mpr121_handlers, etc..
 xSemaphoreHandle badge_mpr121_mux = NULL;
 
@@ -300,6 +299,8 @@ badge_mpr121_get_gpio_level(int pin)
 {
 	if (pin < 4 || pin >= 12)
 		return -1;
+
+	pin -= 4;
 
 	// read data
 	int res = badge_mpr121_read_reg(0x75);
