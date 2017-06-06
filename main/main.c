@@ -34,15 +34,15 @@ get_buttons(void)
 {
 	uint32_t bits = 0;
 #ifdef PIN_NUM_BUTTON_A
-	bits |= gpio_get_level(PIN_NUM_BUTTON_A)     <<  0; // A
-	bits |= gpio_get_level(PIN_NUM_BUTTON_B)     <<  1; // B
-	bits |= gpio_get_level(PIN_NUM_BUTTON_MID)   <<  2; // MID
-	bits |= gpio_get_level(PIN_NUM_BUTTON_UP)    <<  3; // UP
-	bits |= gpio_get_level(PIN_NUM_BUTTON_DOWN)  <<  4; // DOWN
-	bits |= gpio_get_level(PIN_NUM_BUTTON_LEFT)  <<  5; // LEFT
-	bits |= gpio_get_level(PIN_NUM_BUTTON_RIGHT) <<  6; // RIGHT
+	bits |= gpio_get_level(PIN_NUM_BUTTON_A)     <<  BADGE_BUTTON_A;
+	bits |= gpio_get_level(PIN_NUM_BUTTON_B)     <<  BADGE_BUTTON_B;
+	bits |= gpio_get_level(PIN_NUM_BUTTON_MID)   <<  BADGE_BUTTON_MID;
+	bits |= gpio_get_level(PIN_NUM_BUTTON_UP)    <<  BADGE_BUTTON_UP;
+	bits |= gpio_get_level(PIN_NUM_BUTTON_DOWN)  <<  BADGE_BUTTON_DOWN;
+	bits |= gpio_get_level(PIN_NUM_BUTTON_LEFT)  <<  BADGE_BUTTON_LEFT;
+	bits |= gpio_get_level(PIN_NUM_BUTTON_RIGHT) <<  BADGE_BUTTON_RIGHT;
 #else
-	bits |= gpio_get_level(PIN_NUM_BUTTON_FLASH) <<  7; // FLASH
+	bits |= gpio_get_level(PIN_NUM_BUTTON_FLASH) <<  BADGE_BUTTON_FLASH;
 #endif // ! PIN_NUM_BUTTON_A
 	return bits;
 }
@@ -66,21 +66,21 @@ void gpio_intr_buttons(void *arg) {
   if (buttons_down != 0)
     xQueueSendFromISR(badge_input_queue, &buttons_down, NULL);
 
-  if (buttons_down & (1 << 0))
+  if (buttons_down & (1 << BADGE_BUTTON_A))
     ets_printf("Button A\n");
-  if (buttons_down & (1 << 1))
+  if (buttons_down & (1 << BADGE_BUTTON_B))
     ets_printf("Button B\n");
-  if (buttons_down & (1 << 2))
+  if (buttons_down & (1 << BADGE_BUTTON_MID))
     ets_printf("Button MID\n");
-  if (buttons_down & (1 << 3))
+  if (buttons_down & (1 << BADGE_BUTTON_UP))
     ets_printf("Button UP\n");
-  if (buttons_down & (1 << 4))
+  if (buttons_down & (1 << BADGE_BUTTON_DOWN))
     ets_printf("Button DOWN\n");
-  if (buttons_down & (1 << 5))
+  if (buttons_down & (1 << BADGE_BUTTON_LEFT))
     ets_printf("Button LEFT\n");
-  if (buttons_down & (1 << 6))
+  if (buttons_down & (1 << BADGE_BUTTON_RIGHT))
     ets_printf("Button RIGHT\n");
-  if (buttons_down & (1 << 7))
+  if (buttons_down & (1 << BADGE_BUTTON_FLASH))
     ets_printf("Button FLASH\n");
 }
 
@@ -90,8 +90,20 @@ touch_event_handler(int event)
 {
 	// convert into button queue event
 	if (((event >> 16) & 0x0f) == 0x0) { // button down event
-		static const int conv[12] =
-		{ -1, -1, 5, 3, 6, 4, -1, 0, 2, 1, -1, 0 };
+		static const int conv[12] = {
+			-1,
+			-1,
+			BADGE_BUTTON_LEFT,
+			BADGE_BUTTON_UP,
+			BADGE_BUTTON_RIGHT,
+			BADGE_BUTTON_DOWN,
+			-1,
+			BADGE_BUTTON_SELECT,
+			BADGE_BUTTON_START,
+			BADGE_BUTTON_B,
+			-1,
+			BADGE_BUTTON_A,
+		};
 		if (((event >> 8) & 0xff) < 12) {
 			int id = conv[(event >> 8) & 0xff];
 			if (id != -1)
@@ -228,11 +240,11 @@ void displayMenu(const char *menu_title, const struct menu_item *itemlist) {
     /* handle input */
     uint32_t buttons_down;
     if (xQueueReceive(badge_input_queue, &buttons_down, xTicksToWait)) {
-      if (buttons_down & (1 << 1)) {
+      if (buttons_down & (1 << BADGE_BUTTON_B)) {
         ets_printf("Button B handling\n");
         return;
       }
-      if (buttons_down & (1 << 2)) {
+      if (buttons_down & (1 << BADGE_BUTTON_MID)) {
         ets_printf("Selected '%s'\n", itemlist[item_pos].title);
         if (itemlist[item_pos].handler != NULL)
           itemlist[item_pos].handler();
@@ -240,7 +252,15 @@ void displayMenu(const char *menu_title, const struct menu_item *itemlist) {
         ets_printf("Button MID handled\n");
         continue;
       }
-      if (buttons_down & (1 << 3)) {
+      if (buttons_down & (1 << BADGE_BUTTON_SELECT)) {
+        ets_printf("Selected '%s'\n", itemlist[item_pos].title);
+        if (itemlist[item_pos].handler != NULL)
+          itemlist[item_pos].handler();
+        num_draw = 0;
+        ets_printf("Button SELECT handled\n");
+        continue;
+      }
+      if (buttons_down & (1 << BADGE_BUTTON_UP)) {
         if (item_pos > 0) {
           item_pos--;
           if (scroll_pos > item_pos)
@@ -249,7 +269,7 @@ void displayMenu(const char *menu_title, const struct menu_item *itemlist) {
         }
         ets_printf("Button UP handled\n");
       }
-      if (buttons_down & (1 << 4)) {
+      if (buttons_down & (1 << BADGE_BUTTON_DOWN)) {
         if (item_pos + 1 < num_items) {
           item_pos++;
           if (scroll_pos + 6 < item_pos)
@@ -340,14 +360,14 @@ app_main(void) {
 
 #ifdef I2C_MPR121_ADDR
 	badge_mpr121_init();
-	badge_mpr121_set_interrupt_handler(MPR121_PIN_NUM_A     , mpr121_event_handler, (void*) (1<<0));
-	badge_mpr121_set_interrupt_handler(MPR121_PIN_NUM_B     , mpr121_event_handler, (void*) (1<<1));
-//	badge_mpr121_set_interrupt_handler(MPR121_PIN_NUM_START , mpr121_event_handler, (void*) (1<<0));
-	badge_mpr121_set_interrupt_handler(MPR121_PIN_NUM_SELECT, mpr121_event_handler, (void*) (1<<2));
-	badge_mpr121_set_interrupt_handler(MPR121_PIN_NUM_DOWN  , mpr121_event_handler, (void*) (1<<4));
-	badge_mpr121_set_interrupt_handler(MPR121_PIN_NUM_RIGHT , mpr121_event_handler, (void*) (1<<6));
-	badge_mpr121_set_interrupt_handler(MPR121_PIN_NUM_UP    , mpr121_event_handler, (void*) (1<<3));
-	badge_mpr121_set_interrupt_handler(MPR121_PIN_NUM_LEFT  , mpr121_event_handler, (void*) (1<<5));
+	badge_mpr121_set_interrupt_handler(MPR121_PIN_NUM_A     , mpr121_event_handler, (void*) (1 << BADGE_BUTTON_A));
+	badge_mpr121_set_interrupt_handler(MPR121_PIN_NUM_B     , mpr121_event_handler, (void*) (1 << BADGE_BUTTON_B));
+	badge_mpr121_set_interrupt_handler(MPR121_PIN_NUM_START , mpr121_event_handler, (void*) (1 << BADGE_BUTTON_START));
+	badge_mpr121_set_interrupt_handler(MPR121_PIN_NUM_SELECT, mpr121_event_handler, (void*) (1 << BADGE_BUTTON_SELECT));
+	badge_mpr121_set_interrupt_handler(MPR121_PIN_NUM_DOWN  , mpr121_event_handler, (void*) (1 << BADGE_BUTTON_DOWN));
+	badge_mpr121_set_interrupt_handler(MPR121_PIN_NUM_RIGHT , mpr121_event_handler, (void*) (1 << BADGE_BUTTON_RIGHT));
+	badge_mpr121_set_interrupt_handler(MPR121_PIN_NUM_UP    , mpr121_event_handler, (void*) (1 << BADGE_BUTTON_UP));
+	badge_mpr121_set_interrupt_handler(MPR121_PIN_NUM_LEFT  , mpr121_event_handler, (void*) (1 << BADGE_BUTTON_LEFT));
 #endif // I2C_MPR121_ADDR
 
 #ifdef I2C_TOUCHPAD_ADDR
@@ -401,30 +421,36 @@ app_main(void) {
   while (1) {
     uint32_t buttons_down;
     if (xQueueReceive(badge_input_queue, &buttons_down, portMAX_DELAY)) {
-      if (buttons_down & (1 << 1)) {
+      if (buttons_down & (1 << BADGE_BUTTON_B)) {
         ets_printf("Button B handling\n");
         /* redraw with default LUT */
 		display_picture(picture_id, -1);
       }
-      if (buttons_down & (1 << 2)) {
+      if (buttons_down & (1 << BADGE_BUTTON_MID)) {
         ets_printf("Button MID handling\n");
         /* open menu */
         displayMenu("Demo menu", demoMenu);
 		display_picture(picture_id, selected_lut);
       }
-      if (buttons_down & (1 << 3)) {
+      if (buttons_down & (1 << BADGE_BUTTON_SELECT)) {
+        ets_printf("Button SELECT handling\n");
+        /* open menu */
+        displayMenu("Demo menu", demoMenu);
+		display_picture(picture_id, selected_lut);
+      }
+      if (buttons_down & (1 << BADGE_BUTTON_UP)) {
         ets_printf("Button UP handling\n");
         /* switch LUT */
         selected_lut = (selected_lut + 1) % (LUT_MAX + 1);
 		display_picture(picture_id, selected_lut);
       }
-      if (buttons_down & (1 << 4)) {
+      if (buttons_down & (1 << BADGE_BUTTON_DOWN)) {
         ets_printf("Button DOWN handling\n");
         /* switch LUT */
         selected_lut = (selected_lut + LUT_MAX) % (LUT_MAX + 1);
 		display_picture(picture_id, selected_lut);
       }
-      if (buttons_down & (1 << 5)) {
+      if (buttons_down & (1 << BADGE_BUTTON_LEFT)) {
         ets_printf("Button LEFT handling\n");
         /* previous picture */
         if (picture_id > 0) {
@@ -432,7 +458,7 @@ app_main(void) {
 		  display_picture(picture_id, selected_lut);
         }
       }
-      if (buttons_down & (1 << 6)) {
+      if (buttons_down & (1 << BADGE_BUTTON_RIGHT)) {
         ets_printf("Button RIGHT handling\n");
         /* next picture */
         if (picture_id + 1 < NUM_PICTURES) {
