@@ -29,65 +29,40 @@
 
 esp_err_t event_handler(void *ctx, system_event_t *event) { return ESP_OK; }
 
-uint32_t
-get_buttons(void)
-{
-	uint32_t bits = 0;
-#ifdef PIN_NUM_BUTTON_A
-	bits |= gpio_get_level(PIN_NUM_BUTTON_A)     <<  BADGE_BUTTON_A;
-	bits |= gpio_get_level(PIN_NUM_BUTTON_B)     <<  BADGE_BUTTON_B;
-	bits |= gpio_get_level(PIN_NUM_BUTTON_MID)   <<  BADGE_BUTTON_MID;
-	bits |= gpio_get_level(PIN_NUM_BUTTON_UP)    <<  BADGE_BUTTON_UP;
-	bits |= gpio_get_level(PIN_NUM_BUTTON_DOWN)  <<  BADGE_BUTTON_DOWN;
-	bits |= gpio_get_level(PIN_NUM_BUTTON_LEFT)  <<  BADGE_BUTTON_LEFT;
-	bits |= gpio_get_level(PIN_NUM_BUTTON_RIGHT) <<  BADGE_BUTTON_RIGHT;
-#else
-	bits |= gpio_get_level(PIN_NUM_BUTTON_FLASH) <<  BADGE_BUTTON_FLASH;
-#endif // ! PIN_NUM_BUTTON_A
-	return bits;
-}
-
 uint32_t buttons_state = 0;
 
-void gpio_intr_buttons(void *arg) {
-  // read status to get interrupt status for GPIO 0-31
-  uint32_t gpio_intr_status_lo = READ_PERI_REG(GPIO_STATUS_REG);
-  // read status to get interrupt status for GPIO 32-39
-  uint32_t gpio_intr_status_hi = READ_PERI_REG(GPIO_STATUS1_REG);
-  // clear intr for GPIO 0-31
-  SET_PERI_REG_MASK(GPIO_STATUS_W1TC_REG, gpio_intr_status_lo);
-  // clear intr for GPIO 32-39
-  SET_PERI_REG_MASK(GPIO_STATUS1_W1TC_REG, gpio_intr_status_hi);
+void
+gpio_intr_buttons(void *arg) {
+	// read status to get interrupt status for GPIO 0-31
+	uint32_t gpio_intr_status_lo = READ_PERI_REG(GPIO_STATUS_REG);
+	// read status to get interrupt status for GPIO 32-39
+	uint32_t gpio_intr_status_hi = READ_PERI_REG(GPIO_STATUS1_REG);
+	// clear intr for GPIO 0-31
+	SET_PERI_REG_MASK(GPIO_STATUS_W1TC_REG, gpio_intr_status_lo);
+	// clear intr for GPIO 32-39
+	SET_PERI_REG_MASK(GPIO_STATUS1_W1TC_REG, gpio_intr_status_hi);
 
-  uint32_t buttons_new = get_buttons();
-  uint32_t buttons_down = (~buttons_new) & buttons_state;
-  buttons_state = buttons_new;
+	uint32_t buttons_new = 0;
+#ifdef PIN_NUM_BUTTON_A
+	buttons_new |= gpio_get_level(PIN_NUM_BUTTON_A)     <<  BADGE_BUTTON_A;
+	buttons_new |= gpio_get_level(PIN_NUM_BUTTON_B)     <<  BADGE_BUTTON_B;
+	buttons_new |= gpio_get_level(PIN_NUM_BUTTON_MID)   <<  BADGE_BUTTON_MID;
+	buttons_new |= gpio_get_level(PIN_NUM_BUTTON_UP)    <<  BADGE_BUTTON_UP;
+	buttons_new |= gpio_get_level(PIN_NUM_BUTTON_DOWN)  <<  BADGE_BUTTON_DOWN;
+	buttons_new |= gpio_get_level(PIN_NUM_BUTTON_LEFT)  <<  BADGE_BUTTON_LEFT;
+	buttons_new |= gpio_get_level(PIN_NUM_BUTTON_RIGHT) <<  BADGE_BUTTON_RIGHT;
+#else
+	buttons_new |= gpio_get_level(PIN_NUM_BUTTON_FLASH) <<  BADGE_BUTTON_FLASH;
+#endif // ! PIN_NUM_BUTTON_A
 
-  if (buttons_down != 0)
-  {
-    uint32_t button_down;
-    for (button_down = 0; button_down < 32; button_down++) {
-      if (buttons_down & (1 << button_down))
-        xQueueSendFromISR(badge_input_queue, &button_down, NULL);
-    }
-  }
+	uint32_t buttons_down = (~buttons_new) & buttons_state;
+	buttons_state = buttons_new;
 
-  if (buttons_down & (1 << BADGE_BUTTON_A))
-    ets_printf("Button A\n");
-  if (buttons_down & (1 << BADGE_BUTTON_B))
-    ets_printf("Button B\n");
-  if (buttons_down & (1 << BADGE_BUTTON_MID))
-    ets_printf("Button MID\n");
-  if (buttons_down & (1 << BADGE_BUTTON_UP))
-    ets_printf("Button UP\n");
-  if (buttons_down & (1 << BADGE_BUTTON_DOWN))
-    ets_printf("Button DOWN\n");
-  if (buttons_down & (1 << BADGE_BUTTON_LEFT))
-    ets_printf("Button LEFT\n");
-  if (buttons_down & (1 << BADGE_BUTTON_RIGHT))
-    ets_printf("Button RIGHT\n");
-  if (buttons_down & (1 << BADGE_BUTTON_FLASH))
-    ets_printf("Button FLASH\n");
+	uint32_t button_down;
+	for (button_down = 0; button_down < 32; button_down++) {
+		if (buttons_down & (1 << button_down))
+			xQueueSendFromISR(badge_input_queue, &button_down, NULL);
+	}
 }
 
 #ifdef I2C_TOUCHPAD_ADDR
