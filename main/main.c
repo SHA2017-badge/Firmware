@@ -295,9 +295,10 @@ app_main(void) {
 	// gpio pin.
 	gpio_install_isr_service(0);
 
-	/* configure buttons input */
+	// configure input queue
 	badge_input_init();
 
+	// configure buttons directly connected to gpio pins
 #ifdef PIN_NUM_BUTTON_A
 	gpio_isr_handler_add(PIN_NUM_BUTTON_A    , gpio_intr_buttons, NULL);
 	gpio_isr_handler_add(PIN_NUM_BUTTON_B    , gpio_intr_buttons, NULL);
@@ -310,7 +311,7 @@ app_main(void) {
 	gpio_isr_handler_add(PIN_NUM_BUTTON_FLASH, gpio_intr_buttons, NULL);
 #endif // ! PIN_NUM_BUTTON_A
 
-	// configure button-listener
+	// configure the gpio pins for input
 	gpio_config_t io_conf;
 	io_conf.intr_type = GPIO_INTR_ANYEDGE;
 	io_conf.mode = GPIO_MODE_INPUT;
@@ -331,6 +332,7 @@ app_main(void) {
 	io_conf.pull_up_en = 1;
 	gpio_config(&io_conf);
 
+	// configure the i2c bus to the port-expander and touch-controller or to the mpr121
 #ifdef PIN_NUM_I2C_CLK
 	badge_i2c_init();
 #endif // PIN_NUM_I2C_CLK
@@ -338,6 +340,11 @@ app_main(void) {
 #ifdef I2C_PORTEXP_ADDR
 	badge_portexp_init();
 #endif // I2C_PORTEXP_ADDR
+
+#ifdef I2C_TOUCHPAD_ADDR
+	badge_touch_init();
+	badge_touch_set_event_handler(touch_event_handler);
+#endif // I2C_TOUCHPAD_ADDR
 
 #ifdef I2C_MPR121_ADDR
 	badge_mpr121_init();
@@ -351,16 +358,16 @@ app_main(void) {
 	badge_mpr121_set_interrupt_handler(MPR121_PIN_NUM_LEFT  , mpr121_event_handler, (void*) (BADGE_BUTTON_LEFT));
 #endif // I2C_MPR121_ADDR
 
-#ifdef I2C_TOUCHPAD_ADDR
-	badge_touch_init();
-	badge_touch_set_event_handler(touch_event_handler);
-#endif // I2C_TOUCHPAD_ADDR
-
+	// configure the voltage measuring for charging-info feedback
 	badge_power_init();
 
+	// configure the led-strip on top of the badge
 #ifdef PIN_NUM_LEDS
 	badge_leds_init();
 #endif // PIN_NUM_LEDS
+
+	// configure eink display
+	badge_eink_init();
 
   tcpip_adapter_init();
   ESP_ERROR_CHECK(esp_event_loop_init(event_handler, NULL));
@@ -376,8 +383,6 @@ app_main(void) {
   ESP_ERROR_CHECK(esp_wifi_start());
   ESP_ERROR_CHECK(esp_wifi_connect());
 #endif // CONFIG_WIFI_USE
-
-  badge_eink_init();
 
   int picture_id = 0;
 #if 0
