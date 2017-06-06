@@ -5,4 +5,4 @@
 
 extern void demoUgfx(void);
 
-#endif // DEMO_DOT1_H
+#endif // DEMO_UGFX_H
