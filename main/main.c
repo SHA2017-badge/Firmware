@@ -64,7 +64,13 @@ void gpio_intr_buttons(void *arg) {
   buttons_state = buttons_new;
 
   if (buttons_down != 0)
-    xQueueSendFromISR(badge_input_queue, &buttons_down, NULL);
+  {
+    uint32_t button_down;
+    for (button_down = 0; button_down < 32; button_down++) {
+      if (buttons_down & (1 << button_down))
+        xQueueSendFromISR(badge_input_queue, &button_down, NULL);
+    }
+  }
 
   if (buttons_down & (1 << BADGE_BUTTON_A))
     ets_printf("Button A\n");
@@ -108,8 +114,8 @@ touch_event_handler(int event)
 			int id = conv[(event >> 8) & 0xff];
 			if (id != -1)
 			{
-				uint32_t buttons_down = 1<<id;
-				xQueueSend(badge_input_queue, &buttons_down, 0);
+				uint32_t button_down = id;
+				xQueueSend(badge_input_queue, &button_down, 0);
 			}
 		}
 	}
@@ -120,8 +126,8 @@ touch_event_handler(int event)
 void
 mpr121_event_handler(void *b)
 {
-	int button = (int) b;
-	xQueueSend(badge_input_queue, &button, 0);
+	uint32_t button_down = (int) b;
+	xQueueSend(badge_input_queue, &button_down, 0);
 }
 #endif // I2C_MPR121_ADDR
 
@@ -238,13 +244,13 @@ void displayMenu(const char *menu_title, const struct menu_item *itemlist) {
     }
 
     /* handle input */
-    uint32_t buttons_down;
-    if (xQueueReceive(badge_input_queue, &buttons_down, xTicksToWait)) {
-      if (buttons_down & (1 << BADGE_BUTTON_B)) {
+    uint32_t button_down;
+    if (xQueueReceive(badge_input_queue, &button_down, xTicksToWait)) {
+      if (button_down == BADGE_BUTTON_B) {
         ets_printf("Button B handling\n");
         return;
       }
-      if (buttons_down & (1 << BADGE_BUTTON_MID)) {
+      if (button_down == BADGE_BUTTON_MID) {
         ets_printf("Selected '%s'\n", itemlist[item_pos].title);
         if (itemlist[item_pos].handler != NULL)
           itemlist[item_pos].handler();
@@ -252,7 +258,7 @@ void displayMenu(const char *menu_title, const struct menu_item *itemlist) {
         ets_printf("Button MID handled\n");
         continue;
       }
-      if (buttons_down & (1 << BADGE_BUTTON_SELECT)) {
+      if (button_down == BADGE_BUTTON_SELECT) {
         ets_printf("Selected '%s'\n", itemlist[item_pos].title);
         if (itemlist[item_pos].handler != NULL)
           itemlist[item_pos].handler();
@@ -260,7 +266,7 @@ void displayMenu(const char *menu_title, const struct menu_item *itemlist) {
         ets_printf("Button SELECT handled\n");
         continue;
       }
-      if (buttons_down & (1 << BADGE_BUTTON_UP)) {
+      if (button_down == BADGE_BUTTON_UP) {
         if (item_pos > 0) {
           item_pos--;
           if (scroll_pos > item_pos)
@@ -269,7 +275,7 @@ void displayMenu(const char *menu_title, const struct menu_item *itemlist) {
         }
         ets_printf("Button UP handled\n");
       }
-      if (buttons_down & (1 << BADGE_BUTTON_DOWN)) {
+      if (button_down == BADGE_BUTTON_DOWN) {
         if (item_pos + 1 < num_items) {
           item_pos++;
           if (scroll_pos + 6 < item_pos)
@@ -360,14 +366,14 @@ app_main(void) {
 
 #ifdef I2C_MPR121_ADDR
 	badge_mpr121_init();
-	badge_mpr121_set_interrupt_handler(MPR121_PIN_NUM_A     , mpr121_event_handler, (void*) (1 << BADGE_BUTTON_A));
-	badge_mpr121_set_interrupt_handler(MPR121_PIN_NUM_B     , mpr121_event_handler, (void*) (1 << BADGE_BUTTON_B));
-	badge_mpr121_set_interrupt_handler(MPR121_PIN_NUM_START , mpr121_event_handler, (void*) (1 << BADGE_BUTTON_START));
-	badge_mpr121_set_interrupt_handler(MPR121_PIN_NUM_SELECT, mpr121_event_handler, (void*) (1 << BADGE_BUTTON_SELECT));
-	badge_mpr121_set_interrupt_handler(MPR121_PIN_NUM_DOWN  , mpr121_event_handler, (void*) (1 << BADGE_BUTTON_DOWN));
-	badge_mpr121_set_interrupt_handler(MPR121_PIN_NUM_RIGHT , mpr121_event_handler, (void*) (1 << BADGE_BUTTON_RIGHT));
-	badge_mpr121_set_interrupt_handler(MPR121_PIN_NUM_UP    , mpr121_event_handler, (void*) (1 << BADGE_BUTTON_UP));
-	badge_mpr121_set_interrupt_handler(MPR121_PIN_NUM_LEFT  , mpr121_event_handler, (void*) (1 << BADGE_BUTTON_LEFT));
+	badge_mpr121_set_interrupt_handler(MPR121_PIN_NUM_A     , mpr121_event_handler, (void*) (BADGE_BUTTON_A));
+	badge_mpr121_set_interrupt_handler(MPR121_PIN_NUM_B     , mpr121_event_handler, (void*) (BADGE_BUTTON_B));
+	badge_mpr121_set_interrupt_handler(MPR121_PIN_NUM_START , mpr121_event_handler, (void*) (BADGE_BUTTON_START));
+	badge_mpr121_set_interrupt_handler(MPR121_PIN_NUM_SELECT, mpr121_event_handler, (void*) (BADGE_BUTTON_SELECT));
+	badge_mpr121_set_interrupt_handler(MPR121_PIN_NUM_DOWN  , mpr121_event_handler, (void*) (BADGE_BUTTON_DOWN));
+	badge_mpr121_set_interrupt_handler(MPR121_PIN_NUM_RIGHT , mpr121_event_handler, (void*) (BADGE_BUTTON_RIGHT));
+	badge_mpr121_set_interrupt_handler(MPR121_PIN_NUM_UP    , mpr121_event_handler, (void*) (BADGE_BUTTON_UP));
+	badge_mpr121_set_interrupt_handler(MPR121_PIN_NUM_LEFT  , mpr121_event_handler, (void*) (BADGE_BUTTON_LEFT));
 #endif // I2C_MPR121_ADDR
 
 #ifdef I2C_TOUCHPAD_ADDR
@@ -419,38 +425,38 @@ app_main(void) {
   int selected_lut = LUT_PART;
 
   while (1) {
-    uint32_t buttons_down;
-    if (xQueueReceive(badge_input_queue, &buttons_down, portMAX_DELAY)) {
-      if (buttons_down & (1 << BADGE_BUTTON_B)) {
+    uint32_t button_down;
+    if (xQueueReceive(badge_input_queue, &button_down, portMAX_DELAY)) {
+      if (button_down == BADGE_BUTTON_B) {
         ets_printf("Button B handling\n");
         /* redraw with default LUT */
 		display_picture(picture_id, -1);
       }
-      if (buttons_down & (1 << BADGE_BUTTON_MID)) {
+      if (button_down == BADGE_BUTTON_MID) {
         ets_printf("Button MID handling\n");
         /* open menu */
         displayMenu("Demo menu", demoMenu);
 		display_picture(picture_id, selected_lut);
       }
-      if (buttons_down & (1 << BADGE_BUTTON_SELECT)) {
+      if (button_down == BADGE_BUTTON_SELECT) {
         ets_printf("Button SELECT handling\n");
         /* open menu */
         displayMenu("Demo menu", demoMenu);
 		display_picture(picture_id, selected_lut);
       }
-      if (buttons_down & (1 << BADGE_BUTTON_UP)) {
+      if (button_down == BADGE_BUTTON_UP) {
         ets_printf("Button UP handling\n");
         /* switch LUT */
         selected_lut = (selected_lut + 1) % (LUT_MAX + 1);
 		display_picture(picture_id, selected_lut);
       }
-      if (buttons_down & (1 << BADGE_BUTTON_DOWN)) {
+      if (button_down == BADGE_BUTTON_DOWN) {
         ets_printf("Button DOWN handling\n");
         /* switch LUT */
         selected_lut = (selected_lut + LUT_MAX) % (LUT_MAX + 1);
 		display_picture(picture_id, selected_lut);
       }
-      if (buttons_down & (1 << BADGE_BUTTON_LEFT)) {
+      if (button_down == BADGE_BUTTON_LEFT) {
         ets_printf("Button LEFT handling\n");
         /* previous picture */
         if (picture_id > 0) {
@@ -458,7 +464,7 @@ app_main(void) {
 		  display_picture(picture_id, selected_lut);
         }
       }
-      if (buttons_down & (1 << BADGE_BUTTON_RIGHT)) {
+      if (button_down == BADGE_BUTTON_RIGHT) {
         ets_printf("Button RIGHT handling\n");
         /* next picture */
         if (picture_id + 1 < NUM_PICTURES) {
