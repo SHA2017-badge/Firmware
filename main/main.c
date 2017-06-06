@@ -1,5 +1,4 @@
 #include "sdkconfig.h"
-#include "driver/gpio.h"
 #include "esp_event.h"
 #include "esp_event_loop.h"
 #include "esp_system.h"
@@ -20,6 +19,7 @@
 #include "badge_eink.h"
 #include "badge_power.h"
 #include "badge_input.h"
+#include "badge_button.h"
 
 #include "imgv2_sha.h"
 #include "imgv2_menu.h"
@@ -28,41 +28,6 @@
 #include "imgv2_test.h"
 
 esp_err_t event_handler(void *ctx, system_event_t *event) { return ESP_OK; }
-
-uint32_t badge_button_conv[40] = { 0 };
-int badge_button_old_state[40] = { 0 };
-
-void
-badge_button_handler(void *arg)
-{
-	uint32_t gpio_num = (uint32_t) arg;
-
-	int new_state = gpio_get_level(gpio_num);
-	if (new_state == 0 && badge_button_old_state[gpio_num] != 0)
-	{
-		uint32_t button_down = badge_button_conv[gpio_num];
-		xQueueSendFromISR(badge_input_queue, &button_down, NULL);
-	}
-	badge_button_old_state[gpio_num] = new_state;
-}
-
-void
-badge_button_add(int gpio_num, uint32_t button_id)
-{
-	badge_button_conv[gpio_num] = button_id;
-	badge_button_old_state[gpio_num] = -1;
-
-	gpio_isr_handler_add(gpio_num, badge_button_handler, (void*) gpio_num);
-
-	// configure the gpio pin for input
-	gpio_config_t io_conf;
-	io_conf.intr_type = GPIO_INTR_ANYEDGE;
-	io_conf.mode = GPIO_MODE_INPUT;
-	io_conf.pin_bit_mask = 1LL << gpio_num;
-	io_conf.pull_down_en = 0;
-	io_conf.pull_up_en = 1;
-	gpio_config(&io_conf);
-}
 
 #ifdef I2C_TOUCHPAD_ADDR
 void
