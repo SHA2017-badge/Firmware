@@ -19,6 +19,7 @@
 #include "badge_leds.h"
 #include "badge_eink.h"
 #include "badge_power.h"
+#include "badge_input.h"
 
 #include "imgv2_sha.h"
 #include "imgv2_menu.h"
@@ -46,8 +47,6 @@ get_buttons(void)
 	return bits;
 }
 
-#include "event_queue.h"
-
 uint32_t buttons_state = 0;
 
 void gpio_intr_buttons(void *arg) {
@@ -65,7 +64,7 @@ void gpio_intr_buttons(void *arg) {
   buttons_state = buttons_new;
 
   if (buttons_down != 0)
-    xQueueSendFromISR(evt_queue, &buttons_down, NULL);
+    xQueueSendFromISR(badge_input_queue, &buttons_down, NULL);
 
   if (buttons_down & (1 << 0))
     ets_printf("Button A\n");
@@ -98,7 +97,7 @@ touch_event_handler(int event)
 			if (id != -1)
 			{
 				uint32_t buttons_down = 1<<id;
-				xQueueSend(evt_queue, &buttons_down, 0);
+				xQueueSend(badge_input_queue, &buttons_down, 0);
 			}
 		}
 	}
@@ -110,7 +109,7 @@ void
 mpr121_event_handler(void *b)
 {
 	int button = (int) b;
-	xQueueSend(evt_queue, &button, 0);
+	xQueueSend(badge_input_queue, &button, 0);
 }
 #endif // I2C_MPR121_ADDR
 
@@ -228,7 +227,7 @@ void displayMenu(const char *menu_title, const struct menu_item *itemlist) {
 
     /* handle input */
     uint32_t buttons_down;
-    if (xQueueReceive(evt_queue, &buttons_down, xTicksToWait)) {
+    if (xQueueReceive(badge_input_queue, &buttons_down, xTicksToWait)) {
       if (buttons_down & (1 << 1)) {
         ets_printf("Button B handling\n");
         return;
@@ -296,7 +295,8 @@ app_main(void) {
 	gpio_install_isr_service(0);
 
 	/* configure buttons input */
-	evt_queue = xQueueCreate(10, sizeof(uint32_t));
+	badge_input_init();
+
 #ifdef PIN_NUM_BUTTON_A
 	gpio_isr_handler_add(PIN_NUM_BUTTON_A    , gpio_intr_buttons, NULL);
 	gpio_isr_handler_add(PIN_NUM_BUTTON_B    , gpio_intr_buttons, NULL);
@@ -400,7 +400,7 @@ app_main(void) {
 
   while (1) {
     uint32_t buttons_down;
-    if (xQueueReceive(evt_queue, &buttons_down, portMAX_DELAY)) {
+    if (xQueueReceive(badge_input_queue, &buttons_down, portMAX_DELAY)) {
       if (buttons_down & (1 << 1)) {
         ets_printf("Button B handling\n");
         /* redraw with default LUT */

@@ -7,9 +7,9 @@
 #include <badge_pins.h>
 #include <badge_eink.h>
 #include <badge_power.h>
-#include <font.h>
+#include <badge_input.h>
 
-#include "event_queue.h"
+#include <font.h>
 
 // re-use screen_buf from main.c
 extern uint8_t screen_buf[296*16];
@@ -67,7 +67,7 @@ demoPower(void) {
 
 		// wait 1 second
 		uint32_t buttons_down = 0;
-		if (xQueueReceive(evt_queue, &buttons_down, 1000 / portTICK_RATE_MS))
+		if (xQueueReceive(badge_input_queue, &buttons_down, 1000 / portTICK_RATE_MS))
 			if ((buttons_down & 0xffff) != 0)
 				return;
 	}
