@@ -29,40 +29,39 @@
 
 esp_err_t event_handler(void *ctx, system_event_t *event) { return ESP_OK; }
 
-uint32_t buttons_state = 0;
+uint32_t badge_button_conv[40] = { 0 };
+int badge_button_old_state[40] = { 0 };
 
 void
-gpio_intr_buttons(void *arg) {
-	// read status to get interrupt status for GPIO 0-31
-	uint32_t gpio_intr_status_lo = READ_PERI_REG(GPIO_STATUS_REG);
-	// read status to get interrupt status for GPIO 32-39
-	uint32_t gpio_intr_status_hi = READ_PERI_REG(GPIO_STATUS1_REG);
-	// clear intr for GPIO 0-31
-	SET_PERI_REG_MASK(GPIO_STATUS_W1TC_REG, gpio_intr_status_lo);
-	// clear intr for GPIO 32-39
-	SET_PERI_REG_MASK(GPIO_STATUS1_W1TC_REG, gpio_intr_status_hi);
+badge_button_handler(void *arg)
+{
+	uint32_t gpio_num = (uint32_t) arg;
 
-	uint32_t buttons_new = 0;
-#ifdef PIN_NUM_BUTTON_A
-	buttons_new |= gpio_get_level(PIN_NUM_BUTTON_A)     <<  BADGE_BUTTON_A;
-	buttons_new |= gpio_get_level(PIN_NUM_BUTTON_B)     <<  BADGE_BUTTON_B;
-	buttons_new |= gpio_get_level(PIN_NUM_BUTTON_MID)   <<  BADGE_BUTTON_MID;
-	buttons_new |= gpio_get_level(PIN_NUM_BUTTON_UP)    <<  BADGE_BUTTON_UP;
-	buttons_new |= gpio_get_level(PIN_NUM_BUTTON_DOWN)  <<  BADGE_BUTTON_DOWN;
-	buttons_new |= gpio_get_level(PIN_NUM_BUTTON_LEFT)  <<  BADGE_BUTTON_LEFT;
-	buttons_new |= gpio_get_level(PIN_NUM_BUTTON_RIGHT) <<  BADGE_BUTTON_RIGHT;
-#else
-	buttons_new |= gpio_get_level(PIN_NUM_BUTTON_FLASH) <<  BADGE_BUTTON_FLASH;
-#endif // ! PIN_NUM_BUTTON_A
-
-	uint32_t buttons_down = (~buttons_new) & buttons_state;
-	buttons_state = buttons_new;
-
-	uint32_t button_down;
-	for (button_down = 0; button_down < 32; button_down++) {
-		if (buttons_down & (1 << button_down))
-			xQueueSendFromISR(badge_input_queue, &button_down, NULL);
+	int new_state = gpio_get_level(gpio_num);
+	if (new_state == 0 && badge_button_old_state[gpio_num] != 0)
+	{
+		uint32_t button_down = badge_button_conv[gpio_num];
+		xQueueSendFromISR(badge_input_queue, &button_down, NULL);
 	}
+	badge_button_old_state[gpio_num] = new_state;
+}
+
+void
+badge_button_add(int gpio_num, uint32_t button_id)
+{
+	badge_button_conv[gpio_num] = button_id;
+	badge_button_old_state[gpio_num] = -1;
+
+	gpio_isr_handler_add(gpio_num, badge_button_handler, (void*) gpio_num);
+
+	// configure the gpio pin for input
+	gpio_config_t io_conf;
+	io_conf.intr_type = GPIO_INTR_ANYEDGE;
+	io_conf.mode = GPIO_MODE_INPUT;
+	io_conf.pin_bit_mask = 1LL << gpio_num;
+	io_conf.pull_down_en = 0;
+	io_conf.pull_up_en = 1;
+	gpio_config(&io_conf);
 }
 
 #ifdef I2C_TOUCHPAD_ADDR
@@ -300,37 +299,16 @@ app_main(void) {
 
 	// configure buttons directly connected to gpio pins
 #ifdef PIN_NUM_BUTTON_A
-	gpio_isr_handler_add(PIN_NUM_BUTTON_A    , gpio_intr_buttons, NULL);
-	gpio_isr_handler_add(PIN_NUM_BUTTON_B    , gpio_intr_buttons, NULL);
-	gpio_isr_handler_add(PIN_NUM_BUTTON_MID  , gpio_intr_buttons, NULL);
-	gpio_isr_handler_add(PIN_NUM_BUTTON_UP   , gpio_intr_buttons, NULL);
-	gpio_isr_handler_add(PIN_NUM_BUTTON_DOWN , gpio_intr_buttons, NULL);
-	gpio_isr_handler_add(PIN_NUM_BUTTON_LEFT , gpio_intr_buttons, NULL);
-	gpio_isr_handler_add(PIN_NUM_BUTTON_RIGHT, gpio_intr_buttons, NULL);
+	badge_button_add(PIN_NUM_BUTTON_A    , BADGE_BUTTON_A);
+	badge_button_add(PIN_NUM_BUTTON_B    , BADGE_BUTTON_B);
+	badge_button_add(PIN_NUM_BUTTON_MID  , BADGE_BUTTON_MID);
+	badge_button_add(PIN_NUM_BUTTON_UP   , BADGE_BUTTON_UP);
+	badge_button_add(PIN_NUM_BUTTON_DOWN , BADGE_BUTTON_DOWN);
+	badge_button_add(PIN_NUM_BUTTON_LEFT , BADGE_BUTTON_LEFT);
+	badge_button_add(PIN_NUM_BUTTON_RIGHT, BADGE_BUTTON_RIGHT);
 #else
-	gpio_isr_handler_add(PIN_NUM_BUTTON_FLASH, gpio_intr_buttons, NULL);
+	badge_button_add(PIN_NUM_BUTTON_FLASH, BADGE_BUTTON_FLASH);
 #endif // ! PIN_NUM_BUTTON_A
-
-	// configure the gpio pins for input
-	gpio_config_t io_conf;
-	io_conf.intr_type = GPIO_INTR_ANYEDGE;
-	io_conf.mode = GPIO_MODE_INPUT;
-	io_conf.pin_bit_mask =
-#ifdef PIN_NUM_BUTTON_A
-		(1LL << PIN_NUM_BUTTON_A) |
-		(1LL << PIN_NUM_BUTTON_B) |
-		(1LL << PIN_NUM_BUTTON_MID) |
-		(1LL << PIN_NUM_BUTTON_UP) |
-		(1LL << PIN_NUM_BUTTON_DOWN) |
-		(1LL << PIN_NUM_BUTTON_LEFT) |
-		(1LL << PIN_NUM_BUTTON_RIGHT) |
-#else
-		(1LL << PIN_NUM_BUTTON_FLASH) |
-#endif // ! PIN_NUM_BUTTON_A
-		0LL;
-	io_conf.pull_down_en = 0;
-	io_conf.pull_up_en = 1;
-	gpio_config(&io_conf);
 
 	// configure the i2c bus to the port-expander and touch-controller or to the mpr121
 #ifdef PIN_NUM_I2C_CLK
