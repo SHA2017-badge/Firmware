@@ -21,7 +21,5 @@ extern void writeLUT(int lut_idx);
 extern void setRamArea(unsigned char Xstart, unsigned char Xend,
                        unsigned short Ystart, unsigned short Yend);
 extern void setRamPointer(unsigned char addrX, unsigned short addrY);
-extern void updateDisplay(void);
-extern void updateDisplayPartial(unsigned short yStart, unsigned short yEnd);
 
 #endif

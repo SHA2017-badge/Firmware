@@ -170,10 +170,6 @@ void initDisplay(void) {
   // Source voltage setting (15volt, 0 volt and -15 volt)
   gdeWriteCommand_p3(0x04, 0x41, 0x00, 0x32);
 
-  // Frame setting 50hz
-  gdeWriteCommand_p1(0x3A, 0x30);
-  gdeWriteCommand_p1(0x3B, 0x0A);
-
   writeLUT(LUT_DEFAULT);
 }
 
@@ -189,36 +185,6 @@ void setRamPointer(uint8_t addrX, uint16_t addrY) {
   gdeWriteCommand_p1(0x4e, addrX);
   // set RAM Y address counter
   gdeWriteCommand_p2(0x4f, addrY & 0xff, addrY >> 8);
-}
-
-void updateDisplay(void) {
-  // enforce full screen update
-  //gdeWriteCommand_p3(0x01, (DISP_SIZE_Y - 1) & 0xff, (DISP_SIZE_Y - 1) >> 8,
-  //                   0x00);
-  // gdeWriteCommand_p2(0x0f, 0, 0);
-
-  //	gdeWriteCommand_p1(0x22, 0xc7);
-  gdeWriteCommand_p1(0x22, 0xc7);
-  //	gdeWriteCommand_p1(0x22, 0xff);
-  // 80 - enable clock signal
-  // 40 - enable CP
-  // 20 - load temperature value
-  // 10 - load LUT
-  // 08 - initial display
-  // 04 - pattern display
-  // 02 - disable CP
-  // 01 - disable clock signal
-  gdeWriteCommand(0x20);
-}
-
-void updateDisplayPartial(uint16_t yStart, uint16_t yEnd) {
-  // NOTE: partial screen updates work, but you need the full
-  //       LUT waveform. but still a lot of ghosting..
-  uint16_t yLen = yEnd - yStart;
-  gdeWriteCommand_p3(0x01, yLen & 0xff, yLen >> 8, 0x00);
-  gdeWriteCommand_p2(0x0f, yStart & 0xff, yStart >> 8);
-  gdeWriteCommand_p1(0x22, 0xc7);
-  gdeWriteCommand(0x20);
 }
 
 #endif // CONFIG_SHA_BADGE_EINK_DEPG0290B1
