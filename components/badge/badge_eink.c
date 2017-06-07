@@ -105,6 +105,7 @@ const struct badge_eink_update eink_upd_default = {
 void
 badge_eink_update(const struct badge_eink_update *upd_conf)
 {
+	// write LUT to display
 	if (upd_conf->lut == -1)
 	{
 #ifndef CONFIG_SHA_BADGE_EINK_DEPG0290B1
@@ -117,14 +118,35 @@ badge_eink_update(const struct badge_eink_update *upd_conf)
 	{
 		writeLUT(upd_conf->lut);
 	}
+
+	// write number of overscan lines
 	gdeWriteCommand_p1(0x3a, upd_conf->reg_0x3a);
+
+	// write time to write every line
 	gdeWriteCommand_p1(0x3b, upd_conf->reg_0x3b);
 
 	uint16_t y_len = upd_conf->y_end - upd_conf->y_start;
+	// configure length of update
 	gdeWriteCommand_p3(0x01, y_len & 0xff, y_len >> 8, 0x00);
+
+	// configure starting-line of update
 	gdeWriteCommand_p2(0x0f, upd_conf->y_start & 0xff, upd_conf->y_start >> 8);
+
+	// bitmapped enabled phases of the update: (in this order)
+	//   80 - enable clock signal
+	//   40 - enable CP
+	//   20 - load temperature value
+	//   10 - load LUT
+	//   08 - initial display
+	//   04 - pattern display
+	//   02 - disable CP
+	//   01 - disable clock signal
 	gdeWriteCommand_p1(0x22, 0xc7);
+
+	// start update
 	gdeWriteCommand(0x20);
+
+	// wait until no longer busy
 	gdeBusyWait();
 }
 
@@ -230,9 +252,6 @@ badge_eink_display(const uint8_t *img, int mode)
 			badge_eink_update(&eink_upd);
 		}
 	}
-
-	gdeWriteCommand_p1(0x3a, 0x1a); // 26 dummy lines per gate
-	gdeWriteCommand_p1(0x3b, 0x08); // 62us per line
 }
 
 void
