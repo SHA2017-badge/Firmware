@@ -3,6 +3,7 @@
 #include <gde-driver.h>
 
 #include "badge_pins.h"
+#include "badge_eink_lut.h"
 #include "badge_eink.h"
 
 static const uint8_t xlat_curve[256] = {
