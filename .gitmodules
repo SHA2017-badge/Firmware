@@ -14,3 +14,6 @@
 	path = ugfx
 	url = https://git.ugfx.io/ugfx/ugfx.git
 	branch = master
+[submodule "micropython-lib"]
+	path = micropython-lib
+	url = git@github.com:micropython/micropython-lib.git
