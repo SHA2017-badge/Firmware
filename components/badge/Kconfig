@@ -26,15 +26,10 @@ choice SHA_BADGE_EINK_TYPE
     default SHA_BADGE_EINK_DEPG0290B1
     help
         The GDEH029A1 was the original e-ink display.
-        The GDEW029* are alternatives. (tsd''s side project)
         The DEPG0290B1 is the cheaper alternative.
 
 config SHA_BADGE_EINK_GDEH029A1
     bool "GDEH029A1"
-config SHA_BADGE_EINK_GDEW029Z10
-    bool "GDEW029Z10"
-config SHA_BADGE_EINK_GDEW029T5
-    bool "GDEW029T5"
 config SHA_BADGE_EINK_DEPG0290B1
     bool "DEPG0290B1"
 endchoice
