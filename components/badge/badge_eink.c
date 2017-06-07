@@ -95,7 +95,7 @@ write_bitplane(const uint8_t *img, int y_start, int y_end, int bit, int flags)
 }
 
 const struct badge_eink_update eink_upd_default = {
-	.lut      = LUT_DEFAULT,
+	.lut      = BADGE_EINK_LUT_DEFAULT,
 	.reg_0x3a = 26,   // 26 dummy lines per gate
 	.reg_0x3b = 0x08, // 62us per line
 	.y_start  = 0,
@@ -106,7 +106,7 @@ void
 badge_eink_update(const struct badge_eink_update *upd_conf)
 {
 	// write LUT to display
-	if (upd_conf->lut == -1)
+	if (upd_conf->lut == BADGE_EINK_LUT_CUSTOM)
 	{
 #ifndef CONFIG_SHA_BADGE_EINK_DEPG0290B1
 		gdeWriteCommandStream(0x32, upd_conf->lut_custom, 30);
@@ -182,7 +182,7 @@ badge_eink_display(const uint8_t *img, int mode)
 		if ((mode & DISPLAY_FLAG_NO_UPDATE) == 0)
 		{
 			struct badge_eink_update eink_upd = {
-				.lut      = lut_mode > 0 ? lut_mode - 1 : 0,
+				.lut      = lut_mode > 0 ? lut_mode - 1 : BADGE_EINK_LUT_DEFAULT,
 				.reg_0x3a = 26,   // 26 dummy lines per gate
 				.reg_0x3b = 0x08, // 62us per line
 				.y_start  = 0,
@@ -242,7 +242,7 @@ badge_eink_display(const uint8_t *img, int mode)
 
 			/* update display */
 			struct badge_eink_update eink_upd = {
-				.lut        = -1,
+				.lut        = BADGE_EINK_LUT_CUSTOM,
 				.lut_custom = lut,
 				.reg_0x3a   = 0, // no dummy lines per gate
 				.reg_0x3b   = 0, // 30us per line

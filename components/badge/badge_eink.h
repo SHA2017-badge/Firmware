@@ -6,16 +6,16 @@
 #define BADGE_EINK_WIDTH  296
 #define BADGE_EINK_HEIGHT 128
 
-/* badge_eink_display 'mode' settings */
-// bitmapped flags:
-#define DISPLAY_FLAG_GREYSCALE  1
-#define DISPLAY_FLAG_ROTATE_180 2
-#define DISPLAY_FLAG_NO_UPDATE  4
-// fields and sizes:
-#define DISPLAY_FLAG_LUT_BIT    8
-#define DISPLAY_FLAG_LUT_SIZE   4
-
 extern void badge_eink_init(void);
+
+/* badge_eink_update 'lut' settings */
+#define BADGE_EINK_LUT_CUSTOM  -1
+#define BADGE_EINK_LUT_FULL     0
+#define BADGE_EINK_LUT_NORMAL   1
+#define BADGE_EINK_LUT_FASTER   2
+#define BADGE_EINK_LUT_FASTEST  3
+#define BADGE_EINK_LUT_DEFAULT  BADGE_EINK_LUT_FULL
+#define BADGE_EINK_LUT_MAX      BADGE_EINK_LUT_FASTEST
 
 struct badge_eink_update {
 	int lut;
@@ -25,9 +25,20 @@ struct badge_eink_update {
 	int y_start;
 	int y_end;
 };
+
+// default config for convenience
 extern const struct badge_eink_update eink_upd_default;
 
 extern void badge_eink_update(const struct badge_eink_update *upd_conf);
+
+/* badge_eink_display 'mode' settings */
+// bitmapped flags:
+#define DISPLAY_FLAG_GREYSCALE  1
+#define DISPLAY_FLAG_ROTATE_180 2
+#define DISPLAY_FLAG_NO_UPDATE  4
+// fields and sizes:
+#define DISPLAY_FLAG_LUT_BIT    8
+#define DISPLAY_FLAG_LUT_SIZE   4
 
 /*
  * display image on badge
