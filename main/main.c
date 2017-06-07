@@ -1,5 +1,4 @@
 #include "sdkconfig.h"
-#include "driver/gpio.h"
 #include "esp_event.h"
 #include "esp_event_loop.h"
 #include "esp_system.h"
@@ -11,14 +10,9 @@
 #include <font.h>
 #include <string.h>
 
-#include "badge_pins.h"
-#include "badge_i2c.h"
-#include "badge_portexp.h"
-#include "badge_mpr121.h"
-#include "badge_touch.h"
-#include "badge_leds.h"
-#include "badge_eink.h"
-#include "badge_power.h"
+#include <badge.h>
+#include <badge_input.h>
+#include <badge_eink.h>
 
 #include "imgv2_sha.h"
 #include "imgv2_menu.h"
@@ -27,92 +21,6 @@
 #include "imgv2_test.h"
 
 esp_err_t event_handler(void *ctx, system_event_t *event) { return ESP_OK; }
-
-uint32_t
-get_buttons(void)
-{
-	uint32_t bits = 0;
-#ifdef PIN_NUM_BUTTON_A
-	bits |= gpio_get_level(PIN_NUM_BUTTON_A)     <<  0; // A
-	bits |= gpio_get_level(PIN_NUM_BUTTON_B)     <<  1; // B
-	bits |= gpio_get_level(PIN_NUM_BUTTON_MID)   <<  2; // MID
-	bits |= gpio_get_level(PIN_NUM_BUTTON_UP)    <<  3; // UP
-	bits |= gpio_get_level(PIN_NUM_BUTTON_DOWN)  <<  4; // DOWN
-	bits |= gpio_get_level(PIN_NUM_BUTTON_LEFT)  <<  5; // LEFT
-	bits |= gpio_get_level(PIN_NUM_BUTTON_RIGHT) <<  6; // RIGHT
-#else
-	bits |= gpio_get_level(PIN_NUM_BUTTON_FLASH) <<  7; // FLASH
-#endif // ! PIN_NUM_BUTTON_A
-	return bits;
-}
-
-#include "event_queue.h"
-
-uint32_t buttons_state = 0;
-
-void gpio_intr_buttons(void *arg) {
-  // read status to get interrupt status for GPIO 0-31
-  uint32_t gpio_intr_status_lo = READ_PERI_REG(GPIO_STATUS_REG);
-  // read status to get interrupt status for GPIO 32-39
-  uint32_t gpio_intr_status_hi = READ_PERI_REG(GPIO_STATUS1_REG);
-  // clear intr for GPIO 0-31
-  SET_PERI_REG_MASK(GPIO_STATUS_W1TC_REG, gpio_intr_status_lo);
-  // clear intr for GPIO 32-39
-  SET_PERI_REG_MASK(GPIO_STATUS1_W1TC_REG, gpio_intr_status_hi);
-
-  uint32_t buttons_new = get_buttons();
-  uint32_t buttons_down = (~buttons_new) & buttons_state;
-  buttons_state = buttons_new;
-
-  if (buttons_down != 0)
-    xQueueSendFromISR(evt_queue, &buttons_down, NULL);
-
-  if (buttons_down & (1 << 0))
-    ets_printf("Button A\n");
-  if (buttons_down & (1 << 1))
-    ets_printf("Button B\n");
-  if (buttons_down & (1 << 2))
-    ets_printf("Button MID\n");
-  if (buttons_down & (1 << 3))
-    ets_printf("Button UP\n");
-  if (buttons_down & (1 << 4))
-    ets_printf("Button DOWN\n");
-  if (buttons_down & (1 << 5))
-    ets_printf("Button LEFT\n");
-  if (buttons_down & (1 << 6))
-    ets_printf("Button RIGHT\n");
-  if (buttons_down & (1 << 7))
-    ets_printf("Button FLASH\n");
-}
-
-#ifdef I2C_TOUCHPAD_ADDR
-void
-touch_event_handler(int event)
-{
-	// convert into button queue event
-	if (((event >> 16) & 0x0f) == 0x0) { // button down event
-		static const int conv[12] =
-		{ -1, -1, 5, 3, 6, 4, -1, 0, 2, 1, -1, 0 };
-		if (((event >> 8) & 0xff) < 12) {
-			int id = conv[(event >> 8) & 0xff];
-			if (id != -1)
-			{
-				uint32_t buttons_down = 1<<id;
-				xQueueSend(evt_queue, &buttons_down, 0);
-			}
-		}
-	}
-}
-#endif // I2C_TOUCHPAD_ADDR
-
-#ifdef I2C_MPR121_ADDR
-void
-mpr121_event_handler(void *b)
-{
-	int button = (int) b;
-	xQueueSend(evt_queue, &button, 0);
-}
-#endif // I2C_MPR121_ADDR
 
 struct menu_item {
   const char *title;
@@ -227,13 +135,13 @@ void displayMenu(const char *menu_title, const struct menu_item *itemlist) {
     }
 
     /* handle input */
-    uint32_t buttons_down;
-    if (xQueueReceive(evt_queue, &buttons_down, xTicksToWait)) {
-      if (buttons_down & (1 << 1)) {
+    uint32_t button_down;
+    if (xQueueReceive(badge_input_queue, &button_down, xTicksToWait)) {
+      if (button_down == BADGE_BUTTON_B) {
         ets_printf("Button B handling\n");
         return;
       }
-      if (buttons_down & (1 << 2)) {
+      if (button_down == BADGE_BUTTON_MID) {
         ets_printf("Selected '%s'\n", itemlist[item_pos].title);
         if (itemlist[item_pos].handler != NULL)
           itemlist[item_pos].handler();
@@ -241,7 +149,15 @@ void displayMenu(const char *menu_title, const struct menu_item *itemlist) {
         ets_printf("Button MID handled\n");
         continue;
       }
-      if (buttons_down & (1 << 3)) {
+      if (button_down == BADGE_BUTTON_SELECT) {
+        ets_printf("Selected '%s'\n", itemlist[item_pos].title);
+        if (itemlist[item_pos].handler != NULL)
+          itemlist[item_pos].handler();
+        num_draw = 0;
+        ets_printf("Button SELECT handled\n");
+        continue;
+      }
+      if (button_down == BADGE_BUTTON_UP) {
         if (item_pos > 0) {
           item_pos--;
           if (scroll_pos > item_pos)
@@ -250,7 +166,7 @@ void displayMenu(const char *menu_title, const struct menu_item *itemlist) {
         }
         ets_printf("Button UP handled\n");
       }
-      if (buttons_down & (1 << 4)) {
+      if (button_down == BADGE_BUTTON_DOWN) {
         if (item_pos + 1 < num_items) {
           item_pos++;
           if (scroll_pos + 6 < item_pos)
@@ -291,75 +207,7 @@ void
 app_main(void) {
 	nvs_flash_init();
 
-	// install isr-service, so we can register interrupt-handlers per
-	// gpio pin.
-	gpio_install_isr_service(0);
-
-	/* configure buttons input */
-	evt_queue = xQueueCreate(10, sizeof(uint32_t));
-#ifdef PIN_NUM_BUTTON_A
-	gpio_isr_handler_add(PIN_NUM_BUTTON_A    , gpio_intr_buttons, NULL);
-	gpio_isr_handler_add(PIN_NUM_BUTTON_B    , gpio_intr_buttons, NULL);
-	gpio_isr_handler_add(PIN_NUM_BUTTON_MID  , gpio_intr_buttons, NULL);
-	gpio_isr_handler_add(PIN_NUM_BUTTON_UP   , gpio_intr_buttons, NULL);
-	gpio_isr_handler_add(PIN_NUM_BUTTON_DOWN , gpio_intr_buttons, NULL);
-	gpio_isr_handler_add(PIN_NUM_BUTTON_LEFT , gpio_intr_buttons, NULL);
-	gpio_isr_handler_add(PIN_NUM_BUTTON_RIGHT, gpio_intr_buttons, NULL);
-#else
-	gpio_isr_handler_add(PIN_NUM_BUTTON_FLASH, gpio_intr_buttons, NULL);
-#endif // ! PIN_NUM_BUTTON_A
-
-	// configure button-listener
-	gpio_config_t io_conf;
-	io_conf.intr_type = GPIO_INTR_ANYEDGE;
-	io_conf.mode = GPIO_MODE_INPUT;
-	io_conf.pin_bit_mask =
-#ifdef PIN_NUM_BUTTON_A
-		(1LL << PIN_NUM_BUTTON_A) |
-		(1LL << PIN_NUM_BUTTON_B) |
-		(1LL << PIN_NUM_BUTTON_MID) |
-		(1LL << PIN_NUM_BUTTON_UP) |
-		(1LL << PIN_NUM_BUTTON_DOWN) |
-		(1LL << PIN_NUM_BUTTON_LEFT) |
-		(1LL << PIN_NUM_BUTTON_RIGHT) |
-#else
-		(1LL << PIN_NUM_BUTTON_FLASH) |
-#endif // ! PIN_NUM_BUTTON_A
-		0LL;
-	io_conf.pull_down_en = 0;
-	io_conf.pull_up_en = 1;
-	gpio_config(&io_conf);
-
-#ifdef PIN_NUM_I2C_CLK
-	badge_i2c_init();
-#endif // PIN_NUM_I2C_CLK
-
-#ifdef I2C_PORTEXP_ADDR
-	badge_portexp_init();
-#endif // I2C_PORTEXP_ADDR
-
-#ifdef I2C_MPR121_ADDR
-	badge_mpr121_init();
-	badge_mpr121_set_interrupt_handler(MPR121_PIN_NUM_A     , mpr121_event_handler, (void*) (1<<0));
-	badge_mpr121_set_interrupt_handler(MPR121_PIN_NUM_B     , mpr121_event_handler, (void*) (1<<1));
-//	badge_mpr121_set_interrupt_handler(MPR121_PIN_NUM_START , mpr121_event_handler, (void*) (1<<0));
-	badge_mpr121_set_interrupt_handler(MPR121_PIN_NUM_SELECT, mpr121_event_handler, (void*) (1<<2));
-	badge_mpr121_set_interrupt_handler(MPR121_PIN_NUM_DOWN  , mpr121_event_handler, (void*) (1<<4));
-	badge_mpr121_set_interrupt_handler(MPR121_PIN_NUM_RIGHT , mpr121_event_handler, (void*) (1<<6));
-	badge_mpr121_set_interrupt_handler(MPR121_PIN_NUM_UP    , mpr121_event_handler, (void*) (1<<3));
-	badge_mpr121_set_interrupt_handler(MPR121_PIN_NUM_LEFT  , mpr121_event_handler, (void*) (1<<5));
-#endif // I2C_MPR121_ADDR
-
-#ifdef I2C_TOUCHPAD_ADDR
-	badge_touch_init();
-	badge_touch_set_event_handler(touch_event_handler);
-#endif // I2C_TOUCHPAD_ADDR
-
-	badge_power_init();
-
-#ifdef PIN_NUM_LEDS
-	badge_leds_init();
-#endif // PIN_NUM_LEDS
+	badge_init();
 
   tcpip_adapter_init();
   ESP_ERROR_CHECK(esp_event_loop_init(event_handler, NULL));
@@ -375,8 +223,6 @@ app_main(void) {
   ESP_ERROR_CHECK(esp_wifi_start());
   ESP_ERROR_CHECK(esp_wifi_connect());
 #endif // CONFIG_WIFI_USE
-
-  badge_eink_init();
 
   int picture_id = 0;
 #if 0
@@ -399,32 +245,38 @@ app_main(void) {
   int selected_lut = LUT_PART;
 
   while (1) {
-    uint32_t buttons_down;
-    if (xQueueReceive(evt_queue, &buttons_down, portMAX_DELAY)) {
-      if (buttons_down & (1 << 1)) {
+    uint32_t button_down;
+    if (xQueueReceive(badge_input_queue, &button_down, portMAX_DELAY)) {
+      if (button_down == BADGE_BUTTON_B) {
         ets_printf("Button B handling\n");
         /* redraw with default LUT */
 		display_picture(picture_id, -1);
       }
-      if (buttons_down & (1 << 2)) {
+      if (button_down == BADGE_BUTTON_MID) {
         ets_printf("Button MID handling\n");
         /* open menu */
         displayMenu("Demo menu", demoMenu);
 		display_picture(picture_id, selected_lut);
       }
-      if (buttons_down & (1 << 3)) {
+      if (button_down == BADGE_BUTTON_SELECT) {
+        ets_printf("Button SELECT handling\n");
+        /* open menu */
+        displayMenu("Demo menu", demoMenu);
+		display_picture(picture_id, selected_lut);
+      }
+      if (button_down == BADGE_BUTTON_UP) {
         ets_printf("Button UP handling\n");
         /* switch LUT */
         selected_lut = (selected_lut + 1) % (LUT_MAX + 1);
 		display_picture(picture_id, selected_lut);
       }
-      if (buttons_down & (1 << 4)) {
+      if (button_down == BADGE_BUTTON_DOWN) {
         ets_printf("Button DOWN handling\n");
         /* switch LUT */
         selected_lut = (selected_lut + LUT_MAX) % (LUT_MAX + 1);
 		display_picture(picture_id, selected_lut);
       }
-      if (buttons_down & (1 << 5)) {
+      if (button_down == BADGE_BUTTON_LEFT) {
         ets_printf("Button LEFT handling\n");
         /* previous picture */
         if (picture_id > 0) {
@@ -432,7 +284,7 @@ app_main(void) {
 		  display_picture(picture_id, selected_lut);
         }
       }
-      if (buttons_down & (1 << 6)) {
+      if (button_down == BADGE_BUTTON_RIGHT) {
         ets_printf("Button RIGHT handling\n");
         /* next picture */
         if (picture_id + 1 < NUM_PICTURES) {

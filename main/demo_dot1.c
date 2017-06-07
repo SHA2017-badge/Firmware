@@ -3,10 +3,11 @@
 #ifdef CONFIG_SHA_BADGE_EINK_GDEH029A1
 #include <freertos/FreeRTOS.h>
 #include <esp_event.h>
+
 #include <gde.h>
 #include <gde-driver.h>
 
-#include "event_queue.h"
+#include <badge_input.h>
 
 void demoDot1(void) {
   /* update LUT */
@@ -53,7 +54,7 @@ void demoDot1(void) {
 
   while (1) {
     uint32_t buttons_down = 0;
-    if (xQueueReceive(evt_queue, &buttons_down, portMAX_DELAY))
+    if (xQueueReceive(badge_input_queue, &buttons_down, portMAX_DELAY))
       if ((buttons_down & 0xffff) != 0)
         return;
 

@@ -2,12 +2,12 @@
 
 #include <freertos/FreeRTOS.h>
 #include <esp_event.h>
+
 #include <gde.h>
 #include <gde-driver.h>
 
 #include <badge_eink.h>
-
-#include "event_queue.h"
+#include <badge_input.h>
 
 #include "imgv2_sha.h"
 #include "imgv2_nick.h"
@@ -48,5 +48,5 @@ demoPartialUpdate(void) {
 	// wait for random keypress
 	uint32_t buttons_down = 0;
 	while ((buttons_down & 0xffff) == 0)
-		xQueueReceive(evt_queue, &buttons_down, portMAX_DELAY);
+		xQueueReceive(badge_input_queue, &buttons_down, portMAX_DELAY);
 }

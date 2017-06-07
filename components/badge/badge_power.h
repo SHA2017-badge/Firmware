@@ -1,6 +1,8 @@
 #ifndef BADGE_POWER_H
 #define BADGE_POWER_H
 
+#include <stdbool.h>
+
 extern void badge_power_init(void);
 extern bool badge_battery_charge_status(void);
 

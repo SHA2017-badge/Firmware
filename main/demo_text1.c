@@ -1,15 +1,17 @@
 #include "sdkconfig.h"
 
 #include <string.h>
+
 #include <freertos/FreeRTOS.h>
 #include <esp_event.h>
+
 #include <gde.h>
 #include <gde-driver.h>
 
 #include <badge_eink.h>
-#include <font.h>
+#include <badge_input.h>
 
-#include "event_queue.h"
+#include <font.h>
 
 // re-use screen_buf from main.c
 extern uint8_t screen_buf[296*16];
@@ -73,5 +75,5 @@ demoText1(void) {
 	// wait for random keypress
 	uint32_t buttons_down = 0;
 	while ((buttons_down & 0xffff) == 0)
-		xQueueReceive(evt_queue, &buttons_down, portMAX_DELAY);
+		xQueueReceive(badge_input_queue, &buttons_down, portMAX_DELAY);
 }

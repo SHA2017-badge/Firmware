@@ -1,14 +1,13 @@
-#include <string.h>
-
 #include "sdkconfig.h"
 
-#include "freertos/FreeRTOS.h"
-#include "freertos/task.h"
+#include <string.h>
 
-#include "event_queue.h"
+#include <freertos/FreeRTOS.h>
+#include <freertos/task.h>
 
-#include "badge_pins.h"
-#include "badge_leds.h"
+#include <badge_input.h>
+#include <badge_pins.h>
+#include <badge_leds.h>
 
 #ifdef PIN_NUM_LEDS
 
@@ -46,7 +45,7 @@ void demo_leds(void)
 	while (1) {
 		// exit on random keypress
 		uint32_t buttons_down = 0;
-		if (xQueueReceive(evt_queue, &buttons_down, 10 / portTICK_RATE_MS))
+		if (xQueueReceive(badge_input_queue, &buttons_down, 10 / portTICK_RATE_MS))
 		{
 			if (buttons_down & 0xffff)
 				break;
