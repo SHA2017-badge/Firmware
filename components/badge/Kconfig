@@ -34,4 +34,25 @@ config SHA_BADGE_EINK_DEPG0290B1
     bool "DEPG0290B1"
 endchoice
 
+config SHA_BADGE_PORTEXP_DEBUG
+    bool "Enable port-expander debug messages"
+    depends on SHA_BADGE_V2
+    default n
+    help
+        Debugging
+
+config SHA_BADGE_TOUCH_DEBUG
+    bool "Enable touch debug messages"
+    depends on SHA_BADGE_V2
+    default n
+    help
+        Debugging
+
+config SHA_BADGE_MPR121_DEBUG
+    bool "Enable MPR121 debug messages"
+    depends on SHA_BADGE_V3
+    default n
+    help
+        Debugging
+
 endmenu

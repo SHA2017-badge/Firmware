@@ -18,8 +18,6 @@
 
 #ifdef I2C_PORTEXP_ADDR
 
-//define BADGE_PORTEXP_DEBUG
-
 // use bit 8 to mark unknown current state due to failed write.
 struct badge_portexp_state_t {
 	uint16_t io_direction;         // default is 0x00
@@ -51,9 +49,9 @@ badge_portexp_read_reg(uint8_t reg)
 	esp_err_t ret = badge_i2c_read_reg(I2C_PORTEXP_ADDR, reg, &value);
 
 	if (ret == ESP_OK) {
-#ifdef BADGE_PORTEXP_DEBUG
+#ifdef SHA_BADGE_PORTEXP_DEBUG
 		ets_printf("i2c read reg(0x%02x): 0x%02x\n", reg, value);
-#endif // BADGE_PORTEXP_DEBUG
+#endif // SHA_BADGE_PORTEXP_DEBUG
 		return value;
 	} else {
 		ets_printf("i2c read reg(0x%02x): error %d\n", reg, ret);
@@ -67,9 +65,9 @@ badge_portexp_write_reg(uint8_t reg, uint8_t value)
 	esp_err_t ret = badge_i2c_write_reg(I2C_PORTEXP_ADDR, reg, value);
 
 	if (ret == ESP_OK) {
-#ifdef BADGE_PORTEXP_DEBUG
+#ifdef SHA_BADGE_PORTEXP_DEBUG
 		ets_printf("i2c write reg(0x%02x, 0x%02x): ok\n", reg, value);
-#endif // BADGE_PORTEXP_DEBUG
+#endif // SHA_BADGE_PORTEXP_DEBUG
 		return 0;
 	} else {
 		ets_printf("i2c write reg(0x%02x, 0x%02x): error %d\n", reg, value, ret);
@@ -113,7 +111,7 @@ badge_portexp_intr_handler(void *arg)
 {
 
 	int gpio_state = gpio_get_level(PIN_NUM_PORTEXP_INT);
-#ifdef BADGE_PORTEXP_DEBUG
+#ifdef SHA_BADGE_PORTEXP_DEBUG
 	static int gpio_last_state = -1;
 	if (gpio_last_state != gpio_state)
 	{
@@ -123,7 +121,7 @@ badge_portexp_intr_handler(void *arg)
 			ets_printf("I2C Int up\n");
 	}
 	gpio_last_state = gpio_state;
-#endif // BADGE_PORTEXP_DEBUG
+#endif // SHA_BADGE_PORTEXP_DEBUG
 
 	if (gpio_state == 0)
 	{

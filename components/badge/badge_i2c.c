@@ -12,8 +12,6 @@
 
 #ifdef PIN_NUM_I2C_CLK
 
-//define BADGE_I2C_DEBUG
-
 #define I2C_MASTER_NUM             I2C_NUM_1
 #define I2C_MASTER_FREQ_HZ         100000
 //define I2C_MASTER_FREQ_HZ        400000
