@@ -81,12 +81,12 @@ const uint8_t eink_upd_menu_lut[30] = {
 
 const struct badge_eink_update eink_upd_menu = {
 #ifndef CONFIG_SHA_BADGE_EINK_DEPG0290B1
-	.lut      = -1,
+	.lut      = BADGE_EINK_LUT_CUSTOM,
 	.lut_custom = eink_upd_menu_lut,
 	.reg_0x3a = 2, // 2 dummy lines per gate
 	.reg_0x3b = 0, // 30us per line
 #else
-	.lut      = LUT_FASTEST,
+	.lut      = BADGE_EINK_LUT_FASTEST,
 	.reg_0x3a = 2, // 2 dummy lines per gate
 	.reg_0x3b = 8, // 62us per line
 #endif
@@ -242,7 +242,7 @@ app_main(void) {
 	}
 #else
   display_picture(picture_id, -1);
-  int selected_lut = LUT_PART;
+  int selected_lut = BADGE_EINK_LUT_NORMAL;
 
   while (1) {
     uint32_t button_down;
@@ -267,13 +267,13 @@ app_main(void) {
       if (button_down == BADGE_BUTTON_UP) {
         ets_printf("Button UP handling\n");
         /* switch LUT */
-        selected_lut = (selected_lut + 1) % (LUT_MAX + 1);
+        selected_lut = (selected_lut + 1) % (BADGE_EINK_LUT_MAX + 1);
 		display_picture(picture_id, selected_lut);
       }
       if (button_down == BADGE_BUTTON_DOWN) {
         ets_printf("Button DOWN handling\n");
         /* switch LUT */
-        selected_lut = (selected_lut + LUT_MAX) % (LUT_MAX + 1);
+        selected_lut = (selected_lut + BADGE_EINK_LUT_MAX) % (BADGE_EINK_LUT_MAX + 1);
 		display_picture(picture_id, selected_lut);
       }
       if (button_down == BADGE_BUTTON_LEFT) {

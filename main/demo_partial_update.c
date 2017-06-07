@@ -15,7 +15,7 @@
 void
 demoPartialUpdate(void) {
 	struct badge_eink_update eink_upd = {
-		.lut      = LUT_DEFAULT,
+		.lut      = BADGE_EINK_LUT_DEFAULT,
 //		.reg_0x3a = 26,   // 26 dummy lines per gate
 		.reg_0x3a = 63,   // 63 dummy lines per gate
 //		.reg_0x3b = 0x08, // 62us per line

@@ -39,7 +39,7 @@ void demoGreyscaleImg3(void) {
     gdeWriteCommandEnd();
 
     struct badge_eink_update eink_upd = {
-      .lut      = LUT_DEFAULT,
+      .lut      = BADGE_EINK_LUT_DEFAULT,
       .reg_0x3a = 26,   // 26 dummy lines per gate
       .reg_0x3b = 0x08, // 62us per line
       .y_start  = 0,
@@ -94,7 +94,7 @@ void demoGreyscaleImg3(void) {
       };
 
       struct badge_eink_update eink_upd = {
-        .lut      = -1,
+        .lut      = BADGE_EINK_LUT_CUSTOM,
         .lut_custom = lut,
         .reg_0x3a = 0,  // no dummy lines per gate
         .reg_0x3b = 0,  // 30us per line
