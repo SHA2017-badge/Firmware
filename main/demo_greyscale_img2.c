@@ -28,8 +28,8 @@ void demoGreyscaleImg2(void) {
   int i;
   for (i = 0; i < 3; i++) {
     /* draw initial pattern */
-    setRamArea(0, DISP_SIZE_X_B - 1, 0, DISP_SIZE_Y - 1);
-    setRamPointer(0, 0);
+    badge_eink_set_ram_area(0, DISP_SIZE_X_B - 1, 0, DISP_SIZE_Y - 1);
+    badge_eink_set_ram_pointer(0, 0);
     gdeWriteCommandInit(0x24);
     int c;
     for (c = 0; c < DISP_SIZE_X_B * DISP_SIZE_Y; c++)
@@ -52,8 +52,8 @@ void demoGreyscaleImg2(void) {
     int y_end = y_start + (DISP_SIZE_Y / 4) - 1;
 
     for (i = 32; i > 0; i >>= 1) {
-      setRamArea(0, DISP_SIZE_X_B - 1, 0, DISP_SIZE_Y - 1);
-      setRamPointer(0, 0);
+      badge_eink_set_ram_area(0, DISP_SIZE_X_B - 1, 0, DISP_SIZE_Y - 1);
+      badge_eink_set_ram_pointer(0, 0);
       gdeWriteCommandInit(0x24);
       int x, y;
       const uint8_t *ptr = img_hacking;

@@ -12,8 +12,8 @@
 
 void demoDot1(void) {
   /* clear screen */
-  setRamArea(0, DISP_SIZE_X_B - 1, 0, DISP_SIZE_Y - 1);
-  setRamPointer(0, 0);
+  badge_eink_set_ram_area(0, DISP_SIZE_X_B - 1, 0, DISP_SIZE_Y - 1);
+  badge_eink_set_ram_pointer(0, 0);
   gdeWriteCommandInit(0x24);
   {
     int x, y;
@@ -75,8 +75,8 @@ void demoDot1(void) {
       dot_pos = 0;
 
     /* clear screen */
-    setRamArea(0, DISP_SIZE_X_B - 1, 0, DISP_SIZE_Y - 1);
-    setRamPointer(0, 0);
+    badge_eink_set_ram_area(0, DISP_SIZE_X_B - 1, 0, DISP_SIZE_Y - 1);
+    badge_eink_set_ram_pointer(0, 0);
     gdeWriteCommandInit(0x24);
     {
       int x, y;
@@ -91,7 +91,7 @@ void demoDot1(void) {
     for (i = 0; i < 16; i++) {
       int px = dots[i] & 127;
       int py = dots[i] >> 7;
-      setRamPointer(px >> 3, py);
+      badge_eink_set_ram_pointer(px >> 3, py);
       gdeWriteCommand_p1(0x24, 0xff ^ (128 >> (px & 7)));
     }
 
