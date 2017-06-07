@@ -44,18 +44,4 @@ void initDisplay(void) {
   //	gdeWriteCommand_p1(0x22, 0xf0); // (in original source, but not used)
 }
 
-void setRamArea(uint8_t Xstart, uint8_t Xend, uint16_t Ystart, uint16_t Yend) {
-  // set RAM X - address Start / End position
-  gdeWriteCommand_p2(0x44, Xstart, Xend);
-  // set RAM Y - address Start / End position
-  gdeWriteCommand_p4(0x45, Ystart & 0xff, Ystart >> 8, Yend & 0xff, Yend >> 8);
-}
-
-void setRamPointer(uint8_t addrX, uint16_t addrY) {
-  // set RAM X address counter
-  gdeWriteCommand_p1(0x4e, addrX);
-  // set RAM Y address counter
-  gdeWriteCommand_p2(0x4f, addrY & 0xff, addrY >> 8);
-}
-
 #endif // CONFIG_SHA_BADGE_EINK_GDEH029A1

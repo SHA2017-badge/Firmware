@@ -11,8 +11,4 @@
 
 extern void initDisplay(void);
 
-extern void setRamArea(unsigned char Xstart, unsigned char Xend,
-                       unsigned short Ystart, unsigned short Yend);
-extern void setRamPointer(unsigned char addrX, unsigned short addrY);
-
 #endif
