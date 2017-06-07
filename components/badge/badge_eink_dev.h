@@ -4,6 +4,11 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+// low-level display, 90 degrees rotated
+#define DISP_SIZE_X 128
+#define DISP_SIZE_Y 296
+#define DISP_SIZE_X_B ((DISP_SIZE_X + 7) >> 3)
+
 extern void gdeInit(void);
 extern void gdeReset(void);
 extern bool gdeIsBusy(void);

@@ -5,8 +5,6 @@
 #include "esp_wifi.h"
 #include "freertos/FreeRTOS.h"
 #include "nvs_flash.h"
-#include <gde.h>
-#include <gde-driver.h>
 #include <font.h>
 #include <string.h>
 

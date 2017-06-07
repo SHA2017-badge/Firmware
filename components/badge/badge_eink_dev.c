@@ -1,20 +1,21 @@
+#include <sdkconfig.h>
+
 #include <stdbool.h>
 #include <stdint.h>
 
-#include "driver/gpio.h"
-#include "rom/ets_sys.h"
-#include "rom/gpio.h"
-#include "sdkconfig.h"
-#include "soc/gpio_reg.h"
-#include "soc/gpio_sig_map.h"
-#include "soc/gpio_struct.h"
-#include "soc/spi_reg.h"
+#include <driver/gpio.h>
+#include <rom/ets_sys.h>
+#include <rom/gpio.h>
+#include <soc/gpio_reg.h>
+#include <soc/gpio_sig_map.h>
+#include <soc/gpio_struct.h>
+#include <soc/spi_reg.h>
 
-#include "freertos/FreeRTOS.h"
-#include "freertos/semphr.h"
+#include <freertos/FreeRTOS.h>
+#include <freertos/semphr.h>
 
-#include "gde.h"
 #include "badge_pins.h"
+#include "badge_eink_dev.h"
 
 #define SPI_NUM 0x3
 
