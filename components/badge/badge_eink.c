@@ -106,18 +106,22 @@ void
 badge_eink_update(const struct badge_eink_update *upd_conf)
 {
 	// write LUT to display
+	const uint8_t *lut_lookup[BADGE_EINK_LUT_MAX + 1] = {
+		badge_eink_lut_full, badge_eink_lut_normal, badge_eink_lut_faster, badge_eink_lut_fastest,
+	};
+	const uint8_t *lut;
 	if (upd_conf->lut == BADGE_EINK_LUT_CUSTOM)
-	{
-#ifndef CONFIG_SHA_BADGE_EINK_DEPG0290B1
-		gdeWriteCommandStream(0x32, upd_conf->lut_custom, 30);
-#else
-		gdeWriteCommandStream(0x32, upd_conf->lut_custom, 70);
-#endif
-	}
+		lut = upd_conf->lut_custom;
+	else if (upd_conf->lut >= 0 && upd_conf->lut <= BADGE_EINK_LUT_MAX)
+		lut = lut_lookup[upd_conf->lut];
 	else
-	{
-		writeLUT(upd_conf->lut);
-	}
+		lut = badge_eink_lut_full;
+
+#ifndef CONFIG_SHA_BADGE_EINK_DEPG0290B1
+	gdeWriteCommandStream(0x32, lut, 30);
+#else
+	gdeWriteCommandStream(0x32, lut, 70);
+#endif
 
 	// write number of overscan lines
 	gdeWriteCommand_p1(0x3a, upd_conf->reg_0x3a);
