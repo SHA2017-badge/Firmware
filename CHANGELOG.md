@@ -14,6 +14,9 @@
 
 **Merged pull requests:**
 
+- Many fixes and simplifications [\#19](https://github.com/SHA2017-badge/Firmware/pull/19) ([basvs](https://github.com/basvs))
+- Bugfix: add \#defines to demo\_power.c [\#18](https://github.com/SHA2017-badge/Firmware/pull/18) ([basvs](https://github.com/basvs))
+- Basvs charging status [\#17](https://github.com/SHA2017-badge/Firmware/pull/17) ([basvs](https://github.com/basvs))
 - Attempt to stabalize build \(fixes \#13\) [\#16](https://github.com/SHA2017-badge/Firmware/pull/16) ([annejan](https://github.com/annejan))
 - Log Make version [\#14](https://github.com/SHA2017-badge/Firmware/pull/14) ([raboof](https://github.com/raboof))
 - Add support for SHA-style fonts \(fixes \#11\) [\#12](https://github.com/SHA2017-badge/Firmware/pull/12) ([raboof](https://github.com/raboof))
