@@ -1,6 +1,8 @@
 #include "sdkconfig.h"
 
 #ifdef CONFIG_SHA_BADGE_EINK_GDEH029A1
+#include <string.h>
+
 #include <freertos/FreeRTOS.h>
 #include <esp_event.h>
 
@@ -8,6 +10,7 @@
 #include <gde-driver.h>
 
 #include <badge_input.h>
+#include <badge_eink.h>
 
 #include "img_hacking.h"
 
@@ -21,11 +24,6 @@ void demoGreyscaleImg2(void) {
       237, 239, 241, 243, 244, 246, 248, 249, 251, 252, 254, 255 // e=0.15, n=63
   };
 
-  /* update LUT */
-  writeLUT(LUT_DEFAULT);
-  gdeWriteCommand_p1(0x3a, 0x1a); // 26 dummy lines per gate
-  gdeWriteCommand_p1(0x3b, 0x08); // 62us per line
-
   // trying to get rid of all ghosting and end with a black screen.
   int i;
   for (i = 0; i < 3; i++) {
@@ -38,13 +36,15 @@ void demoGreyscaleImg2(void) {
       gdeWriteByte((i & 1) ? 0xff : 0x00);
     gdeWriteCommandEnd();
 
-    /* update display */
-    updateDisplay();
-    gdeBusyWait();
+    struct badge_eink_update eink_upd = {
+      .lut      = LUT_DEFAULT,
+      .reg_0x3a = 26,   // 26 dummy lines per gate
+      .reg_0x3b = 0x08, // 62us per line
+      .y_start  = 0,
+      .y_end    = 295,
+    };
+    badge_eink_update(&eink_upd);
   }
-
-  gdeWriteCommand_p1(0x3a, 0x00); // no dummy lines per gate
-  gdeWriteCommand_p1(0x3b, 0x00); // 30us per line
 
   int j;
   for (j = 0; j < 4; j++) {
@@ -78,12 +78,13 @@ void demoGreyscaleImg2(void) {
       //   Do nothing when bit is not set;
       //   Make pixel whiter when bit is set;
       //   Duration is <i> cycles.
+      uint8_t lut_[30];
       if (i <= 15) {
         uint8_t lut[30] = {
             0x88, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
             0,    0, 0, 0, 0, i, 0, 0, 0, 0, 0, 0, 0, 0, 0,
         };
-        gdeWriteCommandStream(0x32, lut, 30);
+        memcpy(lut_, lut, 30);
       } else if (i <= 30) {
         uint8_t lut[30] = {
             0x88, 0x88, 0, 0, 0, 0, 0,
@@ -92,30 +93,33 @@ void demoGreyscaleImg2(void) {
             0,    0,    0, 0, 0, 0, 0,
             0,    0,
         };
-        gdeWriteCommandStream(0x32, lut, 30);
+        memcpy(lut_, lut, 30);
       } else if (i <= 45) {
         uint8_t lut[30] = {
             0x88, 0x88, 0x88, 0, 0, 0,    0,        0, 0, 0, 0, 0, 0, 0, 0,
             0,    0,    0,    0, 0, 0xff, (i - 30), 0, 0, 0, 0, 0, 0, 0, 0,
         };
-        gdeWriteCommandStream(0x32, lut, 30);
+        memcpy(lut_, lut, 30);
       } else if (i <= 60) {
         uint8_t lut[30] = {
             0x88, 0x88, 0x88, 0x88, 0, 0, 0, 0, 0, 0,    0,
             0,    0,    0,    0,    0, 0, 0, 0, 0, 0xff, ((i - 45) << 4) + 15,
             0,    0,    0,    0,    0, 0, 0, 0,
         };
-        gdeWriteCommandStream(0x32, lut, 30);
+        memcpy(lut_, lut, 30);
       }
 
-      /* update display */
-      updateDisplayPartial(y_start, y_end + 1);
-      gdeBusyWait();
+      struct badge_eink_update eink_upd = {
+        .lut      = -1,
+        .lut_custom = lut_,
+        .reg_0x3a = 0,  // no dummy lines per gate
+        .reg_0x3b = 0,  // 30us per line
+        .y_start  = y_start,
+        .y_end    = y_end + 1,
+      };
+      badge_eink_update(&eink_upd);
     }
   }
-
-  gdeWriteCommand_p1(0x3a, 0x1a); // 26 dummy lines per gate
-  gdeWriteCommand_p1(0x3b, 0x08); // 62us per line
 
   // wait for random keypress
   uint32_t buttons_down = 0;

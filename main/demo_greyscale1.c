@@ -8,14 +8,9 @@
 #include <gde-driver.h>
 
 #include <badge_input.h>
+#include <badge_eink.h>
 
 void demoGreyscale1(void) {
-  /* update LUT */
-  writeLUT(LUT_DEFAULT);
-
-  gdeWriteCommand_p1(0x3a, 0x1a); // 26 dummy lines per gate
-  gdeWriteCommand_p1(0x3b, 0x08); // 62us per line
-
   int i;
   for (i = 0; i < 2; i++) {
     /* draw test pattern */
@@ -31,8 +26,14 @@ void demoGreyscale1(void) {
     }
     gdeWriteCommandEnd();
 
-    updateDisplay();
-    gdeBusyWait();
+    struct badge_eink_update eink_upd = {
+      .lut      = LUT_DEFAULT,
+      .reg_0x3a = 26,   // 26 dummy lines per gate
+      .reg_0x3b = 0x08, // 62us per line
+      .y_start  = 0,
+      .y_end    = 295,
+    };
+    badge_eink_update(&eink_upd);
   }
 
   int y = 0;
@@ -53,8 +54,16 @@ void demoGreyscale1(void) {
 
     if (y + n > DISP_SIZE_Y)
       n = DISP_SIZE_Y - y;
-    updateDisplayPartial(y, y + n);
-    gdeBusyWait();
+
+    struct badge_eink_update eink_upd = {
+      .lut      = LUT_DEFAULT,
+      .reg_0x3a = 26,   // 26 dummy lines per gate
+      .reg_0x3b = 0x08, // 62us per line
+      .y_start  = y,
+      .y_end    = y+n,
+    };
+    badge_eink_update(&eink_upd);
+
     vTaskDelay(1000 / portTICK_PERIOD_MS);
     y += n;
     n += 4;
@@ -77,8 +86,16 @@ void demoGreyscale1(void) {
 
     if (y + n > DISP_SIZE_Y)
       n = DISP_SIZE_Y - y;
-    updateDisplayPartial(y, y + n);
-    gdeBusyWait();
+
+    struct badge_eink_update eink_upd = {
+      .lut      = LUT_DEFAULT,
+      .reg_0x3a = 26,   // 26 dummy lines per gate
+      .reg_0x3b = 0x08, // 62us per line
+      .y_start  = y,
+      .y_end    = y+n,
+    };
+    badge_eink_update(&eink_upd);
+
     vTaskDelay(1000 / portTICK_PERIOD_MS);
     y += n;
     n += 2;

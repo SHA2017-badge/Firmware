@@ -8,11 +8,9 @@
 #include <gde-driver.h>
 
 #include <badge_input.h>
+#include <badge_eink.h>
 
 void demoDot1(void) {
-  /* update LUT */
-  writeLUT(LUT_DEFAULT);
-
   /* clear screen */
   setRamArea(0, DISP_SIZE_X_B - 1, 0, DISP_SIZE_Y - 1);
   setRamPointer(0, 0);
@@ -26,9 +24,14 @@ void demoDot1(void) {
   }
   gdeWriteCommandEnd();
 
-  /* update display */
-  updateDisplay();
-  gdeBusyWait();
+  struct badge_eink_update eink_upd = {
+    .lut      = LUT_DEFAULT,
+    .reg_0x3a = 26,   // 26 dummy lines per gate
+    .reg_0x3b = 0x08, // 62us per line
+    .y_start  = 0,
+    .y_end    = 295,
+  };
+  badge_eink_update(&eink_upd);
 
   // init LUT
   static const uint8_t lut[30] = {
@@ -36,11 +39,6 @@ void demoDot1(void) {
       0, 0x99, 0, 0, 0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
       0, 0,    0, 0, 0, 17, 1, 0, 0, 0, 0, 0, 0, 0, 0,
   };
-  gdeWriteCommandStream(0x32, lut, 30);
-
-  // tweak timing a bit..
-  gdeWriteCommand_p1(0x3a, 0x02); // 2 dummy lines per gate
-  gdeWriteCommand_p1(0x3b, 0x00); // 30us per line
 
   int px = 100;
   int py = 64;
@@ -97,9 +95,15 @@ void demoDot1(void) {
       gdeWriteCommand_p1(0x24, 0xff ^ (128 >> (px & 7)));
     }
 
-    /* update display */
-    updateDisplay();
-    gdeBusyWait();
+    struct badge_eink_update eink_upd = {
+      .lut      = -1,
+      .lut_custom = lut,
+      .reg_0x3a = 2,  // 2 dummy lines per gate
+      .reg_0x3b = 0,  // 30us per line
+      .y_start  = 0,
+      .y_end    = 295,
+    };
+    badge_eink_update(&eink_upd);
   }
 }
 

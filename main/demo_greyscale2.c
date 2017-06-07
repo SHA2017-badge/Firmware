@@ -8,11 +8,9 @@
 #include <gde-driver.h>
 
 #include <badge_input.h>
+#include <badge_eink.h>
 
 void demoGreyscale2(void) {
-  /* update LUT */
-  writeLUT(LUT_DEFAULT);
-
   int i;
   for (i = 0; i < 3; i++) {
     /* draw initial pattern */
@@ -30,14 +28,16 @@ void demoGreyscale2(void) {
     }
     gdeWriteCommandEnd();
 
-    /* update display */
-    updateDisplay();
-    gdeBusyWait();
+    struct badge_eink_update eink_upd = {
+      .lut      = LUT_DEFAULT,
+      .reg_0x3a = 26,   // 26 dummy lines per gate
+      .reg_0x3b = 0x08, // 62us per line
+      .y_start  = 0,
+      .y_end    = 295,
+    };
+    badge_eink_update(&eink_upd);
   }
 
-  gdeWriteCommand_p1(0x3a, 0x02); // 2 dummy lines per gate
-  //	gdeWriteCommand_p1(0x3b, 0x08); // 62us per line
-  gdeWriteCommand_p1(0x3b, 0x00); // 30us per line
 
   for (i = 1; i < 16; i++) {
     /* draw pattern */
@@ -75,15 +75,17 @@ void demoGreyscale2(void) {
         0x18, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
         0,    0, 0, 0, 0, i, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     };
-    gdeWriteCommandStream(0x32, lut, 30);
 
-    /* update display */
-    updateDisplay();
-    gdeBusyWait();
+    struct badge_eink_update eink_upd = {
+      .lut      = -1,
+      .lut_custom = lut,
+      .reg_0x3a = 2,    // 2 dummy lines per gate
+      .reg_0x3b = 0x00, // 30us per line
+      .y_start  = 0,
+      .y_end    = 295,
+    };
+    badge_eink_update(&eink_upd);
   }
-
-  gdeWriteCommand_p1(0x3a, 0x1a); // 26 dummy lines per gate
-  gdeWriteCommand_p1(0x3b, 0x08); // 62us per line
 
   // wait for random keypress
   uint32_t buttons_down = 0;

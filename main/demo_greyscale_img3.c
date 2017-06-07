@@ -8,6 +8,7 @@
 #include <gde-driver.h>
 
 #include <badge_input.h>
+#include <badge_eink.h>
 
 #include "img_hacking.h"
 
@@ -25,11 +26,6 @@ void demoGreyscaleImg3(void) {
       250, 251, 252, 252, 253, 254, 254, 255 // e=0.15, n=127
   };
 
-  /* update LUT */
-  writeLUT(LUT_DEFAULT);
-  gdeWriteCommand_p1(0x3a, 0x1a); // 26 dummy lines per gate
-  gdeWriteCommand_p1(0x3b, 0x08); // 62us per line
-
   // trying to get rid of all ghosting and end with a black screen.
   int i;
   for (i = 0; i < 3; i++) {
@@ -42,13 +38,15 @@ void demoGreyscaleImg3(void) {
       gdeWriteByte((i & 1) ? 0xff : 0x00);
     gdeWriteCommandEnd();
 
-    /* update display */
-    updateDisplay();
-    gdeBusyWait();
+    struct badge_eink_update eink_upd = {
+      .lut      = LUT_DEFAULT,
+      .reg_0x3a = 26,   // 26 dummy lines per gate
+      .reg_0x3b = 0x08, // 62us per line
+      .y_start  = 0,
+      .y_end    = 295,
+    };
+    badge_eink_update(&eink_upd);
   }
-
-  gdeWriteCommand_p1(0x3a, 0x00); // no dummy lines per gate
-  gdeWriteCommand_p1(0x3b, 0x00); // 30us per line
 
   for (i = 64; i > 0; i >>= 1) {
     int ii = i;
@@ -94,16 +92,18 @@ void demoGreyscaleImg3(void) {
           0, 0x88, 0, 0, 0,         0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
           0, 0   , 0, 0, 0, (ii<<4)|1, 1, 0, 0, 0, 0, 0, 0, 0, 0,
       };
-      gdeWriteCommandStream(0x32, lut, 30);
 
-      /* update display */
-      updateDisplayPartial(y_start, y_end + 1);
-      gdeBusyWait();
+      struct badge_eink_update eink_upd = {
+        .lut      = -1,
+        .lut_custom = lut,
+        .reg_0x3a = 0,  // no dummy lines per gate
+        .reg_0x3b = 0,  // 30us per line
+        .y_start  = y_start,
+        .y_end    = y_end + 1,
+      };
+      badge_eink_update(&eink_upd);
     }
   }
-
-  gdeWriteCommand_p1(0x3a, 0x1a); // 26 dummy lines per gate
-  gdeWriteCommand_p1(0x3b, 0x08); // 62us per line
 
   // wait for random keypress
   uint32_t buttons_down = 0;
