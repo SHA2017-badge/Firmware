@@ -74,7 +74,7 @@
 //#define GDISP_NEED_CLIP                              TRUE
 #define GDISP_NEED_CIRCLE                            TRUE
 //#define GDISP_NEED_DUALCIRCLE                        FALSE
-#define GDISP_NEED_ELLIPSE                           TRUE	
+#define GDISP_NEED_ELLIPSE                           TRUE
 #define GDISP_NEED_ARC                               TRUE
 //#define GDISP_NEED_ARCSECTORS                        FALSE
 #define GDISP_NEED_CONVEX_POLYGON                    TRUE
@@ -246,7 +246,7 @@
 ///////////////////////////////////////////////////////////////////////////
 // GEVENT                                                                //
 ///////////////////////////////////////////////////////////////////////////
-//#define GFX_USE_GEVENT                               FALSE
+#define GFX_USE_GEVENT                               FALSE
 
 //#define GEVENT_ASSERT_NO_RESOURCE                    FALSE
 //#define GEVENT_MAXIMUM_SIZE                          32
@@ -275,7 +275,7 @@
 ///////////////////////////////////////////////////////////////////////////
 // GINPUT                                                                //
 ///////////////////////////////////////////////////////////////////////////
-//#define GFX_USE_GINPUT                               FALSE
+#define GFX_USE_GINPUT                               TRUE
 
 //#define GINPUT_NEED_MOUSE                            FALSE
 //    #define GINPUT_TOUCH_STARTRAW                    FALSE
@@ -293,7 +293,7 @@
 //    #define GKEYBOARD_DRIVER_LIST                    GKEYBOARDVMT_Win32, GKEYBOARDVMT_Win32
 //    #define GKEYBOARD_LAYOUT_OFF                     FALSE
 //        #define GKEYBOARD_LAYOUT_SCANCODE2_US        FALSE
-//#define GINPUT_NEED_TOGGLE                           FALSE
+#define GINPUT_NEED_TOGGLE                           TRUE
 //#define GINPUT_NEED_DIAL                             FALSE
 
 
