@@ -8,7 +8,8 @@
 #include "gfx.h"
 
 #if (GFX_USE_GINPUT && GINPUT_NEED_TOGGLE)
-#include "ginput_driver_toggle.h"
+#include "../../../src/ginput/ginput_driver_toggle.h"
+
 
 
 
