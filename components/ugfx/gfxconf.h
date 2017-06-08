@@ -82,7 +82,7 @@
 //#define GDISP_NEED_PIXELREAD                         FALSE
 //#define GDISP_NEED_CONTROL                           FALSE
 //#define GDISP_NEED_QUERY                             FALSE
-//#define GDISP_NEED_MULTITHREAD                       FALSE
+#define GDISP_NEED_MULTITHREAD                       TRUE
 //#define GDISP_NEED_STREAMING                         FALSE
 #define GDISP_NEED_TEXT                              TRUE
 #define GDISP_NEED_TEXT_WORDWRAP                     TRUE
@@ -246,7 +246,7 @@
 ///////////////////////////////////////////////////////////////////////////
 // GEVENT                                                                //
 ///////////////////////////////////////////////////////////////////////////
-#define GFX_USE_GEVENT                               FALSE
+#define GFX_USE_GEVENT                               TRUE
 
 //#define GEVENT_ASSERT_NO_RESOURCE                    FALSE
 //#define GEVENT_MAXIMUM_SIZE                          32
@@ -256,7 +256,7 @@
 ///////////////////////////////////////////////////////////////////////////
 // GTIMER                                                                //
 ///////////////////////////////////////////////////////////////////////////
-//#define GFX_USE_GTIMER                               FALSE
+#define GFX_USE_GTIMER                               TRUE
 
 //#define GTIMER_THREAD_PRIORITY                       HIGH_PRIORITY
 //#define GTIMER_THREAD_WORKAREA_SIZE                  2048
