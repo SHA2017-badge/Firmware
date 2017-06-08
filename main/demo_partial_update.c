@@ -3,9 +3,6 @@
 #include <freertos/FreeRTOS.h>
 #include <esp_event.h>
 
-#include <gde.h>
-#include <gde-driver.h>
-
 #include <badge_eink.h>
 #include <badge_input.h>
 
@@ -15,7 +12,7 @@
 void
 demoPartialUpdate(void) {
 	struct badge_eink_update eink_upd = {
-		.lut      = LUT_DEFAULT,
+		.lut      = BADGE_EINK_LUT_DEFAULT,
 //		.reg_0x3a = 26,   // 26 dummy lines per gate
 		.reg_0x3a = 63,   // 63 dummy lines per gate
 //		.reg_0x3b = 0x08, // 62us per line

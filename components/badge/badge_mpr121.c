@@ -18,8 +18,6 @@
 
 #ifdef I2C_MPR121_ADDR
 
-// define BADGE_MPR121_DEBUG
-
 #define MPR121_BASELINE_0   0x1E
 #define MPR121_MHDR         0x2B
 #define MPR121_NHDR         0x2C
@@ -56,9 +54,9 @@ badge_mpr121_read_reg(uint8_t reg)
 	esp_err_t ret = badge_i2c_read_reg(I2C_MPR121_ADDR, reg, &value);
 
 	if (ret == ESP_OK) {
-#ifdef BADGE_MPR121_DEBUG
+#ifdef SHA_BADGE_MPR121_DEBUG
 		ets_printf("i2c read reg(0x%02x): 0x%02x\n", reg, value);
-#endif // BADGE_MPR121_DEBUG
+#endif // SHA_BADGE_MPR121_DEBUG
 		return value;
 	} else {
 		ets_printf("i2c read reg(0x%02x): error %d\n", reg, ret);
@@ -72,9 +70,9 @@ badge_mpr121_write_reg(uint8_t reg, uint8_t value)
 	esp_err_t ret = badge_i2c_write_reg(I2C_MPR121_ADDR, reg, value);
 
 	if (ret == ESP_OK) {
-#ifdef BADGE_MPR121_DEBUG
+#ifdef SHA_BADGE_MPR121_DEBUG
 		ets_printf("i2c write reg(0x%02x, 0x%02x): ok\n", reg, value);
-#endif // BADGE_MPR121_DEBUG
+#endif // SHA_BADGE_MPR121_DEBUG
 		return 0;
 	} else {
 		ets_printf("i2c write reg(0x%02x, 0x%02x): error %d\n", reg, value, ret);
@@ -118,7 +116,7 @@ badge_mpr121_intr_handler(void *arg)
 {
 
 	int gpio_state = gpio_get_level(PIN_NUM_MPR121_INT);
-#ifdef BADGE_MPR121_DEBUG
+#ifdef SHA_BADGE_MPR121_DEBUG
 	static int gpio_last_state = -1;
 	if (gpio_last_state != gpio_state)
 	{
@@ -128,7 +126,7 @@ badge_mpr121_intr_handler(void *arg)
 			ets_printf("I2C Int up\n");
 	}
 	gpio_last_state = gpio_state;
-#endif // BADGE_MPR121_DEBUG
+#endif // SHA_BADGE_MPR121_DEBUG
 
 	if (gpio_state == 0)
 	{

@@ -6,9 +6,6 @@
 #include <esp_event.h>
 #include <driver/adc.h>
 
-#include <gde.h>
-#include <gde-driver.h>
-
 #include <badge_eink.h>
 #include <badge_input.h>
 

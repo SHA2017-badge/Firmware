@@ -4,10 +4,9 @@
 #include <freertos/FreeRTOS.h>
 #include <esp_event.h>
 
-#include <gde.h>
-#include <gde-driver.h>
-
 #include <badge_input.h>
+#include <badge_eink.h>
+#include <badge_eink_dev.h>
 
 #include "img_hacking.h"
 
@@ -25,30 +24,27 @@ void demoGreyscaleImg3(void) {
       250, 251, 252, 252, 253, 254, 254, 255 // e=0.15, n=127
   };
 
-  /* update LUT */
-  writeLUT(LUT_DEFAULT);
-  gdeWriteCommand_p1(0x3a, 0x1a); // 26 dummy lines per gate
-  gdeWriteCommand_p1(0x3b, 0x08); // 62us per line
-
   // trying to get rid of all ghosting and end with a black screen.
   int i;
   for (i = 0; i < 3; i++) {
     /* draw initial pattern */
-    setRamArea(0, DISP_SIZE_X_B - 1, 0, DISP_SIZE_Y - 1);
-    setRamPointer(0, 0);
+    badge_eink_set_ram_area(0, DISP_SIZE_X_B - 1, 0, DISP_SIZE_Y - 1);
+    badge_eink_set_ram_pointer(0, 0);
     gdeWriteCommandInit(0x24);
     int c;
     for (c = 0; c < DISP_SIZE_X_B * DISP_SIZE_Y; c++)
       gdeWriteByte((i & 1) ? 0xff : 0x00);
     gdeWriteCommandEnd();
 
-    /* update display */
-    updateDisplay();
-    gdeBusyWait();
+    struct badge_eink_update eink_upd = {
+      .lut      = BADGE_EINK_LUT_DEFAULT,
+      .reg_0x3a = 26,   // 26 dummy lines per gate
+      .reg_0x3b = 0x08, // 62us per line
+      .y_start  = 0,
+      .y_end    = 295,
+    };
+    badge_eink_update(&eink_upd);
   }
-
-  gdeWriteCommand_p1(0x3a, 0x00); // no dummy lines per gate
-  gdeWriteCommand_p1(0x3b, 0x00); // 30us per line
 
   for (i = 64; i > 0; i >>= 1) {
     int ii = i;
@@ -64,8 +60,8 @@ void demoGreyscaleImg3(void) {
       int y_start = 0 + j * (DISP_SIZE_Y / p);
       int y_end = y_start + (DISP_SIZE_Y / p) - 1;
 
-      setRamArea(0, DISP_SIZE_X_B - 1, 0, DISP_SIZE_Y - 1);
-      setRamPointer(0, 0);
+      badge_eink_set_ram_area(0, DISP_SIZE_X_B - 1, 0, DISP_SIZE_Y - 1);
+      badge_eink_set_ram_pointer(0, 0);
       gdeWriteCommandInit(0x24);
       int x, y;
       const uint8_t *ptr = img_hacking;
@@ -94,16 +90,18 @@ void demoGreyscaleImg3(void) {
           0, 0x88, 0, 0, 0,         0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
           0, 0   , 0, 0, 0, (ii<<4)|1, 1, 0, 0, 0, 0, 0, 0, 0, 0,
       };
-      gdeWriteCommandStream(0x32, lut, 30);
 
-      /* update display */
-      updateDisplayPartial(y_start, y_end + 1);
-      gdeBusyWait();
+      struct badge_eink_update eink_upd = {
+        .lut      = BADGE_EINK_LUT_CUSTOM,
+        .lut_custom = lut,
+        .reg_0x3a = 0,  // no dummy lines per gate
+        .reg_0x3b = 0,  // 30us per line
+        .y_start  = y_start,
+        .y_end    = y_end + 1,
+      };
+      badge_eink_update(&eink_upd);
     }
   }
-
-  gdeWriteCommand_p1(0x3a, 0x1a); // 26 dummy lines per gate
-  gdeWriteCommand_p1(0x3b, 0x08); // 62us per line
 
   // wait for random keypress
   uint32_t buttons_down = 0;

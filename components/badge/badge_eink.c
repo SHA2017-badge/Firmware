@@ -1,8 +1,8 @@
 #include "sdkconfig.h"
-#include <gde.h>
-#include <gde-driver.h>
 
 #include "badge_pins.h"
+#include "badge_eink_lut.h"
+#include "badge_eink_dev.h"
 #include "badge_eink.h"
 
 static const uint8_t xlat_curve[256] = {
@@ -36,8 +36,8 @@ write_bitplane(const uint8_t *img, int y_start, int y_end, int bit, int flags)
 #ifdef EPD_ROTATED_180
 	flags ^= DISPLAY_FLAG_ROTATE_180;
 #endif
-	setRamArea(0, DISP_SIZE_X_B - 1, 0, DISP_SIZE_Y - 1);
-	setRamPointer(0, 0);
+	badge_eink_set_ram_area(0, DISP_SIZE_X_B - 1, 0, DISP_SIZE_Y - 1);
+	badge_eink_set_ram_pointer(0, 0);
 	gdeWriteCommandInit(0x24);
 	int x, y;
 	int pos, dx, dy;
@@ -95,7 +95,7 @@ write_bitplane(const uint8_t *img, int y_start, int y_end, int bit, int flags)
 }
 
 const struct badge_eink_update eink_upd_default = {
-	.lut      = LUT_DEFAULT,
+	.lut      = BADGE_EINK_LUT_DEFAULT,
 	.reg_0x3a = 26,   // 26 dummy lines per gate
 	.reg_0x3b = 0x08, // 62us per line
 	.y_start  = 0,
@@ -105,26 +105,52 @@ const struct badge_eink_update eink_upd_default = {
 void
 badge_eink_update(const struct badge_eink_update *upd_conf)
 {
-	if (upd_conf->lut == -1)
-	{
-#ifndef CONFIG_SHA_BADGE_EINK_DEPG0290B1
-		gdeWriteCommandStream(0x32, upd_conf->lut_custom, 30);
-#else
-		gdeWriteCommandStream(0x32, upd_conf->lut_custom, 70);
-#endif
-	}
+	// write LUT to display
+	const uint8_t *lut_lookup[BADGE_EINK_LUT_MAX + 1] = {
+		badge_eink_lut_full, badge_eink_lut_normal, badge_eink_lut_faster, badge_eink_lut_fastest,
+	};
+	const uint8_t *lut;
+	if (upd_conf->lut == BADGE_EINK_LUT_CUSTOM)
+		lut = upd_conf->lut_custom;
+	else if (upd_conf->lut >= 0 && upd_conf->lut <= BADGE_EINK_LUT_MAX)
+		lut = lut_lookup[upd_conf->lut];
 	else
-	{
-		writeLUT(upd_conf->lut);
-	}
+		lut = badge_eink_lut_full;
+
+#ifndef CONFIG_SHA_BADGE_EINK_DEPG0290B1
+	gdeWriteCommandStream(0x32, lut, 30);
+#else
+	gdeWriteCommandStream(0x32, lut, 70);
+#endif
+
+	// write number of overscan lines
 	gdeWriteCommand_p1(0x3a, upd_conf->reg_0x3a);
+
+	// write time to write every line
 	gdeWriteCommand_p1(0x3b, upd_conf->reg_0x3b);
 
 	uint16_t y_len = upd_conf->y_end - upd_conf->y_start;
+	// configure length of update
 	gdeWriteCommand_p3(0x01, y_len & 0xff, y_len >> 8, 0x00);
+
+	// configure starting-line of update
 	gdeWriteCommand_p2(0x0f, upd_conf->y_start & 0xff, upd_conf->y_start >> 8);
+
+	// bitmapped enabled phases of the update: (in this order)
+	//   80 - enable clock signal
+	//   40 - enable CP
+	//   20 - load temperature value
+	//   10 - load LUT
+	//   08 - initial display
+	//   04 - pattern display
+	//   02 - disable CP
+	//   01 - disable clock signal
 	gdeWriteCommand_p1(0x22, 0xc7);
+
+	// start update
 	gdeWriteCommand(0x20);
+
+	// wait until no longer busy
 	gdeBusyWait();
 }
 
@@ -140,8 +166,8 @@ badge_eink_display(const uint8_t *img, int mode)
 		int i;
 		for (i = 0; i < 3; i++) {
 			/* draw initial pattern */
-			setRamArea(0, DISP_SIZE_X_B - 1, 0, DISP_SIZE_Y - 1);
-			setRamPointer(0, 0);
+			badge_eink_set_ram_area(0, DISP_SIZE_X_B - 1, 0, DISP_SIZE_Y - 1);
+			badge_eink_set_ram_pointer(0, 0);
 			gdeWriteCommandInit(0x24);
 			int c;
 			for (c = 0; c < DISP_SIZE_X_B * DISP_SIZE_Y; c++)
@@ -160,7 +186,7 @@ badge_eink_display(const uint8_t *img, int mode)
 		if ((mode & DISPLAY_FLAG_NO_UPDATE) == 0)
 		{
 			struct badge_eink_update eink_upd = {
-				.lut      = lut_mode > 0 ? lut_mode - 1 : 0,
+				.lut      = lut_mode > 0 ? lut_mode - 1 : BADGE_EINK_LUT_DEFAULT,
 				.reg_0x3a = 26,   // 26 dummy lines per gate
 				.reg_0x3b = 0x08, // 62us per line
 				.y_start  = 0,
@@ -220,7 +246,7 @@ badge_eink_display(const uint8_t *img, int mode)
 
 			/* update display */
 			struct badge_eink_update eink_upd = {
-				.lut        = -1,
+				.lut        = BADGE_EINK_LUT_CUSTOM,
 				.lut_custom = lut,
 				.reg_0x3a   = 0, // no dummy lines per gate
 				.reg_0x3b   = 0, // 30us per line
@@ -230,9 +256,25 @@ badge_eink_display(const uint8_t *img, int mode)
 			badge_eink_update(&eink_upd);
 		}
 	}
+}
 
-	gdeWriteCommand_p1(0x3a, 0x1a); // 26 dummy lines per gate
-	gdeWriteCommand_p1(0x3b, 0x08); // 62us per line
+void
+badge_eink_set_ram_area(uint8_t x_start, uint8_t x_end,
+		uint16_t y_start, uint16_t y_end)
+{
+	// set RAM X - address Start / End position
+	gdeWriteCommand_p2(0x44, x_start, x_end);
+	// set RAM Y - address Start / End position
+	gdeWriteCommand_p4(0x45, y_start & 0xff, y_start >> 8, y_end & 0xff, y_end >> 8);
+}
+
+void
+badge_eink_set_ram_pointer(uint8_t x_addr, uint16_t y_addr)
+{
+	// set RAM X address counter
+	gdeWriteCommand_p1(0x4e, x_addr);
+	// set RAM Y address counter
+	gdeWriteCommand_p2(0x4f, y_addr & 0xff, y_addr >> 8);
 }
 
 void
@@ -241,6 +283,63 @@ badge_eink_init(void)
 	// initialize spi interface to display
 	gdeInit();
 
-	// initialize display
-	initDisplay();
+#ifdef CONFIG_SHA_BADGE_EINK_GDEH029A1
+	/* initialize GDEH029A1 */
+
+	gdeReset();
+
+	// 0C: booster soft start control
+	gdeWriteCommand_p3(0x0c, 0xd7, 0xd6, 0x9d);
+
+	// 2C: write VCOM register
+	gdeWriteCommand_p1(0x2c, 0xa8); // VCOM 7c
+
+	// 11: data entry mode setting
+	gdeWriteCommand_p1(0x11, 0x03); // X inc, Y inc
+#endif // CONFIG_SHA_BADGE_EINK_GDEH029A1
+
+#ifdef CONFIG_SHA_BADGE_EINK_DEPG0290B1
+	/* initialize DEPG0290B01 */
+
+	// Hardware reset
+	gdeReset();
+	gdeBusyWait();
+
+	// Software reset
+	gdeWriteCommand(0x12);
+	gdeBusyWait();
+
+	// Set analog block control
+	gdeWriteCommand_p1(0x74, 0x54);
+
+	// Set digital block control
+	gdeWriteCommand_p1(0x7E, 0x3B);
+
+	// Set display size and driver output control
+	gdeWriteCommand_p3(0x01, 0x27, 0x01, 0x00);
+
+	// Ram data entry mode
+	// Adress counter is updated in Y direction, Y increment, X increment
+	gdeWriteCommand_p1(0x11, 0x03);
+
+	// Set RAM X address (00h to 0Fh)
+	gdeWriteCommand_p2(0x44, 0x00, 0x0F);
+
+	// Set RAM Y address (0127h to 0000h)
+	gdeWriteCommand_p4(0x45, 0x00, 0x00, 0x27, 0x01);
+
+	// Set border waveform for VBD (see datasheet)
+	gdeWriteCommand_p1(0x3C, 0x01);
+
+	// SET VOLTAGE
+
+	// Set VCOM value
+	gdeWriteCommand_p1(0x2C, 0x26);
+
+	// Gate voltage setting (17h = 20 Volt, ranges from 10v to 21v)
+	gdeWriteCommand_p1(0x03, 0x17);
+
+	// Source voltage setting (15volt, 0 volt and -15 volt)
+	gdeWriteCommand_p3(0x04, 0x41, 0x00, 0x32);
+#endif // CONFIG_SHA_BADGE_EINK_DEPG0290B1
 }

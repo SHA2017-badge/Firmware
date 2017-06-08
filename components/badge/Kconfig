@@ -1,0 +1,58 @@
+menu "SHA2017 Badge"
+
+choice SHA_BADGE_REV
+    prompt "SHA Badge revision"
+    default SHA_BADGE_V3
+    help
+        This option sets the SHA badge revision.
+
+        - Rev0.0.1 Dev: The original development badge.
+          (december 2016)
+        - Rev0.1.0 Dev: Improved badge.
+          (february 2017)
+        - Rev1.0.0 Dev: Release candidate
+          (may 2017)
+
+config SHA_BADGE_V1
+    bool "Rev0.0.1 Dev"
+config SHA_BADGE_V2
+    bool "Rev0.1.0 Dev"
+config SHA_BADGE_V3
+    bool "Rev1.0.*"
+endchoice
+
+choice SHA_BADGE_EINK_TYPE
+    prompt "SHA Badge e-ink display type"
+    default SHA_BADGE_EINK_DEPG0290B1
+    help
+        The GDEH029A1 was the original e-ink display.
+        The DEPG0290B1 is the cheaper alternative.
+
+config SHA_BADGE_EINK_GDEH029A1
+    bool "GDEH029A1"
+config SHA_BADGE_EINK_DEPG0290B1
+    bool "DEPG0290B1"
+endchoice
+
+config SHA_BADGE_PORTEXP_DEBUG
+    bool "Enable port-expander debug messages"
+    depends on SHA_BADGE_V2
+    default n
+    help
+        Debugging
+
+config SHA_BADGE_TOUCH_DEBUG
+    bool "Enable touch debug messages"
+    depends on SHA_BADGE_V2
+    default n
+    help
+        Debugging
+
+config SHA_BADGE_MPR121_DEBUG
+    bool "Enable MPR121 debug messages"
+    depends on SHA_BADGE_V3
+    default n
+    help
+        Debugging
+
+endmenu
