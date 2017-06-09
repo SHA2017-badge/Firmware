@@ -17,6 +17,9 @@ extern xQueueHandle badge_input_queue;
 #define BADGE_BUTTON_START   9
 #define BADGE_BUTTON_FLASH  10
 
+// Number of buttons on the badge
+#define BADGE_BUTTONS 10
+
 extern void badge_input_init(void);
 
 #endif // BADGE_INPUT_H

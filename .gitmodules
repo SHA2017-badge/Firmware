@@ -12,8 +12,8 @@
 	branch = esp32
 [submodule "ugfx"]
 	path = ugfx
-	url = https://git.ugfx.io/ugfx/ugfx.git
-	branch = master
+	url = https://github.com/SHA2017-badge/ugfx.git
+	branch = fixFreetosGtimer
 [submodule "micropython-lib"]
 	path = micropython-lib
 	url = https://github.com/micropython/micropython-lib.git
