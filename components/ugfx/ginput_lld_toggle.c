@@ -14,15 +14,44 @@
 #include <esp_event.h>
 
 #include <badge_input.h>
+#include <badge_pins.h>
+#include <badge_button.h>
 
 #include "ginput_lld_toggle_config.h"
 
 GINPUT_TOGGLE_DECLARE_STRUCTURE();
 
 void
+ugfx_button_interrupt_handler(void *arg) {
+	badge_button_handler(arg);
+	ginputToggleWakeupI();
+}
+
+void
+register_button_interrupt_handler(int gpio_num) {
+	gpio_isr_handler_add(gpio_num, ugfx_button_interrupt_handler, (void*) gpio_num);
+
+	// configure the gpio pin for input
+	gpio_config_t io_conf;
+	io_conf.intr_type = GPIO_INTR_ANYEDGE;
+	io_conf.mode = GPIO_MODE_INPUT;
+	io_conf.pin_bit_mask = 1LL << gpio_num;
+	io_conf.pull_down_en = 0;
+	io_conf.pull_up_en = 1;
+	gpio_config(&io_conf);
+}
+
+void
 ginput_lld_toggle_init(const GToggleConfig *ptc)
 {
 	ets_printf("ginput_lld_toggle: init()\n");
+	register_button_interrupt_handler(PIN_NUM_BUTTON_A);
+	register_button_interrupt_handler(PIN_NUM_BUTTON_B);
+	register_button_interrupt_handler(PIN_NUM_BUTTON_MID);
+	register_button_interrupt_handler(PIN_NUM_BUTTON_UP);
+	register_button_interrupt_handler(PIN_NUM_BUTTON_DOWN);
+	register_button_interrupt_handler(PIN_NUM_BUTTON_LEFT);
+	register_button_interrupt_handler(PIN_NUM_BUTTON_RIGHT);
 }
 
 unsigned
@@ -31,7 +60,7 @@ ginput_lld_toggle_getbits(const GToggleConfig *ptc)
 	ets_printf("ginput_lld_toggle: getbits()\n");
 	uint32_t result = 0;
     uint32_t button_down = 0;
-		// No delay, because we'll be triggered by an interrupt so we know there should be something to read.
+		// No delay, because we'll be triggered by an interrupt so we know there should be something to read
     while (xQueueReceive(badge_input_queue, &button_down, 0))
 	{
 		ets_printf("ginput_lld_toggle: button %d pressed\n", button_down);

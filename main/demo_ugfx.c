@@ -28,10 +28,6 @@ const char* displayNames[] = {
 GEventToggle ptoggle;
 
 void showDemo(uint8_t name, color_t front, color_t back) {
-  // TODO trigger this only when we have reason to believe a button was toggled
-  ets_printf("Simulating button interrupt\n");
-  ginputToggleWakeup();
-
   ets_printf("Getting toggle status\n");
   if (!ginputGetToggleStatus(BADGE_BUTTON_UP, &ptoggle)) {
     ets_printf("Error getting toggle status\n");
