@@ -78,3 +78,12 @@ ugfx.string(140,75,"Anyway","Roboto_BlackItalic24",badge.WHITE)
 ugfx.flush()
 ```
 More info on the [MicroPython badge module](https://wiki.sha2017.org/w/Projects:Badge/MicroPython)
+Badge Emulator
+--------------
+```
+cd micropython/lib/axtls
+make menuconfig
+cd ../../unix
+make axtls
+make
+```
