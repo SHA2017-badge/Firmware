@@ -1,5 +1,3 @@
-#include "badge_input.h"
-
 #ifndef GINPUT_LLD_TOGGLE_CONFIG
 #define GINPUT_LLD_TOGGLE_CONFIG
 

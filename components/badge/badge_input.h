@@ -22,4 +22,8 @@ extern xQueueHandle badge_input_queue;
 
 extern void badge_input_init(void);
 
+extern void badge_input_add_event(uint32_t button_id, bool down, bool in_isr);
+
+extern void (*badge_input_notify)(void);
+
 #endif // BADGE_INPUT_H
