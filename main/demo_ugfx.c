@@ -56,11 +56,17 @@ void showDemo(uint8_t name, color_t front, color_t back) {
 }
 
 void demoUgfx() {
+  GListener pl;
+  GEvent* event;
+
   ets_printf("Initializing gfx\n");
   gfxInit();
   ets_printf("Initialized gfx\n");
 
-  GSourceHandle downHandle = ginputGetToggle(BADGE_BUTTON_UP);
+  GSourceHandle upHandle = ginputGetToggle(BADGE_BUTTON_UP);
+
+  geventListenerInit(&pl);
+  geventAttachSource(&pl, upHandle, GLISTEN_TOGGLE_ON|GLISTEN_TOGGLE_OFF);
 
   roboto = gdispOpenFont("Roboto_Regular12");
   robotoBlackItalic = gdispOpenFont("Roboto_BlackItalic24");
@@ -77,12 +83,22 @@ void demoUgfx() {
       ets_printf("Make it White\n");
       showDemo(i, Black, White);
       ets_printf("Take 5\n");
-      ets_delay_us(5000000);
+      ets_printf("Waiting for 'up'\n");
+      if ((event = geventEventWait(&pl, 5000))) {
+        ets_printf("Got 'up' event\n");
+      } else {
+        ets_printf("Timeout without 'up' event\n");
+      }
 
       ets_printf("Paint it Black\n");
       showDemo(i, White, Black);
       ets_printf("Take 5\n");
-      ets_delay_us(5000000);
+      ets_printf("Waiting for 'up'\n");
+      if ((event = geventEventWait(&pl, 5000))) {
+        ets_printf("Got 'up' event\n");
+      } else {
+        ets_printf("Timeout without 'up' event\n");
+      }
     }
   }
 }
