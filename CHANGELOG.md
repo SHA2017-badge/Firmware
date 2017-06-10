@@ -14,6 +14,9 @@
 
 **Merged pull requests:**
 
+- ugfx touch input \(and some more goodies\) [\#22](https://github.com/SHA2017-badge/Firmware/pull/22) ([raboof](https://github.com/raboof))
+- Enabled LEDs demo [\#21](https://github.com/SHA2017-badge/Firmware/pull/21) ([raboof](https://github.com/raboof))
+- cleanups in components/epd and components/badge [\#20](https://github.com/SHA2017-badge/Firmware/pull/20) ([basvs](https://github.com/basvs))
 - Many fixes and simplifications [\#19](https://github.com/SHA2017-badge/Firmware/pull/19) ([basvs](https://github.com/basvs))
 - Bugfix: add \#defines to demo\_power.c [\#18](https://github.com/SHA2017-badge/Firmware/pull/18) ([basvs](https://github.com/basvs))
 - Basvs charging status [\#17](https://github.com/SHA2017-badge/Firmware/pull/17) ([basvs](https://github.com/basvs))

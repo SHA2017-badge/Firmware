@@ -36,6 +36,7 @@ script:
   # Build the micropython firmware
   - cd ../esp32
   - make
+  # TODO build the unix 'emulator'
 
 notifications:
   irc:
