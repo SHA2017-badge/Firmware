@@ -22,14 +22,21 @@
 GINPUT_TOGGLE_DECLARE_STRUCTURE();
 
 void
-ugfx_button_interrupt_handler(void *arg) {
+ginput_toggle_interrupt_handler(void *arg) {
+#ifdef PIN_NUM_BUTTON_A
 	badge_button_handler(arg);
+#endif /* PIN_NUM_BUTTON_A */
+
+#ifdef I2C_TOUCHPAD_ADDR
+	badge_touch_intr_handler(arg);
+#endif /* I2C_TOUCHPAD_ADDR */
+
 	ginputToggleWakeupI();
 }
 
 void
 register_button_interrupt_handler(int gpio_num) {
-	gpio_isr_handler_add(gpio_num, ugfx_button_interrupt_handler, (void*) gpio_num);
+	gpio_isr_handler_add(gpio_num, ginput_toggle_interrupt_handler, (void*) gpio_num);
 
 	// configure the gpio pin for input
 	gpio_config_t io_conf;
@@ -45,6 +52,7 @@ void
 ginput_lld_toggle_init(const GToggleConfig *ptc)
 {
 	ets_printf("ginput_lld_toggle: init()\n");
+#ifdef PIN_NUM_BUTTON_A
 	register_button_interrupt_handler(PIN_NUM_BUTTON_A);
 	register_button_interrupt_handler(PIN_NUM_BUTTON_B);
 	register_button_interrupt_handler(PIN_NUM_BUTTON_MID);
@@ -52,6 +60,11 @@ ginput_lld_toggle_init(const GToggleConfig *ptc)
 	register_button_interrupt_handler(PIN_NUM_BUTTON_DOWN);
 	register_button_interrupt_handler(PIN_NUM_BUTTON_LEFT);
 	register_button_interrupt_handler(PIN_NUM_BUTTON_RIGHT);
+#endif /* PIN_NUM_BUTTON_A */
+
+#ifdef I2C_TOUCHPAD_ADDR
+	badge_portexp_set_interrupt_handler(PORTEXP_PIN_NUM_TOUCH, ginput_toggle_interrupt_handler, NULL);
+#endif // I2C_TOUCHPAD_ADDR
 }
 
 unsigned
