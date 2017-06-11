@@ -18,7 +18,7 @@ badge_button_handler(void *arg)
 	if (new_state == 0 && badge_button_old_state[gpio_num] != 0)
 	{
 		uint32_t button_down = badge_button_conv[gpio_num];
-		badge_input_add_event(button_down, BUTTON_PRESSED, IN_ISR);
+		badge_input_add_event(button_down, EVENT_BUTTON_PRESSED, IN_ISR);
 	}
 	badge_button_old_state[gpio_num] = new_state;
 }
