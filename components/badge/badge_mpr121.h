@@ -1,7 +1,10 @@
 #ifndef BADGE_MPR121_H
 #define BADGE_MPR121_H
 
-typedef void (*badge_mpr121_intr_t)(void*);
+#include <stdbool.h>
+#include <stdint.h>
+
+typedef void (*badge_mpr121_intr_t)(void*, bool);
 
 extern void badge_mpr121_init(void);
 

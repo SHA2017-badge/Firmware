@@ -54,12 +54,12 @@ badge_mpr121_read_reg(uint8_t reg)
 	esp_err_t ret = badge_i2c_read_reg(I2C_MPR121_ADDR, reg, &value);
 
 	if (ret == ESP_OK) {
-#ifdef SHA_BADGE_MPR121_DEBUG
-		ets_printf("i2c read reg(0x%02x): 0x%02x\n", reg, value);
-#endif // SHA_BADGE_MPR121_DEBUG
+#ifdef CONFIG_SHA_BADGE_MPR121_DEBUG
+		ets_printf("badge_mpr121: i2c read reg(0x%02x): 0x%02x\n", reg, value);
+#endif // CONFIG_SHA_BADGE_MPR121_DEBUG
 		return value;
 	} else {
-		ets_printf("i2c read reg(0x%02x): error %d\n", reg, ret);
+		ets_printf("badge_mpr121: i2c read reg(0x%02x): error %d\n", reg, ret);
 		return -1;
 	}
 }
@@ -70,12 +70,12 @@ badge_mpr121_write_reg(uint8_t reg, uint8_t value)
 	esp_err_t ret = badge_i2c_write_reg(I2C_MPR121_ADDR, reg, value);
 
 	if (ret == ESP_OK) {
-#ifdef SHA_BADGE_MPR121_DEBUG
-		ets_printf("i2c write reg(0x%02x, 0x%02x): ok\n", reg, value);
-#endif // SHA_BADGE_MPR121_DEBUG
+#ifdef CONFIG_SHA_BADGE_MPR121_DEBUG
+		ets_printf("badge_mpr121: i2c write reg(0x%02x, 0x%02x): ok\n", reg, value);
+#endif // CONFIG_SHA_BADGE_MPR121_DEBUG
 		return 0;
 	} else {
-		ets_printf("i2c write reg(0x%02x, 0x%02x): error %d\n", reg, value, ret);
+		ets_printf("badge_mpr121: i2c write reg(0x%02x, 0x%02x): error %d\n", reg, value, ret);
 		return -1;
 	}
 }
@@ -86,17 +86,26 @@ badge_mpr121_intr_task(void *arg)
 	// we cannot use I2C in the interrupt handler, so we
 	// create an extra thread for this..
 
+	int old_state = 0;
 	while (1)
 	{
 		if (xSemaphoreTake(badge_mpr121_intr_trigger, portMAX_DELAY))
 		{
-			int ints = badge_mpr121_get_interrupt_status();
-			// NOTE: if ints = -1, then all handlers will trigger.
+			int state;
+			while (1)
+			{
+				state = badge_mpr121_get_interrupt_status();
+				if (state != -1)
+					break;
+
+				ets_printf("badge_mpr121: failed to read status registers.\n");
+				vTaskDelay(1000 / portTICK_PERIOD_MS);
+			}
 
 			int i;
 			for (i=0; i<8; i++)
 			{
-				if (ints & (1 << i))
+				if ((state & (1 << i)) != (old_state & (1 << i)))
 				{
 					xSemaphoreTake(badge_mpr121_mux, portMAX_DELAY);
 					badge_mpr121_intr_t handler = badge_mpr121_handlers[i];
@@ -104,9 +113,23 @@ badge_mpr121_intr_task(void *arg)
 					xSemaphoreGive(badge_mpr121_mux);
 
 					if (handler != NULL)
-						handler(arg);
+						handler(arg, (state & (1 << i)) != 0);
 				}
 			}
+
+			if (state & 0x8000)
+			{
+				ets_printf("badge_mpr121: over-current detected!\n");
+				vTaskDelay(1000 / portTICK_PERIOD_MS);
+
+				// clear OVCF by writing a 1
+				badge_mpr121_write_reg(0x01, state >> 8);
+
+				// enable run-mode, set base-line tracking
+				badge_mpr121_write_reg(0x5e, 0x88);
+			}
+
+			old_state = state;
 		}
 	}
 }
@@ -116,17 +139,17 @@ badge_mpr121_intr_handler(void *arg)
 {
 
 	int gpio_state = gpio_get_level(PIN_NUM_MPR121_INT);
-#ifdef SHA_BADGE_MPR121_DEBUG
+#ifdef CONFIG_SHA_BADGE_MPR121_DEBUG
 	static int gpio_last_state = -1;
 	if (gpio_last_state != gpio_state)
 	{
 		if (gpio_state == 1)
-			ets_printf("I2C Int down\n");
+			ets_printf("badge_mpr121: I2C Int down\n");
 		else if (gpio_state == 0)
-			ets_printf("I2C Int up\n");
+			ets_printf("badge_mpr121: I2C Int up\n");
 	}
 	gpio_last_state = gpio_state;
-#endif // SHA_BADGE_MPR121_DEBUG
+#endif // CONFIG_SHA_BADGE_MPR121_DEBUG
 
 	if (gpio_state == 0)
 	{
@@ -298,10 +321,10 @@ badge_mpr121_get_gpio_level(int pin)
 	if (pin < 4 || pin >= 12)
 		return -1;
 
-	pin -= 4;
+	pin &= 7;
 
-	// read data
-	int res = badge_mpr121_read_reg(0x75);
+	// read data from status register
+	int res = badge_mpr121_read_reg(pin < 4 ? 0x01: 0x00);
 	if (res == -1)
 		return -1;
 

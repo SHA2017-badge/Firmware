@@ -18,7 +18,8 @@ void
 touch_event_handler(int event)
 {
 	// convert into button queue event
-	if (((event >> 16) & 0x0f) == 0x0) { // button down event
+	int event_type = (event >> 16) & 0x0f; // 0=touch, 1=release, 2=slider
+	if (event_type == 0 || event_type == 1) {
 		static const int conv[12] = {
 			-1,
 			-1,
@@ -37,7 +38,7 @@ touch_event_handler(int event)
 			int id = conv[(event >> 8) & 0xff];
 			if (id != -1)
 			{
-				badge_input_add_event(id, EVENT_BUTTON_PRESSED, NOT_IN_ISR);
+				badge_input_add_event(id, event_type == 0 ? EVENT_BUTTON_PRESSED : EVENT_BUTTON_RELEASED, NOT_IN_ISR);
 			}
 		}
 	}
@@ -46,9 +47,9 @@ touch_event_handler(int event)
 
 #ifdef I2C_MPR121_ADDR
 void
-mpr121_event_handler(void *b)
+mpr121_event_handler(void *b, bool pressed)
 {
-	badge_input_add_event((uint32_t) b, EVENT_BUTTON_PRESSED, NOT_IN_ISR);
+	badge_input_add_event((uint32_t) b, pressed ? EVENT_BUTTON_PRESSED : EVENT_BUTTON_RELEASED, NOT_IN_ISR);
 }
 #endif // I2C_MPR121_ADDR
 
