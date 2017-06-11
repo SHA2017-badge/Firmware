@@ -24,12 +24,12 @@ badge_touch_read_event(void)
 	esp_err_t ret = badge_i2c_read_event(I2C_TOUCHPAD_ADDR, buf);
 
 	if (ret == ESP_OK) {
-#ifdef SHA_BADGE_TOUCH_DEBUG
-		ets_printf("event: 0x%02x, 0x%02x, 0x%02x\n", buf[0], buf[1], buf[2]);
-#endif // SHA_BADGE_TOUCH_DEBUG
+#ifdef CONFIG_SHA_BADGE_TOUCH_DEBUG
+		ets_printf("badge_touch: event: 0x%02x, 0x%02x, 0x%02x\n", buf[0], buf[1], buf[2]);
+#endif // CONFIG_SHA_BADGE_TOUCH_DEBUG
 		return (buf[0] << 16) | (buf[1] << 8) | (buf[2]);
 	} else {
-		ets_printf("i2c master read (touch-controller): error %d\n", ret);
+		ets_printf("badge_touch: i2c master read: error %d\n", ret);
 		return -1;
 	}
 }
