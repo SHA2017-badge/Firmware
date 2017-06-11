@@ -2,10 +2,15 @@
 #define BADGE_INPUT_H
 
 #include <sdkconfig.h>
+#ifndef UNIX
 #include <freertos/FreeRTOS.h>
 #include <esp_event.h>
-
 extern xQueueHandle badge_input_queue;
+#else
+#include <stdbool.h>
+#include <stdint.h>
+#endif
+
 #define BADGE_BUTTON_UP      1
 #define BADGE_BUTTON_DOWN    2
 #define BADGE_BUTTON_LEFT    3
