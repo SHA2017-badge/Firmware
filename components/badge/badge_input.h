@@ -22,4 +22,12 @@ extern xQueueHandle badge_input_queue;
 
 extern void badge_input_init(void);
 
+#define EVENT_BUTTON_RELEASED false
+#define EVENT_BUTTON_PRESSED  true
+#define NOT_IN_ISR false
+#define IN_ISR true
+extern void badge_input_add_event(uint32_t button_id, bool pressed, bool in_isr);
+
+extern void (*badge_input_notify)(void);
+
 #endif // BADGE_INPUT_H

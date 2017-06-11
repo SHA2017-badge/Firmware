@@ -37,8 +37,7 @@ touch_event_handler(int event)
 			int id = conv[(event >> 8) & 0xff];
 			if (id != -1)
 			{
-				uint32_t button_down = id;
-				xQueueSend(badge_input_queue, &button_down, 0);
+				badge_input_add_event(id, EVENT_BUTTON_PRESSED, NOT_IN_ISR);
 			}
 		}
 	}
@@ -49,8 +48,7 @@ touch_event_handler(int event)
 void
 mpr121_event_handler(void *b)
 {
-	uint32_t button_down = (int) b;
-	xQueueSend(badge_input_queue, &button_down, 0);
+	badge_input_add_event((uint32_t) b, EVENT_BUTTON_PRESSED, NOT_IN_ISR);
 }
 #endif // I2C_MPR121_ADDR
 
