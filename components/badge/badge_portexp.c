@@ -49,12 +49,12 @@ badge_portexp_read_reg(uint8_t reg)
 	esp_err_t ret = badge_i2c_read_reg(I2C_PORTEXP_ADDR, reg, &value);
 
 	if (ret == ESP_OK) {
-#ifdef SHA_BADGE_PORTEXP_DEBUG
-		ets_printf("i2c read reg(0x%02x): 0x%02x\n", reg, value);
-#endif // SHA_BADGE_PORTEXP_DEBUG
+#ifdef CONFIG_SHA_BADGE_PORTEXP_DEBUG
+		ets_printf("badge_portexp: i2c read reg(0x%02x): 0x%02x\n", reg, value);
+#endif // CONFIG_SHA_BADGE_PORTEXP_DEBUG
 		return value;
 	} else {
-		ets_printf("i2c read reg(0x%02x): error %d\n", reg, ret);
+		ets_printf("badge_portexp: i2c read reg(0x%02x): error %d\n", reg, ret);
 		return -1;
 	}
 }
@@ -65,12 +65,12 @@ badge_portexp_write_reg(uint8_t reg, uint8_t value)
 	esp_err_t ret = badge_i2c_write_reg(I2C_PORTEXP_ADDR, reg, value);
 
 	if (ret == ESP_OK) {
-#ifdef SHA_BADGE_PORTEXP_DEBUG
-		ets_printf("i2c write reg(0x%02x, 0x%02x): ok\n", reg, value);
-#endif // SHA_BADGE_PORTEXP_DEBUG
+#ifdef CONFIG_SHA_BADGE_PORTEXP_DEBUG
+		ets_printf("badge_portexp: i2c write reg(0x%02x, 0x%02x): ok\n", reg, value);
+#endif // CONFIG_SHA_BADGE_PORTEXP_DEBUG
 		return 0;
 	} else {
-		ets_printf("i2c write reg(0x%02x, 0x%02x): error %d\n", reg, value, ret);
+		ets_printf("badge_portexp: i2c write reg(0x%02x, 0x%02x): error %d\n", reg, value, ret);
 		return -1;
 	}
 }
@@ -111,17 +111,17 @@ badge_portexp_intr_handler(void *arg)
 {
 
 	int gpio_state = gpio_get_level(PIN_NUM_PORTEXP_INT);
-#ifdef SHA_BADGE_PORTEXP_DEBUG
+#ifdef CONFIG_SHA_BADGE_PORTEXP_DEBUG
 	static int gpio_last_state = -1;
 	if (gpio_last_state != gpio_state)
 	{
 		if (gpio_state == 1)
-			ets_printf("I2C Int down\n");
+			ets_printf("badge_portexp: I2C Int down\n");
 		else if (gpio_state == 0)
-			ets_printf("I2C Int up\n");
+			ets_printf("badge_portexp: I2C Int up\n");
 	}
 	gpio_last_state = gpio_state;
-#endif // SHA_BADGE_PORTEXP_DEBUG
+#endif // CONFIG_SHA_BADGE_PORTEXP_DEBUG
 
 	if (gpio_state == 0)
 	{

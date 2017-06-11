@@ -51,22 +51,21 @@ void gdeBusyWait(void) {
 	}
 }
 
-#define BADGE_GDE_DEBUG
 void
 badge_gde_intr_handler(void *arg)
 {
 	int gpio_state = gpio_get_level(PIN_NUM_EPD_BUSY);
-#ifdef BADGE_GDE_DEBUG
+#ifdef CONFIG_SHA_BADGE_EINK_DEBUG
 	static int gpio_last_state = -1;
 	if (gpio_last_state != gpio_state)
 	{
 		if (gpio_state == 1)
-			ets_printf("EPD-Busy Int down\n");
+			ets_printf("badge_eink_dev: EPD-Busy Int down\n");
 		else if (gpio_state == 0)
-			ets_printf("EPD-Busy Int up\n");
+			ets_printf("badge_eink_dev: EPD-Busy Int up\n");
 	}
 	gpio_last_state = gpio_state;
-#endif // BADGE_GDE_DEBUG
+#endif // CONFIG_SHA_BADGE_EINK_DEBUG
 
 #ifdef PIN_NUM_LED
 	// pass on BUSY signal to LED.
@@ -118,7 +117,6 @@ void gdeInit(void) {
 	gpio_set_direction(PIN_NUM_EPD_DATA, GPIO_MODE_OUTPUT);
 	gpio_set_direction(PIN_NUM_EPD_RESET, GPIO_MODE_OUTPUT);
 	gpio_set_direction(PIN_NUM_EPD_BUSY, GPIO_MODE_INPUT);
-	ets_printf("epd spi pin mux init ...\r\n");
 	gpio_matrix_out(PIN_NUM_EPD_MOSI, VSPID_OUT_IDX, 0, 0);
 	gpio_matrix_out(PIN_NUM_EPD_CLK, VSPICLK_OUT_IDX, 0, 0);
 	gpio_matrix_out(PIN_NUM_EPD_CS, VSPICS0_OUT_IDX, 0, 0);

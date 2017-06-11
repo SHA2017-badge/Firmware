@@ -34,6 +34,12 @@ config SHA_BADGE_EINK_GDEH029A1
     bool "GDEH029A1"
 endchoice
 
+config SHA_BADGE_INPUT_DEBUG
+    bool "Enable input debug messages"
+    default n
+    help
+        Debugging
+
 config SHA_BADGE_PORTEXP_DEBUG
     bool "Enable port-expander debug messages"
     depends on SHA_BADGE_V2
@@ -51,6 +57,12 @@ config SHA_BADGE_TOUCH_DEBUG
 config SHA_BADGE_MPR121_DEBUG
     bool "Enable MPR121 debug messages"
     depends on SHA_BADGE_V3
+    default n
+    help
+        Debugging
+
+config SHA_BADGE_EINK_DEBUG
+    bool "Enable eink debug messages"
     default n
     help
         Debugging
