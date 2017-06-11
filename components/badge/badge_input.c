@@ -14,9 +14,9 @@ badge_input_init(void)
 }
 
 void
-badge_input_add_event(uint32_t button_id, bool down, bool in_isr)
+badge_input_add_event(uint32_t button_id, bool pressed, bool in_isr)
 {
-	if (down)
+	if (pressed)
 	{
 		if (in_isr)
 			xQueueSendFromISR(badge_input_queue, &button_id, NULL);
