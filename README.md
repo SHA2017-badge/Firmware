@@ -84,5 +84,5 @@ Badge Emulator
 cd micropython/unix
 make axtls
 make
-./micropython demo.py
+./micropython ../../examples/Game\ of\ Life/game_of_life.py
 ```

@@ -25,9 +25,9 @@ install:
   # - sudo apt-get install git wget make libncurses-dev flex bison gperf python python-serial
   # Prepare directory for the toolchain
   git submodule update --init --recursive
-  pip install pyserial
 
 script:
+  - pip install pyserial
   # Update configuration so that kconfig doesn't start interactive mode
   - make --version
   - source set_env.sh

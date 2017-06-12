@@ -17,3 +17,6 @@
 [submodule "micropython-lib"]
 	path = micropython-lib
 	url = https://github.com/micropython/micropython-lib.git
+[submodule "examples"]
+	path = examples
+	url = https://github.com/SHA2017-badge/micropython-examples-sha2017.git
