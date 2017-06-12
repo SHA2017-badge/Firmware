@@ -14,6 +14,14 @@
 
 **Merged pull requests:**
 
+- Moved button definitions to a header that doesn't depend on FreeRTOS queues [\#30](https://github.com/SHA2017-badge/Firmware/pull/30) ([aczid](https://github.com/aczid))
+- added sdcard and vibrator modules; improved greyscale on depg display. [\#29](https://github.com/SHA2017-badge/Firmware/pull/29) ([basvs](https://github.com/basvs))
+- Fixes in low-level drivers [\#28](https://github.com/SHA2017-badge/Firmware/pull/28) ([basvs](https://github.com/basvs))
+- splitting high-level ugfx driver from low-level input drivers [\#27](https://github.com/SHA2017-badge/Firmware/pull/27) ([basvs](https://github.com/basvs))
+- Demo listening for keypresses through GEVENT [\#26](https://github.com/SHA2017-badge/Firmware/pull/26) ([raboof](https://github.com/raboof))
+- Allow overriding stuff in custom\_env.sh while still using defaults [\#25](https://github.com/SHA2017-badge/Firmware/pull/25) ([raboof](https://github.com/raboof))
+- Use ugfx branch with freertos timer fix [\#24](https://github.com/SHA2017-badge/Firmware/pull/24) ([raboof](https://github.com/raboof))
+- PermanentMarker36 [\#23](https://github.com/SHA2017-badge/Firmware/pull/23) ([Peetz0r](https://github.com/Peetz0r))
 - ugfx touch input \(and some more goodies\) [\#22](https://github.com/SHA2017-badge/Firmware/pull/22) ([raboof](https://github.com/raboof))
 - Enabled LEDs demo [\#21](https://github.com/SHA2017-badge/Firmware/pull/21) ([raboof](https://github.com/raboof))
 - cleanups in components/epd and components/badge [\#20](https://github.com/SHA2017-badge/Firmware/pull/20) ([basvs](https://github.com/basvs))
