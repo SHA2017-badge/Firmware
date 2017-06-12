@@ -14,6 +14,7 @@
 
 **Merged pull requests:**
 
+- Missing badge\_button.h includes, latest micropython updates . . [\#31](https://github.com/SHA2017-badge/Firmware/pull/31) ([annejan](https://github.com/annejan))
 - Moved button definitions to a header that doesn't depend on FreeRTOS queues [\#30](https://github.com/SHA2017-badge/Firmware/pull/30) ([aczid](https://github.com/aczid))
 - added sdcard and vibrator modules; improved greyscale on depg display. [\#29](https://github.com/SHA2017-badge/Firmware/pull/29) ([basvs](https://github.com/basvs))
 - Fixes in low-level drivers [\#28](https://github.com/SHA2017-badge/Firmware/pull/28) ([basvs](https://github.com/basvs))
