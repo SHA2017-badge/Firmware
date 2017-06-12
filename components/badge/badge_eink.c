@@ -198,9 +198,15 @@ badge_eink_display(const uint8_t *img, int mode)
 	}
 
 	int i;
+#ifdef CONFIG_SHA_BADGE_EINK_DEPG0290B1
+	for (i = 64; i > 2; i >>= 1) {
+		int ii = i;
+		int p = 2;
+#else
 	for (i = 64; i > 0; i >>= 1) {
 		int ii = i;
 		int p = 8;
+#endif
 
 		while ((ii & 1) == 0 && (p > 1)) {
 			ii >>= 1;
@@ -233,7 +239,7 @@ badge_eink_display(const uint8_t *img, int mode)
 				0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // VCOM
 
 				// timings per cycle
-				ii*3, 0x00, 0x00, 0x00, 0x00,
+				ii  , 0x00, 0x00, 0x00, 0x00,
 			// empty slots:
 				0x00, 0x00, 0x00, 0x00, 0x00,
 				0x00, 0x00, 0x00, 0x00, 0x00,

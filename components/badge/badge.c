@@ -11,6 +11,8 @@
 #include "badge_touch.h"
 #include "badge_power.h"
 #include "badge_leds.h"
+#include "badge_vibrator.h"
+#include "badge_sdcard.h"
 #include "badge_eink.h"
 
 #ifdef I2C_TOUCHPAD_ADDR
@@ -109,6 +111,12 @@ badge_init(void)
 #ifdef PIN_NUM_LEDS
 	badge_leds_init();
 #endif // PIN_NUM_LEDS
+
+#if defined(PORTEXP_PIN_NUM_VIBRATOR) || defined(MPR121_PIN_NUM_VIBRATOR)
+	badge_vibrator_init();
+#endif // defined(PORTEXP_PIN_NUM_VIBRATOR) || defined(MPR121_PIN_NUM_VIBRATOR)
+
+	badge_sdcard_init();
 
 	// configure eink display
 	badge_eink_init();
