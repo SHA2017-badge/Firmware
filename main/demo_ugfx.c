@@ -1,6 +1,7 @@
 #include "gfx.h"
 #include "demo_ugfx.h"
 #include "badge_input.h"
+#include "badge_button.h"
 #include "ginput/ginput_driver_toggle.h"
 
 font_t roboto;
