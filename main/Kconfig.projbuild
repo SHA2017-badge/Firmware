@@ -1,27 +1,31 @@
-menu "SHA2017 Badge Configuration"
+menu "Connectivity"
 
 config WIFI_USE
     bool "Use WiFi on badge"
     depends on WIFI_ENABLED
-    default n
+    default y
     help
         Let the badge use wifi
 
 config WIFI_SSID
     string "WiFi SSID"
     depends on WIFI_USE
-    default "myssid"
+    default "SHA2017-badge"
     help
         SSID (network name) for the example to connect to.
 
 config WIFI_PASSWORD
     string "WiFi Password"
     depends on WIFI_USE
-    default "myssid"
+    default "b4dg3r"
     help
         WiFi password (WPA or WPA2) for the example to use.
 
         Can be left blank if the network has no security set.
+
+endmenu
+
+menu "MicroPython hacks"
 
 config SUPPORT_STATIC_ALLOCATION
     bool "Support static allocation"
@@ -42,7 +46,7 @@ config FREERTOS_THREAD_LOCAL_STORAGE_POINTERS
     range 1 256 if WIFI_ENABLED || ETHERNET
     default 2
     help
-       MicroPython currently seems to need this set to two! 
+       MicroPython currently seems to need this set to two!
 
 config ESP32_DEEP_SLEEP_WAKEUP_DELAY
     int "Extra delay in deep sleep wake stub (in us)"
