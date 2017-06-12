@@ -9,6 +9,8 @@ addons:
       - gperf
       - python
       - python-serial
+      - libffi-dev
+      - libsdl2-dev
 
 before_install:
   # Save path to the git respository
@@ -37,6 +39,9 @@ script:
   - cd ../esp32
   - make
   # TODO build the unix 'emulator'
+  - cd ../unix
+  - make axtls
+  - make
 
 notifications:
   irc:
