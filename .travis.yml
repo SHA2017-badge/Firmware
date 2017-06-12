@@ -8,8 +8,8 @@ addons:
   apt:
     packages:
       - gperf
-      - python
-      - python-serial
+      - python3
+      - python3-serial
       - libffi-dev
       - libsdl2-dev
 
