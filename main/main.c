@@ -142,20 +142,12 @@ void displayMenu(const char *menu_title, const struct menu_item *itemlist) {
         ets_printf("Button B handling\n");
         return;
       }
-      if (button_id == BADGE_BUTTON_MID) {
+      if (button_id == BADGE_BUTTON_START) {
         ets_printf("Selected '%s'\n", itemlist[item_pos].title);
         if (itemlist[item_pos].handler != NULL)
           itemlist[item_pos].handler();
         num_draw = 0;
-        ets_printf("Button MID handled\n");
-        continue;
-      }
-      if (button_id == BADGE_BUTTON_SELECT) {
-        ets_printf("Selected '%s'\n", itemlist[item_pos].title);
-        if (itemlist[item_pos].handler != NULL)
-          itemlist[item_pos].handler();
-        num_draw = 0;
-        ets_printf("Button SELECT handled\n");
+        ets_printf("Button START handled\n");
         continue;
       }
       if (button_id == BADGE_BUTTON_UP) {
@@ -254,14 +246,8 @@ app_main(void) {
         /* redraw with default LUT */
 		display_picture(picture_id, -1);
       }
-      if (button_id == BADGE_BUTTON_MID) {
-        ets_printf("Button MID handling\n");
-        /* open menu */
-        displayMenu("Demo menu", demoMenu);
-		display_picture(picture_id, selected_lut);
-      }
-      if (button_id == BADGE_BUTTON_SELECT) {
-        ets_printf("Button SELECT handling\n");
+      if (button_id == BADGE_BUTTON_START) {
+        ets_printf("Button START handling\n");
         /* open menu */
         displayMenu("Demo menu", demoMenu);
 		display_picture(picture_id, selected_lut);
