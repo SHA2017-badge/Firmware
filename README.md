@@ -1,7 +1,8 @@
-ESP32 AMEPD test for SHA2017Badge
-=================================
+Firmware SHA2017Badge
+=====================
 
-Read [project documentation](https://orga.sha2017.org/index.php/Projects:Badge) and get involved.
+Read [project documentation](https://orga.sha2017.org/index.php/Projects:Badge)
+and get involved.
 
 Project updates:
 
@@ -12,8 +13,10 @@ Project updates:
 * [Pad](https://pad.sha2017.org/p/badge)
 * [Changelog](CHANGELOG.md)
 
-Based on template application for [Espressif IoT Development Framework (ESP-IDF)](https://github.com/espressif/esp-idf
-). Copyright (C) 2016 Espressif Systems, licensed under the Apache License 2.0 as described in the file LICENSE.
+Copyright (C) 2017 SHA2017 Badge team.
+Based on template application for [Espressif IoT Development Framework (ESP-IDF)](https://github.com/espressif/esp-idf).
+Copyright (C) 2016 Espressif Systems, licensed under the Apache License 2.0
+as described in the file LICENSE.
 
 [![Build Status](https://travis-ci.org/SHA2017-badge/Firmware.svg?branch=master)](https://travis-ci.org/SHA2017-badge/Firmware)
 
