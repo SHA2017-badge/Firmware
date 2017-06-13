@@ -70,7 +70,7 @@ badge_init(void)
 #ifdef PIN_NUM_BUTTON_A
 	badge_gpiobutton_add(PIN_NUM_BUTTON_A    , BADGE_BUTTON_A);
 	badge_gpiobutton_add(PIN_NUM_BUTTON_B    , BADGE_BUTTON_B);
-	badge_gpiobutton_add(PIN_NUM_BUTTON_MID  , BADGE_BUTTON_MID);
+	badge_gpiobutton_add(PIN_NUM_BUTTON_START, BADGE_BUTTON_START); // 'mid'
 	badge_gpiobutton_add(PIN_NUM_BUTTON_UP   , BADGE_BUTTON_UP);
 	badge_gpiobutton_add(PIN_NUM_BUTTON_DOWN , BADGE_BUTTON_DOWN);
 	badge_gpiobutton_add(PIN_NUM_BUTTON_LEFT , BADGE_BUTTON_LEFT);

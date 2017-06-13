@@ -10,7 +10,7 @@
 
 #define PIN_NUM_BUTTON_A      0
 #define PIN_NUM_BUTTON_B     27
-#define PIN_NUM_BUTTON_MID   25
+#define PIN_NUM_BUTTON_START 25
 #define PIN_NUM_BUTTON_UP    26
 #define PIN_NUM_BUTTON_DOWN  32
 #define PIN_NUM_BUTTON_LEFT  33
