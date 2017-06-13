@@ -10,9 +10,6 @@
 #if (GFX_USE_GINPUT && GINPUT_NEED_TOGGLE)
 #include "../../../src/ginput/ginput_driver_toggle.h"
 
-#include <freertos/FreeRTOS.h>
-#include <esp_event.h>
-
 #include <badge_input.h>
 
 #include "ginput_lld_toggle_config.h"
@@ -31,12 +28,13 @@ ginput_lld_toggle_getbits(const GToggleConfig *ptc)
 {
 	ets_printf("ginput_lld_toggle: getbits()\n");
 	uint32_t result = 0;
-	uint32_t button_down = 0;
+	uint32_t button_id;
 	// No delay, because we'll be triggered by an interrupt so we know there should be something to read
-	while (xQueueReceive(badge_input_queue, &button_down, 0))
+
+	while ((button_id = badge_input_get_event(0)) != 0)
 	{
-		ets_printf("ginput_lld_toggle: button %d pressed\n", button_down);
-		result |= 1 << button_down;
+		ets_printf("ginput_lld_toggle: button %d pressed\n", button_id);
+		result |= 1 << button_id;
 	}
 
 	if (result == 0)

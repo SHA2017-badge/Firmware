@@ -1,9 +1,6 @@
 #include "sdkconfig.h"
 
 #ifdef CONFIG_SHA_BADGE_EINK_GDEH029A1
-#include <freertos/FreeRTOS.h>
-#include <esp_event.h>
-
 #include <badge_input.h>
 #include <badge_eink.h>
 #include <badge_eink_dev.h>
@@ -49,10 +46,8 @@ void demoDot1(void) {
   int dot_pos = 0;
 
   while (1) {
-    uint32_t buttons_down = 0;
-    if (xQueueReceive(badge_input_queue, &buttons_down, portMAX_DELAY))
-      if ((buttons_down & 0xffff) != 0)
-        return;
+	if (badge_input_get_event(10) != 0)
+	  return;
 
     /* update dot */
     if (px + xd < 0)

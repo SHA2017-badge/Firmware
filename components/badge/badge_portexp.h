@@ -1,6 +1,8 @@
 #ifndef BADGE_PORTEXP_H
 #define BADGE_PORTEXP_H
 
+#include <stdint.h>
+
 typedef void (*badge_portexp_intr_t)(void*);
 
 extern void badge_portexp_init(void);

@@ -2,9 +2,6 @@
 
 #include <string.h>
 
-#include <freertos/FreeRTOS.h>
-#include <esp_event.h>
-
 #include <badge_eink.h>
 #include <badge_input.h>
 
@@ -70,7 +67,5 @@ demoText1(void) {
 	badge_eink_display(screen_buf, (1 << DISPLAY_FLAG_LUT_BIT));
 
 	// wait for random keypress
-	uint32_t buttons_down = 0;
-	while ((buttons_down & 0xffff) == 0)
-		xQueueReceive(badge_input_queue, &buttons_down, portMAX_DELAY);
+	badge_input_get_event(-1);
 }
