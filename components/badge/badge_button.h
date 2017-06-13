@@ -5,7 +5,7 @@
 #define BADGE_BUTTON_DOWN    2
 #define BADGE_BUTTON_LEFT    3
 #define BADGE_BUTTON_RIGHT   4
-#define BADGE_BUTTON_MID     5
+#define BADGE_BUTTON_MID     9
 #define BADGE_BUTTON_A       6
 #define BADGE_BUTTON_B       7
 #define BADGE_BUTTON_SELECT  8
