@@ -1,6 +1,8 @@
 #include "sdkconfig.h"
 
 #ifdef CONFIG_SHA_BADGE_EINK_GDEH029A1
+#include <esp_event.h>
+
 #include <badge_input.h>
 #include <badge_eink.h>
 #include <badge_eink_dev.h>
