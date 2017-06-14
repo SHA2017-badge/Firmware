@@ -1,8 +1,12 @@
-#include "gfx.h"
+#include "sdkconfig.h"
+
+#include <badge_button.h>
+#include <badge_input.h>
+
+#include <gfx.h>
+#include <ginput/ginput_driver_toggle.h>
+
 #include "demo_ugfx.h"
-#include "badge_button.h"
-#include "badge_input.h"
-#include "ginput/ginput_driver_toggle.h"
 
 font_t roboto;
 font_t robotoBlackItalic;

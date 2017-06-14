@@ -2,8 +2,7 @@
 
 #include <string.h>
 
-#include <freertos/FreeRTOS.h>
-#include <esp_event.h>
+#include <rom/ets_sys.h>
 #include <driver/adc.h>
 
 #include <badge_eink.h>
@@ -50,9 +49,8 @@ demoTestAdc(void) {
 		/* update display */
 		badge_eink_display(screen_buf, (1 << DISPLAY_FLAG_LUT_BIT));
 
-		uint32_t buttons_down = 0;
-		if (xQueueReceive(badge_input_queue, &buttons_down, portMAX_DELAY))
-			if ((buttons_down & 0xffff) != 0)
-				return;
+		// wait 1 second
+		if (badge_input_get_event(1000) != 0)
+			return;
 	}
 }

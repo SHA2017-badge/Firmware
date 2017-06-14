@@ -2,9 +2,6 @@
 
 #include <string.h>
 
-#include <freertos/FreeRTOS.h>
-#include <freertos/task.h>
-
 #include <badge_input.h>
 #include <badge_pins.h>
 #include <badge_leds.h>
@@ -44,12 +41,8 @@ void demo_leds(void)
 
 	while (1) {
 		// exit on random keypress
-		uint32_t buttons_down = 0;
-		if (xQueueReceive(badge_input_queue, &buttons_down, 10 / portTICK_RATE_MS))
-		{
-			if (buttons_down & 0xffff)
-				break;
-		}
+		if (badge_input_get_event(10) != 0)
+			break;
 
 		badge_leds_set_state(rgbw);
 

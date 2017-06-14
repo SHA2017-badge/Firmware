@@ -1,5 +1,5 @@
 #include <sdkconfig.h>
-#include <freertos/FreeRTOS.h>
+
 #include <esp_event.h>
 
 #include "badge_input.h"
@@ -42,4 +42,15 @@ badge_input_add_event(uint32_t button_id, bool pressed, bool in_isr)
 		if (badge_input_notify != NULL)
 			badge_input_notify();
 	}
+}
+
+uint32_t
+badge_input_get_event(int timeout)
+{
+	int xqueuetimeout = (timeout == -1) ? portMAX_DELAY : timeout / portTICK_RATE_MS;
+	uint32_t button_id;
+	if (xQueueReceive(badge_input_queue, &button_id, xqueuetimeout)) {
+		return button_id;
+	}
+	return 0;
 }

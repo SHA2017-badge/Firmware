@@ -3,7 +3,7 @@
 #include "esp_event_loop.h"
 #include "esp_system.h"
 #include "esp_wifi.h"
-#include "freertos/FreeRTOS.h"
+//include "freertos/FreeRTOS.h"
 #include "nvs_flash.h"
 #include <font.h>
 #include <string.h>
@@ -135,29 +135,22 @@ void displayMenu(const char *menu_title, const struct menu_item *itemlist) {
     }
 
     /* handle input */
-    uint32_t button_down;
-    if (xQueueReceive(badge_input_queue, &button_down, xTicksToWait)) {
-      if (button_down == BADGE_BUTTON_B) {
+    uint32_t button_id;
+	if ((button_id = badge_input_get_event(xTicksToWait)) != 0)
+	{
+      if (button_id == BADGE_BUTTON_B) {
         ets_printf("Button B handling\n");
         return;
       }
-      if (button_down == BADGE_BUTTON_MID) {
+      if (button_id == BADGE_BUTTON_START) {
         ets_printf("Selected '%s'\n", itemlist[item_pos].title);
         if (itemlist[item_pos].handler != NULL)
           itemlist[item_pos].handler();
         num_draw = 0;
-        ets_printf("Button MID handled\n");
+        ets_printf("Button START handled\n");
         continue;
       }
-      if (button_down == BADGE_BUTTON_SELECT) {
-        ets_printf("Selected '%s'\n", itemlist[item_pos].title);
-        if (itemlist[item_pos].handler != NULL)
-          itemlist[item_pos].handler();
-        num_draw = 0;
-        ets_printf("Button SELECT handled\n");
-        continue;
-      }
-      if (button_down == BADGE_BUTTON_UP) {
+      if (button_id == BADGE_BUTTON_UP) {
         if (item_pos > 0) {
           item_pos--;
           if (scroll_pos > item_pos)
@@ -166,7 +159,7 @@ void displayMenu(const char *menu_title, const struct menu_item *itemlist) {
         }
         ets_printf("Button UP handled\n");
       }
-      if (button_down == BADGE_BUTTON_DOWN) {
+      if (button_id == BADGE_BUTTON_DOWN) {
         if (item_pos + 1 < num_items) {
           item_pos++;
           if (scroll_pos + 6 < item_pos)
@@ -245,38 +238,33 @@ app_main(void) {
   int selected_lut = BADGE_EINK_LUT_NORMAL;
 
   while (1) {
-    uint32_t button_down;
-    if (xQueueReceive(badge_input_queue, &button_down, portMAX_DELAY)) {
-      if (button_down == BADGE_BUTTON_B) {
+    uint32_t button_id;
+	if ((button_id = badge_input_get_event(-1)) != 0)
+	{
+      if (button_id == BADGE_BUTTON_B) {
         ets_printf("Button B handling\n");
         /* redraw with default LUT */
 		display_picture(picture_id, -1);
       }
-      if (button_down == BADGE_BUTTON_MID) {
-        ets_printf("Button MID handling\n");
+      if (button_id == BADGE_BUTTON_START) {
+        ets_printf("Button START handling\n");
         /* open menu */
         displayMenu("Demo menu", demoMenu);
 		display_picture(picture_id, selected_lut);
       }
-      if (button_down == BADGE_BUTTON_SELECT) {
-        ets_printf("Button SELECT handling\n");
-        /* open menu */
-        displayMenu("Demo menu", demoMenu);
-		display_picture(picture_id, selected_lut);
-      }
-      if (button_down == BADGE_BUTTON_UP) {
+      if (button_id == BADGE_BUTTON_UP) {
         ets_printf("Button UP handling\n");
         /* switch LUT */
         selected_lut = (selected_lut + 1) % (BADGE_EINK_LUT_MAX + 1);
 		display_picture(picture_id, selected_lut);
       }
-      if (button_down == BADGE_BUTTON_DOWN) {
+      if (button_id == BADGE_BUTTON_DOWN) {
         ets_printf("Button DOWN handling\n");
         /* switch LUT */
         selected_lut = (selected_lut + BADGE_EINK_LUT_MAX) % (BADGE_EINK_LUT_MAX + 1);
 		display_picture(picture_id, selected_lut);
       }
-      if (button_down == BADGE_BUTTON_LEFT) {
+      if (button_id == BADGE_BUTTON_LEFT) {
         ets_printf("Button LEFT handling\n");
         /* previous picture */
         if (picture_id > 0) {
@@ -284,7 +272,7 @@ app_main(void) {
 		  display_picture(picture_id, selected_lut);
         }
       }
-      if (button_down == BADGE_BUTTON_RIGHT) {
+      if (button_id == BADGE_BUTTON_RIGHT) {
         ets_printf("Button RIGHT handling\n");
         /* next picture */
         if (picture_id + 1 < NUM_PICTURES) {

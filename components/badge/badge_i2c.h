@@ -1,6 +1,7 @@
 #ifndef BADGE_I2C_H
 #define BADGE_I2C_H
 
+#include <stdint.h>
 #include <esp_err.h>
 
 extern void badge_i2c_init(void);

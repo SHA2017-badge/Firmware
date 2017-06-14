@@ -1,8 +1,7 @@
 #include "sdkconfig.h"
 
+#include <stdio.h>
 #include <string.h>
-
-#include <freertos/FreeRTOS.h>
 
 #include <badge_pins.h>
 #include <badge_eink.h>
@@ -66,9 +65,7 @@ demoPower(void) {
 		}
 
 		// wait 1 second
-		uint32_t buttons_down = 0;
-		if (xQueueReceive(badge_input_queue, &buttons_down, 1000 / portTICK_RATE_MS))
-			if ((buttons_down & 0xffff) != 0)
-				return;
+		if (badge_input_get_event(1000) != 0)
+			return;
 	}
 }

@@ -5,6 +5,7 @@
 #include "badge_pins.h"
 #include "badge_input.h"
 #include "badge_button.h"
+#include "badge_gpiobutton.h"
 #include "badge_i2c.h"
 #include "badge_portexp.h"
 #include "badge_mpr121.h"
@@ -67,15 +68,15 @@ badge_init(void)
 
 	// configure buttons directly connected to gpio pins
 #ifdef PIN_NUM_BUTTON_A
-	badge_button_add(PIN_NUM_BUTTON_A    , BADGE_BUTTON_A);
-	badge_button_add(PIN_NUM_BUTTON_B    , BADGE_BUTTON_B);
-	badge_button_add(PIN_NUM_BUTTON_MID  , BADGE_BUTTON_MID);
-	badge_button_add(PIN_NUM_BUTTON_UP   , BADGE_BUTTON_UP);
-	badge_button_add(PIN_NUM_BUTTON_DOWN , BADGE_BUTTON_DOWN);
-	badge_button_add(PIN_NUM_BUTTON_LEFT , BADGE_BUTTON_LEFT);
-	badge_button_add(PIN_NUM_BUTTON_RIGHT, BADGE_BUTTON_RIGHT);
+	badge_gpiobutton_add(PIN_NUM_BUTTON_A    , BADGE_BUTTON_A);
+	badge_gpiobutton_add(PIN_NUM_BUTTON_B    , BADGE_BUTTON_B);
+	badge_gpiobutton_add(PIN_NUM_BUTTON_START, BADGE_BUTTON_START); // 'mid'
+	badge_gpiobutton_add(PIN_NUM_BUTTON_UP   , BADGE_BUTTON_UP);
+	badge_gpiobutton_add(PIN_NUM_BUTTON_DOWN , BADGE_BUTTON_DOWN);
+	badge_gpiobutton_add(PIN_NUM_BUTTON_LEFT , BADGE_BUTTON_LEFT);
+	badge_gpiobutton_add(PIN_NUM_BUTTON_RIGHT, BADGE_BUTTON_RIGHT);
 #else
-	badge_button_add(PIN_NUM_BUTTON_FLASH, BADGE_BUTTON_FLASH);
+	badge_gpiobutton_add(PIN_NUM_BUTTON_FLASH, BADGE_BUTTON_FLASH);
 #endif // ! PIN_NUM_BUTTON_A
 
 	// configure the i2c bus to the port-expander and touch-controller or to the mpr121
