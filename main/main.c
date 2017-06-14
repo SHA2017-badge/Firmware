@@ -10,7 +10,6 @@
 
 #include <badge.h>
 #include <badge_input.h>
-#include <badge_button.h>
 #include <badge_eink.h>
 #include <badge_pins.h>
 #include <badge_button.h>
