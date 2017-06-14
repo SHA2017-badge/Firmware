@@ -34,16 +34,11 @@ script:
   - make defconfig
   # Build project from the git repository
   - make
-  # Build the mpy-cross compiler
-  - cd micropython/mpy-cross
-  - make
   # Build the micropython firmware
-  - cd ../esp32
-  - make
+  - make -C micropython/esp32
   # TODO build the unix 'emulator'
-  - cd ../unix
-  - make axtls
-  - make
+  - make -C micropython/unix axtls
+  - make -C micropython/unix
 
 notifications:
   irc:
