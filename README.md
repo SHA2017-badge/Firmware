@@ -47,11 +47,7 @@ Compiling and flashing MicroPython
 ----------------------------------
 
 ```
-cd micropython/mpy-cross
-make
-cd ../esp32
-make deploy
-cd ../..
+make -C micropython/esp32/ deploy
 ```
 
 Interacting via serial
