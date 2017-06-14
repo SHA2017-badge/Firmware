@@ -1,7 +1,7 @@
 Firmware SHA2017Badge
 =====================
 
-Read [project documentation](https://orga.sha2017.org/index.php/Projects:Badge)
+Read [project documentation](https://wiki.sha2017.org/w/Projects:Badge)
 and get involved.
 
 Project updates:
