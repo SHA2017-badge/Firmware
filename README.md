@@ -24,7 +24,7 @@ Debian prerequisites
 --------------------
 
 ```
-sudo apt-get install libncurses5-dev flex bison gperf python-serial libffi-dev libsdl2-dev
+sudo apt-get install libncurses5-dev flex bison gperf python-serial libffi-dev libsdl2-dev libmbedtls-dev
 ```
 
 Compiling and flashing
@@ -81,8 +81,8 @@ More info on the [MicroPython badge module](https://wiki.sha2017.org/w/Projects:
 Badge Emulator
 --------------
 ```
+make -C micropython/lib/mbedtls
+make -C micropython/unix
 cd micropython/unix
-make axtls
-make
 ./micropython ../../examples/Game\ of\ Life/game_of_life.py
 ```
