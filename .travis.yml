@@ -12,7 +12,6 @@ addons:
       - python-serial
       - libffi-dev
       - libsdl2-dev
-        # - libmbedtls-dev
 
 before_install:
   # Save path to the git respository
@@ -38,7 +37,7 @@ script:
   - make
   # Build the micropython firmware
   - make -C micropython/esp32
-  # TODO fix build of the unix 'emulator'
+  # Build micropython unix 'badge emulator'
   - make -C micropython/lib/mbedtls
   - make -C micropython/unix
   - du -hs
