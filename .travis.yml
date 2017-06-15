@@ -12,6 +12,7 @@ addons:
       - python-serial
       - libffi-dev
       - libsdl2-dev
+      - libmbedtls-dev
 
 before_install:
   # Save path to the git respository

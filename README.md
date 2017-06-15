@@ -24,7 +24,7 @@ Debian prerequisites
 --------------------
 
 ```
-sudo apt-get install libncurses5-dev flex bison gperf python-serial libffi-dev libsdl2-dev
+sudo apt-get install libncurses5-dev flex bison gperf python-serial libffi-dev libsdl2-dev libmbedtls-dev
 ```
 
 Compiling and flashing
