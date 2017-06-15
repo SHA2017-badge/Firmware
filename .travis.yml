@@ -31,6 +31,7 @@ script:
   - pip install pyserial
   # Update configuration so that kconfig doesn't start interactive mode
   - make --version
+  - du -hs
   - source set_env.sh
   - make defconfig
   # Build project from the git repository
@@ -38,7 +39,9 @@ script:
   # Build the micropython firmware
   - make -C micropython/esp32
   # TODO fix build of the unix 'emulator'
+  - make -C micropython/lib/mbedtls
   - make -C micropython/unix
+  - du -hs
 
 notifications:
   irc:
