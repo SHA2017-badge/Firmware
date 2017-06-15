@@ -81,7 +81,6 @@ More info on the [MicroPython badge module](https://wiki.sha2017.org/w/Projects:
 Badge Emulator
 --------------
 ```
-make -C micropython/lib/mbedtls
 make -C micropython/unix
 cd micropython/unix
 ./micropython ../../examples/Game\ of\ Life/game_of_life.py
