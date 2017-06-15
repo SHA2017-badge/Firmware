@@ -8,12 +8,18 @@
 
 **Closed issues:**
 
+- uGFX 'toggle' input driver [\#15](https://github.com/SHA2017-badge/Firmware/issues/15)
 - Intermittent build failures: no rule to make target .../bootloader.bin [\#13](https://github.com/SHA2017-badge/Firmware/issues/13)
 - Add Roboto as ugfx external font [\#11](https://github.com/SHA2017-badge/Firmware/issues/11)
 - Question: New distribution technique [\#8](https://github.com/SHA2017-badge/Firmware/issues/8)
 
 **Merged pull requests:**
 
+- Latest micropython and micropython-lib updates [\#37](https://github.com/SHA2017-badge/Firmware/pull/37) ([annejan](https://github.com/annejan))
+- Updated micropython to latest upstream \(ahead of micropython-esp32\) [\#36](https://github.com/SHA2017-badge/Firmware/pull/36) ([annejan](https://github.com/annejan))
+- Simplified make steps  [\#35](https://github.com/SHA2017-badge/Firmware/pull/35) ([aczid](https://github.com/aczid))
+- cleanup of badge\_button.h [\#34](https://github.com/SHA2017-badge/Firmware/pull/34) ([basvs](https://github.com/basvs))
+- Travis build emulator, README updated on emulator compilation [\#33](https://github.com/SHA2017-badge/Firmware/pull/33) ([annejan](https://github.com/annejan))
 - Missing badge\_button.h includes, latest micropython updates . . [\#31](https://github.com/SHA2017-badge/Firmware/pull/31) ([annejan](https://github.com/annejan))
 - Moved button definitions to a header that doesn't depend on FreeRTOS queues [\#30](https://github.com/SHA2017-badge/Firmware/pull/30) ([aczid](https://github.com/aczid))
 - added sdcard and vibrator modules; improved greyscale on depg display. [\#29](https://github.com/SHA2017-badge/Firmware/pull/29) ([basvs](https://github.com/basvs))
