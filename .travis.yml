@@ -38,6 +38,7 @@ script:
   # Build the micropython firmware
   - make -C micropython/esp32
   # Build micropython unix 'badge emulator'
+  - git clone https://github.com/ARMmbed/mbedtls.git micropython/lib/mbedtls
   - make -C micropython/lib/mbedtls
   - make -C micropython/unix
   - du -hs
