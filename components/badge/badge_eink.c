@@ -281,6 +281,20 @@ badge_eink_set_ram_pointer(uint8_t x_addr, uint16_t y_addr)
 }
 
 void
+badge_eink_deep_sleep(void)
+{
+	// enter deep sleep
+	badge_eink_dev_write_command_p1(0x10, 0x01);
+}
+
+void
+badge_eink_wakeup(void)
+{
+	// leave deep sleep
+	badge_eink_dev_write_command_p1(0x10, 0x00);
+}
+
+void
 badge_eink_init(void)
 {
 	// initialize spi interface to display
