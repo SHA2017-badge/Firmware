@@ -38,10 +38,9 @@ badge_input_add_event(uint32_t button_id, bool pressed, bool in_isr)
 			xQueueSendFromISR(badge_input_queue, &button_id, NULL);
 		else
 			xQueueSend(badge_input_queue, &button_id, 0);
-
-		if (badge_input_notify != NULL)
-			badge_input_notify();
 	}
+	if (badge_input_notify != NULL)
+		badge_input_notify();
 }
 
 uint32_t
