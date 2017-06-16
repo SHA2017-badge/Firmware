@@ -7,6 +7,8 @@
 #include "Roboto-Black22.c"
 #include "Roboto-BlackItalic24.c"
 #include "Roboto-Regular12.c"
+#include "Roboto-Regular18.c"
+#include "Roboto-Regular22.c"
 #include "PermanentMarker22.c"
 #include "PermanentMarker36.c"
 
