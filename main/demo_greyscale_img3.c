@@ -27,11 +27,11 @@ void demoGreyscaleImg3(void) {
     /* draw initial pattern */
     badge_eink_set_ram_area(0, DISP_SIZE_X_B - 1, 0, DISP_SIZE_Y - 1);
     badge_eink_set_ram_pointer(0, 0);
-    gdeWriteCommandInit(0x24);
+    badge_eink_dev_write_command_init(0x24);
     int c;
     for (c = 0; c < DISP_SIZE_X_B * DISP_SIZE_Y; c++)
-      gdeWriteByte((i & 1) ? 0xff : 0x00);
-    gdeWriteCommandEnd();
+      badge_eink_dev_write_byte((i & 1) ? 0xff : 0x00);
+    badge_eink_dev_write_command_end();
 
     struct badge_eink_update eink_upd = {
       .lut      = BADGE_EINK_LUT_DEFAULT,
@@ -59,7 +59,7 @@ void demoGreyscaleImg3(void) {
 
       badge_eink_set_ram_area(0, DISP_SIZE_X_B - 1, 0, DISP_SIZE_Y - 1);
       badge_eink_set_ram_pointer(0, 0);
-      gdeWriteCommandInit(0x24);
+      badge_eink_dev_write_command_init(0x24);
       int x, y;
       const uint8_t *ptr = img_hacking;
       for (y = 0; y < DISP_SIZE_Y; y++) {
@@ -73,10 +73,10 @@ void demoGreyscaleImg3(void) {
           if (y >= y_start && y <= y_end && j & i)
             res++;
           if ((x & 7) == 7)
-            gdeWriteByte(res);
+            badge_eink_dev_write_byte(res);
         }
       }
-      gdeWriteCommandEnd();
+      badge_eink_dev_write_command_end();
 
       // LUT:
       //   Ignore old state;

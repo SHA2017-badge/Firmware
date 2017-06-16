@@ -31,28 +31,34 @@
 #define VSPICLK_OUT_IDX VSPICLK_OUT_MUX_IDX
 #endif
 
-void gdeReset(void) {
+void
+badge_eink_dev_reset(void) {
 	gpio_set_level(PIN_NUM_EPD_RESET, LOW);
 	ets_delay_us(200000);
 	gpio_set_level(PIN_NUM_EPD_RESET, HIGH);
 	ets_delay_us(200000);
 }
 
-bool gdeIsBusy(void) {
+bool
+badge_eink_dev_is_busy(void)
+{
 	return gpio_get_level(PIN_NUM_EPD_BUSY);
 }
 
 // semaphore to trigger on gde-busy signal
-xSemaphoreHandle badge_gde_intr_trigger = NULL;
+xSemaphoreHandle badge_eink_dev_intr_trigger = NULL;
 
-void gdeBusyWait(void) {
-	while (gdeIsBusy()) {
-		xSemaphoreTake(badge_gde_intr_trigger, 100 / portTICK_PERIOD_MS);
+void
+badge_eink_dev_busy_wait(void)
+{
+	while (badge_eink_dev_is_busy())
+	{
+		xSemaphoreTake(badge_eink_dev_intr_trigger, 100 / portTICK_PERIOD_MS);
 	}
 }
 
 void
-badge_gde_intr_handler(void *arg)
+badge_eink_dev_intr_handler(void *arg)
 {
 	int gpio_state = gpio_get_level(PIN_NUM_EPD_BUSY);
 #ifdef CONFIG_SHA_BADGE_EINK_DEBUG
@@ -74,37 +80,49 @@ badge_gde_intr_handler(void *arg)
 
 //	if (gpio_state == 0)
 //	{
-		xSemaphoreGiveFromISR(badge_gde_intr_trigger, NULL);
+		xSemaphoreGiveFromISR(badge_eink_dev_intr_trigger, NULL);
 //	}
 }
 
-void gdeWriteCommand(uint8_t command) {
+void
+badge_eink_dev_write_command(uint8_t command)
+{
+	badge_eink_dev_busy_wait();
+
 	gpio_set_level(PIN_NUM_EPD_CS, HIGH);
 	gpio_set_level(PIN_NUM_EPD_CS, LOW);
-	gdeWriteByte(command);
+	badge_eink_dev_write_byte(command);
 	gpio_set_level(PIN_NUM_EPD_CS, HIGH);
 }
 
-void gdeWriteCommandInit(uint8_t command) {
+void
+badge_eink_dev_write_command_init(uint8_t command)
+{
+	badge_eink_dev_busy_wait();
+
 	gpio_set_level(PIN_NUM_EPD_CS, HIGH);
 	gpio_set_level(PIN_NUM_EPD_CS, LOW);
-	gdeWriteByte(command);
+	badge_eink_dev_write_byte(command);
 	gpio_set_level(PIN_NUM_EPD_DATA, HIGH);
 }
 
-void gdeWriteCommandEnd(void) {
+void
+badge_eink_dev_write_command_end(void)
+{
 	gpio_set_level(PIN_NUM_EPD_CS, HIGH);
 	gpio_set_level(PIN_NUM_EPD_DATA, LOW);
 }
 
-void gdeInit(void) {
+void
+badge_eink_dev_init(void)
+{
 #ifdef PIN_NUM_LED
 	gpio_pad_select_gpio(PIN_NUM_LED);
 	gpio_set_direction(PIN_NUM_LED, GPIO_MODE_OUTPUT);
 #endif // PIN_NUM_LED
 
-	badge_gde_intr_trigger = xSemaphoreCreateBinary();
-	gpio_isr_handler_add(PIN_NUM_EPD_BUSY, badge_gde_intr_handler, NULL);
+	badge_eink_dev_intr_trigger = xSemaphoreCreateBinary();
+	gpio_isr_handler_add(PIN_NUM_EPD_BUSY, badge_eink_dev_intr_handler, NULL);
 	gpio_config_t io_conf;
 	io_conf.intr_type = GPIO_INTR_ANYEDGE;
 	io_conf.mode = GPIO_MODE_INPUT;
@@ -155,13 +173,14 @@ void gdeInit(void) {
 	}
 }
 
-void gdeWriteByte(uint8_t data) {
+void
+badge_eink_dev_write_byte(uint8_t data)
+{
 	SET_PERI_REG_BITS(SPI_MOSI_DLEN_REG(SPI_NUM), SPI_USR_MOSI_DBITLEN, 0x7,
 			SPI_USR_MOSI_DBITLEN_S);
 	WRITE_PERI_REG((SPI_W0_REG(SPI_NUM)), data);
 	SET_PERI_REG_MASK(SPI_CMD_REG(SPI_NUM), SPI_USR);
 
 	// wait until ready?
-	while (READ_PERI_REG(SPI_CMD_REG(SPI_NUM)) & SPI_USR)
-		;
+	while (READ_PERI_REG(SPI_CMD_REG(SPI_NUM)) & SPI_USR);
 }
