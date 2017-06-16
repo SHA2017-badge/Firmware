@@ -149,9 +149,6 @@ badge_eink_update(const struct badge_eink_update *upd_conf)
 
 	// start update
 	badge_eink_dev_write_command(0x20);
-
-	// wait until no longer busy
-	badge_eink_dev_busy_wait();
 }
 
 void
@@ -292,7 +289,11 @@ badge_eink_init(void)
 #ifdef CONFIG_SHA_BADGE_EINK_GDEH029A1
 	/* initialize GDEH029A1 */
 
+	// Hardware reset
 	badge_eink_dev_reset();
+
+	// Software reset
+	badge_eink_dev_write_command(0x12);
 
 	// 0C: booster soft start control
 	badge_eink_dev_write_command_p3(0x0c, 0xd7, 0xd6, 0x9d);
@@ -309,11 +310,9 @@ badge_eink_init(void)
 
 	// Hardware reset
 	badge_eink_dev_reset();
-	badge_eink_dev_busy_wait();
 
 	// Software reset
 	badge_eink_dev_write_command(0x12);
-	badge_eink_dev_busy_wait();
 
 	// Set analog block control
 	badge_eink_dev_write_command_p1(0x74, 0x54);
