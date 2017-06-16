@@ -6,6 +6,7 @@
 
 xQueueHandle badge_input_queue = NULL;
 void (*badge_input_notify)(void);
+uint32_t badge_input_button_state = 0;
 
 void
 badge_input_init(void)
@@ -23,7 +24,7 @@ badge_input_add_event(uint32_t button_id, bool pressed, bool in_isr)
 		"DOWN",
 		"LEFT",
 		"RIGHT",
-		"MID",
+		"(null)",
 		"A",
 		"B",
 		"SELECT",
@@ -34,11 +35,17 @@ badge_input_add_event(uint32_t button_id, bool pressed, bool in_isr)
 #endif // CONFIG_SHA_BADGE_INPUT_DEBUG
 	if (pressed)
 	{
+		badge_input_button_state |= 1 << button_id;
 		if (in_isr)
 			xQueueSendFromISR(badge_input_queue, &button_id, NULL);
 		else
 			xQueueSend(badge_input_queue, &button_id, 0);
 	}
+	else
+	{
+		badge_input_button_state &= ~(1 << button_id);
+	}
+
 	if (badge_input_notify != NULL)
 		badge_input_notify();
 }
