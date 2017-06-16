@@ -25,6 +25,7 @@
 // encode it and send it to the badge_eink driver on flush
 uint8_t* framebuffer;
 uint8_t* target_buffer;
+uint8_t target_lut;
 
 #ifdef GDISP_DRIVER_VMT
 
@@ -44,6 +45,7 @@ uint8_t* target_buffer;
 		g->g.Contrast = 50;
 		fbi->linelen = g->g.Width;
 		fbi->pixels = framebuffer;
+		target_lut = 3;
 	}
 
 	#if GDISP_HARDWARE_FLUSH
@@ -62,7 +64,7 @@ uint8_t* target_buffer;
 					framebuffer[i * 8 + 1] << 1 |
 					framebuffer[i * 8];
 			}
-			badge_eink_display(target_buffer, 3 << DISPLAY_FLAG_LUT_BIT);
+			badge_eink_display(target_buffer, target_lut << DISPLAY_FLAG_LUT_BIT);
 			ets_printf("Flushed framebuffer!\n");
 		}
 	#endif
