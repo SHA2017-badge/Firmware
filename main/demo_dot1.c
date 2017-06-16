@@ -9,15 +9,15 @@ void demoDot1(void) {
   /* clear screen */
   badge_eink_set_ram_area(0, DISP_SIZE_X_B - 1, 0, DISP_SIZE_Y - 1);
   badge_eink_set_ram_pointer(0, 0);
-  gdeWriteCommandInit(0x24);
+  badge_eink_dev_write_command_init(0x24);
   {
     int x, y;
     for (y = 0; y < DISP_SIZE_Y; y++) {
       for (x = 0; x < 16; x++)
-        gdeWriteByte(0xff);
+        badge_eink_dev_write_byte(0xff);
     }
   }
-  gdeWriteCommandEnd();
+  badge_eink_dev_write_command_end();
 
   struct badge_eink_update eink_upd = {
     .lut      = BADGE_EINK_LUT_DEFAULT,
@@ -70,22 +70,22 @@ void demoDot1(void) {
     /* clear screen */
     badge_eink_set_ram_area(0, DISP_SIZE_X_B - 1, 0, DISP_SIZE_Y - 1);
     badge_eink_set_ram_pointer(0, 0);
-    gdeWriteCommandInit(0x24);
+    badge_eink_dev_write_command_init(0x24);
     {
       int x, y;
       for (y = 0; y < DISP_SIZE_Y; y++) {
         for (x = 0; x < 16; x++)
-          gdeWriteByte(0xff);
+          badge_eink_dev_write_byte(0xff);
       }
     }
-    gdeWriteCommandEnd();
+    badge_eink_dev_write_command_end();
 
     int i;
     for (i = 0; i < 16; i++) {
       int px = dots[i] & 127;
       int py = dots[i] >> 7;
       badge_eink_set_ram_pointer(px >> 3, py);
-      gdeWriteCommand_p1(0x24, 0xff ^ (128 >> (px & 7)));
+      badge_eink_dev_write_command_p1(0x24, 0xff ^ (128 >> (px & 7)));
     }
 
     struct badge_eink_update eink_upd = {

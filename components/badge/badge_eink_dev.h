@@ -1,5 +1,5 @@
-#ifndef EPD_GDE_H
-#define EPD_GDE_H
+#ifndef BADGE_EINK_DEV_H
+#define BADGE_EINK_DEV_H
 
 #include <stdbool.h>
 #include <stdint.h>
@@ -9,56 +9,61 @@
 #define DISP_SIZE_Y 296
 #define DISP_SIZE_X_B ((DISP_SIZE_X + 7) >> 3)
 
-extern void gdeInit(void);
-extern void gdeReset(void);
-extern bool gdeIsBusy(void);
-extern void gdeBusyWait(void);
-extern void gdeWriteByte(uint8_t data);
-extern void gdeWriteCommand(uint8_t command);
-extern void gdeWriteCommandInit(uint8_t command);
-extern void gdeWriteCommandEnd(void);
+extern void badge_eink_dev_init(void);
+extern void badge_eink_dev_reset(void);
+extern bool badge_eink_dev_is_busy(void);
+extern void badge_eink_dev_busy_wait(void);
+extern void badge_eink_dev_write_byte(uint8_t data);
+extern void badge_eink_dev_write_command(uint8_t command);
+extern void badge_eink_dev_write_command_init(uint8_t command);
+extern void badge_eink_dev_write_command_end(void);
 
-static inline void gdeWriteCommand_p1(uint8_t command, uint8_t para1) {
-	gdeWriteCommandInit(command);
-	gdeWriteByte(para1);
-	gdeWriteCommandEnd();
+static inline void badge_eink_dev_write_command_p1(uint8_t command, uint8_t para1)
+{
+	badge_eink_dev_write_command_init(command);
+	badge_eink_dev_write_byte(para1);
+	badge_eink_dev_write_command_end();
 }
 
-static inline void gdeWriteCommand_p2(uint8_t command, uint8_t para1,
-                                      uint8_t para2) {
-	gdeWriteCommandInit(command);
-	gdeWriteByte(para1);
-	gdeWriteByte(para2);
-	gdeWriteCommandEnd();
+static inline void badge_eink_dev_write_command_p2(uint8_t command, uint8_t para1,
+                                      uint8_t para2)
+{
+	badge_eink_dev_write_command_init(command);
+	badge_eink_dev_write_byte(para1);
+	badge_eink_dev_write_byte(para2);
+	badge_eink_dev_write_command_end();
 }
 
-static inline void gdeWriteCommand_p3(uint8_t command, uint8_t para1,
-                                      uint8_t para2, uint8_t para3) {
-	gdeWriteCommandInit(command);
-	gdeWriteByte(para1);
-	gdeWriteByte(para2);
-	gdeWriteByte(para3);
-	gdeWriteCommandEnd();
+static inline void badge_eink_dev_write_command_p3(uint8_t command, uint8_t para1,
+                                      uint8_t para2, uint8_t para3)
+{
+	badge_eink_dev_write_command_init(command);
+	badge_eink_dev_write_byte(para1);
+	badge_eink_dev_write_byte(para2);
+	badge_eink_dev_write_byte(para3);
+	badge_eink_dev_write_command_end();
 }
 
-static inline void gdeWriteCommand_p4(uint8_t command, uint8_t para1,
+static inline void badge_eink_dev_write_command_p4(uint8_t command, uint8_t para1,
                                       uint8_t para2, uint8_t para3,
-                                      uint8_t para4) {
-	gdeWriteCommandInit(command);
-	gdeWriteByte(para1);
-	gdeWriteByte(para2);
-	gdeWriteByte(para3);
-	gdeWriteByte(para4);
-	gdeWriteCommandEnd();
+                                      uint8_t para4)
+{
+	badge_eink_dev_write_command_init(command);
+	badge_eink_dev_write_byte(para1);
+	badge_eink_dev_write_byte(para2);
+	badge_eink_dev_write_byte(para3);
+	badge_eink_dev_write_byte(para4);
+	badge_eink_dev_write_command_end();
 }
 
-static inline void gdeWriteCommandStream(uint8_t command, const uint8_t *data,
-                                         unsigned int datalen) {
-	gdeWriteCommandInit(command);
+static inline void badge_eink_dev_write_command_stream(uint8_t command, const uint8_t *data,
+                                         unsigned int datalen)
+{
+	badge_eink_dev_write_command_init(command);
 	while (datalen-- > 0) {
-		gdeWriteByte(*(data++));
+		badge_eink_dev_write_byte(*(data++));
 	}
-	gdeWriteCommandEnd();
+	badge_eink_dev_write_command_end();
 }
 
-#endif
+#endif // BADGE_EINK_DEV_H

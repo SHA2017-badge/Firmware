@@ -13,15 +13,15 @@ void demoGreyscale1(void) {
     /* draw test pattern */
     badge_eink_set_ram_area(0, DISP_SIZE_X_B - 1, 0, DISP_SIZE_Y - 1);
     badge_eink_set_ram_pointer(0, 0);
-    gdeWriteCommandInit(0x24);
+    badge_eink_dev_write_command_init(0x24);
     {
       int x, y;
       for (y = 0; y < DISP_SIZE_Y; y++) {
         for (x = 0; x < 16; x++)
-          gdeWriteByte(x & 4 ? 0xff : 0x00);
+          badge_eink_dev_write_byte(x & 4 ? 0xff : 0x00);
       }
     }
-    gdeWriteCommandEnd();
+    badge_eink_dev_write_command_end();
 
     struct badge_eink_update eink_upd = {
       .lut      = BADGE_EINK_LUT_DEFAULT,
@@ -39,15 +39,15 @@ void demoGreyscale1(void) {
     /* draw new test pattern */
     badge_eink_set_ram_area(0, DISP_SIZE_X_B - 1, 0, DISP_SIZE_Y - 1);
     badge_eink_set_ram_pointer(0, 0);
-    gdeWriteCommandInit(0x24);
+    badge_eink_dev_write_command_init(0x24);
     {
       int x, y;
       for (y = 0; y < DISP_SIZE_Y; y++) {
         for (x = 0; x < 16; x++)
-          gdeWriteByte(x & 2 ? 0xff : 0x00);
+          badge_eink_dev_write_byte(x & 2 ? 0xff : 0x00);
       }
     }
-    gdeWriteCommandEnd();
+    badge_eink_dev_write_command_end();
 
     if (y + n > DISP_SIZE_Y)
       n = DISP_SIZE_Y - y;
@@ -71,15 +71,15 @@ void demoGreyscale1(void) {
     /* draw new test pattern */
     badge_eink_set_ram_area(0, DISP_SIZE_X_B - 1, 0, DISP_SIZE_Y - 1);
     badge_eink_set_ram_pointer(0, 0);
-    gdeWriteCommandInit(0x24);
+    badge_eink_dev_write_command_init(0x24);
     {
       int x, y;
       for (y = 0; y < DISP_SIZE_Y; y++) {
         for (x = 0; x < 16; x++)
-          gdeWriteByte(x & 8 ? 0xff : 0x00);
+          badge_eink_dev_write_byte(x & 8 ? 0xff : 0x00);
       }
     }
-    gdeWriteCommandEnd();
+    badge_eink_dev_write_command_end();
 
     if (y + n > DISP_SIZE_Y)
       n = DISP_SIZE_Y - y;
