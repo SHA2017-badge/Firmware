@@ -1,0 +1,9 @@
+menu "uGFX"
+
+config SHA_BADGE_UGFX_GINPUT_DEBUG
+    bool "Enable uGFX input debug messages"
+    default n
+    help
+        Debugging
+
+endmenu

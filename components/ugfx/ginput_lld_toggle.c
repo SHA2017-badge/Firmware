@@ -5,6 +5,8 @@
  *              http://ugfx.org/license.html
  */
 
+#include <sdkconfig.h>
+
 #include "gfx.h"
 
 #if (GFX_USE_GINPUT && GINPUT_NEED_TOGGLE)
@@ -19,28 +21,25 @@ GINPUT_TOGGLE_DECLARE_STRUCTURE();
 void
 ginput_lld_toggle_init(const GToggleConfig *ptc)
 {
+#ifdef CONFIG_SHA_BADGE_UGFX_GINPUT_DEBUG
 	ets_printf("ginput_lld_toggle: init()\n");
+#endif // CONFIG_SHA_BADGE_UGFX_GINPUT_DEBUG
+
 	badge_input_notify = ginputToggleWakeupI;
 }
 
 unsigned
 ginput_lld_toggle_getbits(const GToggleConfig *ptc)
 {
+#ifdef CONFIG_SHA_BADGE_UGFX_GINPUT_DEBUG
 	ets_printf("ginput_lld_toggle: getbits()\n");
-	uint32_t result = 0;
-	uint32_t button_id;
-	// No delay, because we'll be triggered by an interrupt so we know there should be something to read
+#endif // CONFIG_SHA_BADGE_UGFX_GINPUT_DEBUG
 
-	while ((button_id = badge_input_get_event(0)) != 0)
-	{
-		ets_printf("ginput_lld_toggle: button %d pressed\n", button_id);
-		result |= 1 << button_id;
-	}
+	// drain input queue
+	while (badge_input_get_event(0) != 0);
 
-	if (result == 0)
-		ets_printf("ginput_lld_toggle: no buttons pressed (timeout)\n");
-
-	return result;
+	// pass on button state
+	return badge_input_button_state;
 }
 
 #endif /*  GFX_USE_GINPUT && GINPUT_NEED_TOGGLE */

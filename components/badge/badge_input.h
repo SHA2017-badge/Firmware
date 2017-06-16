@@ -17,6 +17,8 @@ extern void badge_input_add_event(uint32_t button_id, bool pressed, bool in_isr)
 // timeout is in milliseconds; -1 is infinity
 extern uint32_t badge_input_get_event(int timeout);
 
+extern uint32_t badge_input_button_state;
+
 extern void (*badge_input_notify)(void);
 
 #endif // BADGE_INPUT_H
