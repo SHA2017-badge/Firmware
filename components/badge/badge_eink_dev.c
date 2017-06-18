@@ -31,6 +31,8 @@
 #define VSPICLK_OUT_IDX VSPICLK_OUT_MUX_IDX
 #endif
 
+#ifdef PIN_NUM_EPD_RESET
+
 void
 badge_eink_dev_reset(void) {
 	gpio_set_level(PIN_NUM_EPD_RESET, LOW);
@@ -184,3 +186,48 @@ badge_eink_dev_write_byte(uint8_t data)
 	// wait until ready?
 	while (READ_PERI_REG(SPI_CMD_REG(SPI_NUM)) & SPI_USR);
 }
+
+#else
+
+// add dummy functions
+void
+badge_eink_dev_reset(void) {
+}
+
+bool
+badge_eink_dev_is_busy(void)
+{
+	return false;
+}
+
+void
+badge_eink_dev_busy_wait(void)
+{
+}
+
+void
+badge_eink_dev_write_command(uint8_t command)
+{
+}
+
+void
+badge_eink_dev_write_command_init(uint8_t command)
+{
+}
+
+void
+badge_eink_dev_write_command_end(void)
+{
+}
+
+void
+badge_eink_dev_init(void)
+{
+}
+
+void
+badge_eink_dev_write_byte(uint8_t data)
+{
+}
+
+#endif // PIN_NUM_EPD_RESET

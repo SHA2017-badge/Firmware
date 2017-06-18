@@ -72,7 +72,7 @@
 #define PORTEXP_PIN_NUM_EXT_IO_4 6
 #define PORTEXP_PIN_NUM_EXT_IO_3 7
 
-#else
+#elif defined(CONFIG_SHA_BADGE_V3)
 
 // Badge revision 1.0.x
 #define PIN_NUM_LEDS         32
