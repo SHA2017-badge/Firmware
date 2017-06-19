@@ -59,11 +59,11 @@ function build {
 # Commands are of form: build <input_file> <output_file> <output_format> [size] [bw]
 # If bw is not given, builds an antialiased font.
 
-build PermanentMarker.ttf    PermanentMarker22    rlefont 22 bw ${ASCIICHARS}
-build PermanentMarker.ttf    PermanentMarker36    rlefont 36 bw ${ASCIICHARS}
-build Roboto-Black.ttf       Roboto-Black22       rlefont 22 bw ${ASCIICHARS}
-build Roboto-BlackItalic.ttf Roboto-BlackItalic24 rlefont 24 bw ${ASCIICHARS}
-build Roboto-Regular.ttf     Roboto-Regular12     rlefont 12 bw ${ASCIICHARS}
-build Roboto-Regular.ttf     Roboto-Regular18     rlefont 18 bw ${ASCIICHARS}
-build Roboto-Regular.ttf     Roboto-Regular22     rlefont 22 bw ${ASCIICHARS}
+build PermanentMarker.ttf    fonts/PermanentMarker22    rlefont 22 bw ${ASCIICHARS}
+build PermanentMarker.ttf    fonts/PermanentMarker36    rlefont 36 bw ${ASCIICHARS}
+build Roboto-Black.ttf       fonts/Roboto-Black22       rlefont 22 bw ${ASCIICHARS}
+build Roboto-BlackItalic.ttf fonts/Roboto-BlackItalic24 rlefont 24 bw ${ASCIICHARS}
+build Roboto-Regular.ttf     fonts/Roboto-Regular12     rlefont 12 bw ${ASCIICHARS}
+build Roboto-Regular.ttf     fonts/Roboto-Regular18     rlefont 18 bw ${ASCIICHARS}
+build Roboto-Regular.ttf     fonts/Roboto-Regular22     rlefont 22 bw ${ASCIICHARS}
 
