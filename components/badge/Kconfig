@@ -12,6 +12,7 @@ choice SHA_BADGE_REV
           (february 2017)
         - Rev0.0.1 Dev: The original development badge.
           (december 2016)
+        - Plain ESP32 hardware
 
 config SHA_BADGE_V3
     bool "Rev1.0.*"
@@ -19,11 +20,14 @@ config SHA_BADGE_V2
     bool "Rev0.1.0 Dev"
 config SHA_BADGE_V1
     bool "Rev0.0.1 Dev"
+config SHA_BADGE_NONE
+    bool "Plain ESP32"
 endchoice
 
 choice SHA_BADGE_EINK_TYPE
     prompt "SHA Badge e-ink display type"
     default SHA_BADGE_EINK_DEPG0290B1
+    depends on SHA_BADGE_V1 || SHA_BADGE_V2 || SHA_BADGE_V3
     help
         The DEPG0290B1 is the cheaper alternative.
         The GDEH029A1 was the original e-ink display.
@@ -63,6 +67,7 @@ config SHA_BADGE_MPR121_DEBUG
 
 config SHA_BADGE_EINK_DEBUG
     bool "Enable eink debug messages"
+    depends on SHA_BADGE_V1 || SHA_BADGE_V2 || SHA_BADGE_V3
     default n
     help
         Debugging

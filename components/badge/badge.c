@@ -75,7 +75,7 @@ badge_init(void)
 	badge_gpiobutton_add(PIN_NUM_BUTTON_DOWN , BADGE_BUTTON_DOWN);
 	badge_gpiobutton_add(PIN_NUM_BUTTON_LEFT , BADGE_BUTTON_LEFT);
 	badge_gpiobutton_add(PIN_NUM_BUTTON_RIGHT, BADGE_BUTTON_RIGHT);
-#else
+#elif defined( PIN_NUM_BUTTON_FLASH )
 	badge_gpiobutton_add(PIN_NUM_BUTTON_FLASH, BADGE_BUTTON_FLASH);
 #endif // ! PIN_NUM_BUTTON_A
 
