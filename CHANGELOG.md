@@ -15,6 +15,16 @@
 
 **Merged pull requests:**
 
+- Add Plain ESP32 option. [\#47](https://github.com/SHA2017-badge/Firmware/pull/47) ([annejan](https://github.com/annejan))
+- added fonts for use in the weather app [\#46](https://github.com/SHA2017-badge/Firmware/pull/46) ([doebi](https://github.com/doebi))
+- added missing fonts [\#45](https://github.com/SHA2017-badge/Firmware/pull/45) ([doebi](https://github.com/doebi))
+- add badge deep-sleep support. [\#44](https://github.com/SHA2017-badge/Firmware/pull/44) ([basvs](https://github.com/basvs))
+- remove all busy\_wait calls. it's now automatically done on next command. [\#43](https://github.com/SHA2017-badge/Firmware/pull/43) ([basvs](https://github.com/basvs))
+- rename all gde\* methods to badge\_eink\_dev\_\* methods. [\#42](https://github.com/SHA2017-badge/Firmware/pull/42) ([basvs](https://github.com/basvs))
+- Sneaking in some updates [\#41](https://github.com/SHA2017-badge/Firmware/pull/41) ([annejan](https://github.com/annejan))
+- Support both pressed and released button events in uGFX [\#40](https://github.com/SHA2017-badge/Firmware/pull/40) ([basvs](https://github.com/basvs))
+- Only have travis be a bad boy and use local mbedtls [\#39](https://github.com/SHA2017-badge/Firmware/pull/39) ([annejan](https://github.com/annejan))
+- Emulator on mbedtls instead of axtls [\#38](https://github.com/SHA2017-badge/Firmware/pull/38) ([annejan](https://github.com/annejan))
 - Latest micropython and micropython-lib updates [\#37](https://github.com/SHA2017-badge/Firmware/pull/37) ([annejan](https://github.com/annejan))
 - Updated micropython to latest upstream \(ahead of micropython-esp32\) [\#36](https://github.com/SHA2017-badge/Firmware/pull/36) ([annejan](https://github.com/annejan))
 - Simplified make steps  [\#35](https://github.com/SHA2017-badge/Firmware/pull/35) ([aczid](https://github.com/aczid))
