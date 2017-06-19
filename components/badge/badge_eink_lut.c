@@ -42,10 +42,9 @@ const uint8_t badge_eink_lut_fastest[30] = {
 	/* TP */
 	0x0f, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
 };
-#endif // CONFIG_SHA_BADGE_EINK_GDEH029A1
 
 // DEPG0290B01
-#ifdef CONFIG_SHA_BADGE_EINK_DEPG0290B1
+#elif defined( CONFIG_SHA_BADGE_EINK_DEPG0290B1 )
 
 // full, includes inverting
 const uint8_t badge_eink_lut_full[70] = {
@@ -114,4 +113,13 @@ const uint8_t badge_eink_lut_fastest[70] = {
 	0x00, 0x00, 0x00, 0x00, 0x00,
 	0x00, 0x00, 0x00, 0x00, 0x00,
 };
-#endif // CONFIG_SHA_BADGE_EINK_DEPG0290B1
+
+#else
+
+// add dummy entries
+const uint8_t badge_eink_lut_full[0] = { };
+const uint8_t badge_eink_lut_normal[0] = { };
+const uint8_t badge_eink_lut_faster[0] = { };
+const uint8_t badge_eink_lut_fastest[0] = { };
+
+#endif
