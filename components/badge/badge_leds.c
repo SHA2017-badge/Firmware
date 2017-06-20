@@ -21,95 +21,115 @@
 spi_device_handle_t badge_leds_spi = NULL;
 
 int
+badge_leds_enable(void)
+{
+#ifdef PORTEXP_PIN_NUM_LEDS
+	return badge_portexp_set_output_state(PORTEXP_PIN_NUM_LEDS, 1);
+#elif defined(MPR121_PIN_NUM_LEDS)
+	return badge_mpr121_set_gpio_level(MPR121_PIN_NUM_LEDS, 1);
+#endif
+	return -1;
+}
+
+int
+badge_leds_disable(void)
+{
+#ifdef PORTEXP_PIN_NUM_LEDS
+	return badge_portexp_set_output_state(PORTEXP_PIN_NUM_LEDS, 0);
+#elif defined(MPR121_PIN_NUM_LEDS)
+	return badge_mpr121_set_gpio_level(MPR121_PIN_NUM_LEDS, 0);
+#endif
+	return -1;
+}
+
+uint8_t *badge_leds_buf = NULL;
+int badge_leds_buf_len = 0;
+
+int
+badge_leds_send_data(uint8_t *data, int len)
+{
+	static const uint8_t conv[4] = { 0x11, 0x13, 0x31, 0x33 };
+
+	int res = badge_leds_enable();
+	if (res == -1)
+		return -1;
+
+	if (badge_leds_buf_len < len * 4 + 3)
+	{
+		if (badge_leds_buf != NULL)
+			free(badge_leds_buf);
+		badge_leds_buf_len = 0;
+		badge_leds_buf = malloc(len * 4 + 3);
+		if (badge_leds_buf == NULL)
+			return -1; // out of memory
+	}
+
+	// 3 * 24 us 'reset'
+	int pos=0;
+	badge_leds_buf[pos++] = 0;
+	badge_leds_buf[pos++] = 0;
+	badge_leds_buf[pos++] = 0;
+
+	int i;
+	for (i=0; i<len; i++)
+	{
+		int v = rgbw[i];
+#ifdef CONFIG_SHA_BADGE_LEDS_WS2812
+		// the WS2812 doesn't have a white led; evenly distribute over other leds.
+		if (i < 6*4) // only do conversion for the internal leds
+		{
+			if ((i & 3) == 3)
+				continue; // skip the white pixel
+			int w = ((i|3) < len) ? rgbw[i|3] : 0;
+			v += w;
+			if (v > 255)
+				v = 255;
+		}
+#endif // CONFIG_SHA_BADGE_LEDS_WS2812
+
+		badge_leds_buf[pos++] = conv[(v>>6)&3];
+		badge_leds_buf[pos++] = conv[(v>>4)&3];
+		badge_leds_buf[pos++] = conv[(v>>2)&3];
+		badge_leds_buf[pos++] = conv[(v>>0)&3];
+	}
+
+	spi_transaction_t t;
+	memset(&t, 0, sizeof(t));
+	t.length = pos*8;
+	t.tx_buffer = badge_leds_buf;
+
+	esp_err_t ret = spi_device_transmit(badge_leds_spi, &t);
+	return (ret == ESP_OK) ? 0 : -1;
+}
+
+int
 badge_leds_set_state(uint8_t *rgbw)
 {
-	const uint8_t conv[4] = { 0x11, 0x13, 0x31, 0x33 };
-#ifdef SK6812RGBW
-	uint8_t data[6*16 + 3];
-#else
-	uint8_t data[6*12 + 3];
-#endif
-	int i,j;
-	j=0;
-	// 3 * 24 us 'reset'
-	data[j++] = 0;
-	data[j++] = 0;
-	data[j++] = 0;
-	int k=0;
-	for (i=5; i>=0; i--) {
+	uint8_t buf[6*4];
+
+	int pos=0;
+	bool all_zero = true;
+	int i;
+	for (i=5; i>=0; i--)
+	{
 		int r = rgbw[i*4+0];
 		int g = rgbw[i*4+1];
 		int b = rgbw[i*4+2];
 		int w = rgbw[i*4+3];
-		if (r || g || b || w)
-			k++;
-
-#ifdef SK6812RGBW
-		data[j++] = conv[(r>>6)&3];
-		data[j++] = conv[(r>>4)&3];
-		data[j++] = conv[(r>>2)&3];
-		data[j++] = conv[(r>>0)&3];
-		data[j++] = conv[(g>>6)&3];
-		data[j++] = conv[(g>>4)&3];
-		data[j++] = conv[(g>>2)&3];
-		data[j++] = conv[(g>>0)&3];
-		data[j++] = conv[(b>>6)&3];
-		data[j++] = conv[(b>>4)&3];
-		data[j++] = conv[(b>>2)&3];
-		data[j++] = conv[(b>>0)&3];
-		data[j++] = conv[(w>>6)&3];
-		data[j++] = conv[(w>>4)&3];
-		data[j++] = conv[(w>>2)&3];
-		data[j++] = conv[(w>>0)&3];
-#else
-		// we don't have a white led; evenly distribute over other leds
-		r += w; if (r>255) r=255;
-		g += w; if (g>255) g=255;
-		b += w; if (b>255) b=255;
-
-		data[j++] = conv[(g>>6)&3];
-		data[j++] = conv[(g>>4)&3];
-		data[j++] = conv[(g>>2)&3];
-		data[j++] = conv[(g>>0)&3];
-		data[j++] = conv[(r>>6)&3];
-		data[j++] = conv[(r>>4)&3];
-		data[j++] = conv[(r>>2)&3];
-		data[j++] = conv[(r>>0)&3];
-		data[j++] = conv[(b>>6)&3];
-		data[j++] = conv[(b>>4)&3];
-		data[j++] = conv[(b>>2)&3];
-		data[j++] = conv[(b>>0)&3];
-#endif
+		buf[pos++] = g;
+		buf[pos++] = r;
+		buf[pos++] = b;
+		buf[pos++] = w;
+		if (r|g|b|w)
+			all_zero = false;
 	}
 
-	if (k == 0)
+	if (all_zero)
 	{
-#ifdef PORTEXP_PIN_NUM_LEDS
-		return badge_portexp_set_output_state(PORTEXP_PIN_NUM_LEDS, 0);
-#elif defined(MPR121_PIN_NUM_LEDS)
-		return badge_mpr121_set_gpio_level(MPR121_PIN_NUM_LEDS, 0);
-#endif
+		return badge_leds_disable();
 	}
-	else
-	{
-#ifdef PORTEXP_PIN_NUM_LEDS
-		int res = badge_portexp_set_output_state(PORTEXP_PIN_NUM_LEDS, 1);
-		if (res == -1)
-			return -1;
-#elif defined(MPR121_PIN_NUM_LEDS)
-		int res = badge_mpr121_set_gpio_level(MPR121_PIN_NUM_LEDS, 1);
-		if (res == -1)
-			return -1;
-#endif
 
-		spi_transaction_t t;
-		memset(&t, 0, sizeof(t));
-		t.length = j*8;
-		t.tx_buffer = data;
-
-		esp_err_t ret = spi_device_transmit(badge_leds_spi, &t);
-		return (ret == ESP_OK) ? 0 : -1;
-	}
+	return badge_leds_send_data(buf, sizeof(buf));
 }
 
 void
