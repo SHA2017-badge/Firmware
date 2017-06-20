@@ -38,6 +38,15 @@ config SHA_BADGE_EINK_GDEH029A1
     bool "GDEH029A1"
 endchoice
 
+config SHA_BADGE_LEDS_WS2812
+    bool "Using WS2812 LEDS instead of SK6812"
+    depends on SHA_BADGE_V2 || SHA_BADGE_V3
+    default n
+    help
+        On earlier developer boards, WS2812 leds were used
+        instead of SK6812. This option modifies the data
+        stream to emulate the SK6812 LEDS.
+
 config SHA_BADGE_INPUT_DEBUG
     bool "Enable input debug messages"
     default n
