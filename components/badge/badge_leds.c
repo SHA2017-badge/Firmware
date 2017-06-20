@@ -73,14 +73,14 @@ badge_leds_send_data(uint8_t *data, int len)
 	int i;
 	for (i=0; i<len; i++)
 	{
-		int v = rgbw[i];
+		int v = data[i];
 #ifdef CONFIG_SHA_BADGE_LEDS_WS2812
 		// the WS2812 doesn't have a white led; evenly distribute over other leds.
 		if (i < 6*4) // only do conversion for the internal leds
 		{
 			if ((i & 3) == 3)
 				continue; // skip the white pixel
-			int w = ((i|3) < len) ? rgbw[i|3] : 0;
+			int w = ((i|3) < len) ? data[i|3] : 0;
 			v += w;
 			if (v > 255)
 				v = 255;
