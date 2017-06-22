@@ -41,8 +41,12 @@ struct menu_item {
 #include "demo_leds.h"
 #include "demo_ugfx.h"
 #include "demo_power.h"
+#include "demo_mpr121.h"
 
 const struct menu_item demoMenu[] = {
+#ifdef I2C_MPR121_ADDR
+    {"mpr121 touch demo", &demoMpr121},
+#endif // I2C_MPR121_ADDR
     {"text demo 1", &demoText1},
     {"text demo 2", &demoText2},
 #ifdef CONFIG_SHA_BADGE_EINK_GDEH029A1

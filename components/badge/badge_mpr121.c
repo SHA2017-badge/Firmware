@@ -230,6 +230,31 @@ badge_mpr121_get_interrupt_status(void)
 	return (r1 << 8) | r0;
 }
 
+int
+badge_mpr121_get_electrode_data(uint32_t *data)
+{
+	int i;
+	for (i=0; i<8; i++)
+	{
+		int lo = badge_mpr121_read_reg(0x04 + i*2);
+		int hi = badge_mpr121_read_reg(0x05 + i*2);
+		if (lo == -1 || hi == -1)
+			return -1;
+		data[i] = (hi << 8) | lo;
+		int baseline = badge_mpr121_read_reg(0x1e + i);
+		if (baseline == -1)
+			return -1;
+		data[i+8] = baseline << 2;
+		int touch = badge_mpr121_read_reg(0x41 + i*2);
+		int release = badge_mpr121_read_reg(0x42 + i*2);
+		if (touch == -1 || release == -1)
+			return -1;
+		data[i+16] = touch << 2;
+		data[i+24] = release << 2;
+	}
+	return 0;
+}
+
 int mpr121_gpio_bit_out[8] = { -1, -1, -1, -1, -1, -1, -1, -1 };
 
 int
