@@ -9,7 +9,7 @@
 [submodule "micropython"]
 	path = micropython
 	url = https://github.com/SHA2017-badge/micropython-esp32.git
-	branch = esp32
+	branch = master
 [submodule "ugfx"]
 	path = ugfx
 	url = https://github.com/SHA2017-badge/ugfx.git
@@ -17,6 +17,7 @@
 [submodule "micropython-lib"]
 	path = micropython-lib
 	url = https://github.com/micropython/micropython-lib.git
+	branch = master
 [submodule "examples"]
 	path = examples
 	url = https://github.com/SHA2017-badge/micropython-examples-sha2017.git
