@@ -1,3 +1,4 @@
+/** @file badge_leds.h */
 #ifndef BADGE_LEDS_H
 #define BADGE_LEDS_H
 

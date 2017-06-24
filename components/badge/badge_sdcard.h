@@ -1,3 +1,4 @@
+/** @file badge_sdcard.h */
 #ifndef BADGE_SDCARD_H
 #define BADGE_SDCARD_H
 

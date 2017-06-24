@@ -1,3 +1,4 @@
+/** @file badge_portexp.h */
 #ifndef BADGE_PORTEXP_H
 #define BADGE_PORTEXP_H
 

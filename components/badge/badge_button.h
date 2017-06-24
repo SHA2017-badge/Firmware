@@ -1,3 +1,4 @@
+/** @file badge_button.h */
 #ifndef BADGE_BUTTON_H
 #define BADGE_BUTTON_H
 

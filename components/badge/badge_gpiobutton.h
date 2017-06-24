@@ -1,3 +1,4 @@
+/** @file badge_gpiobutton.h */
 #ifndef BADGE_GPIOBUTTON_H
 #define BADGE_GPIOBUTTON_H
 

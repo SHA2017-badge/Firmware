@@ -1,3 +1,4 @@
+/** @file badge_eink_dev.h */
 #ifndef BADGE_EINK_DEV_H
 #define BADGE_EINK_DEV_H
 
