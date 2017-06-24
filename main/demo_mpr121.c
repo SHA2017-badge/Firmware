@@ -34,35 +34,25 @@ demoMpr121(void)
 		"Up",
 		"Left",
 	};
-	static uint32_t button_id[8] = {
-		BADGE_BUTTON_A,
-		BADGE_BUTTON_B,
-		BADGE_BUTTON_START,
-		BADGE_BUTTON_SELECT,
-		BADGE_BUTTON_DOWN,
-		BADGE_BUTTON_RIGHT,
-		BADGE_BUTTON_UP,
-		BADGE_BUTTON_LEFT,
-	};
 
 	while (1)
 	{
 		memset(screen_buf, 0xff, sizeof(screen_buf));
-		uint32_t data[8*5];
+		struct badge_mpr121_touch_info info;
 
-		int res = badge_mpr121_get_electrode_data(data);
+		int res = badge_mpr121_get_touch_info(&info);
 
 		int i;
 		for (i=0; i<8; i++)
 		{
 			int flags = 0;
-			if ((badge_input_button_state >> button_id[i]) & 1)
+			if ((info.touch_state >> i) & 1)
 				flags |= FONT_INVERT;
 
 			draw_font(screen_buf, 2, 16 + 10*i, 36, names[i], (FONT_FULL_WIDTH | FONT_INVERT) ^ flags);
 			if (res != -1) {
 				int x, y;
-				int d = (data[i] >> 2) & 255;
+				int d = (info.data[i] >> 2) & 255;
 				for (y=18+10*i; y<20+10*i; y++)
 				{
 					for (x=40; x<40+d; x++)
@@ -70,7 +60,7 @@ demoMpr121(void)
 						screen_buf[y*(296/8) + (x/8)] &= ~( 1 << (x&7) );
 					}
 				}
-				d = (data[i+8] >> 2) & 255;
+				d = info.baseline[i] & 255;
 				for (y=20+10*i; y<22+10*i; y++)
 				{
 					for (x=40; x<40+d; x++)
@@ -78,9 +68,8 @@ demoMpr121(void)
 						screen_buf[y*(296/8) + (x/8)] &= ~( 1 << (x&7) );
 					}
 				}
-				d = data[i+8] - data[i+16]; // touch
+				d = info.baseline[i] - (info.touch[i] >> 2);
 				if (d < 0) d = 0;
-				d >>= 2;
 				d &= 255;
 				for (y=22+10*i; y<24+10*i; y++)
 				{
@@ -89,9 +78,8 @@ demoMpr121(void)
 						screen_buf[y*(296/8) + (x/8)] &= ~( 1 << (x&7) );
 					}
 				}
-				d = data[i+8] - data[i+24]; // release
+				d = info.baseline[i] - (info.release[i] >> 2);
 				if (d < 0) d = 0;
-				d >>= 2;
 				d &= 255;
 				for (y=16+10*i; y<18+10*i; y++)
 				{
