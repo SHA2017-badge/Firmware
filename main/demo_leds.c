@@ -22,21 +22,39 @@
 
 void demo_leds(void)
 {
+	{
+		uint8_t rgbw[6*4] = {
+			 0,  0,  0,  0,
+			 0,  0,  0,  0,
+			 0,  0,  0, 40,
+			 0,  0, 40,  0,
+			 0, 40,  0,  0,
+			40,  0,  0,  0,
+		}; // show R, G, B, W
+		badge_leds_send_data(rgbw, sizeof(rgbw));
+		if (badge_input_get_event(10000) != 0)
+		{
+			badge_leds_disable();
+			return;
+		}
+	}
+
 	uint8_t rgbw[6*4] = {
-		 L1,  L2,  L3, L2,
-		 L2,  L3,  L2, L1,
-		 L3,  L2,  L1, L0,
-		 L2,  L1,  L0, L1,
-		 L1,  L0,  L1, L2,
 		 L0,  L1,  L2, L3,
+		 L1,  L0,  L1, L2,
+		 L2,  L1,  L0, L1,
+		 L3,  L2,  L1, L0,
+		 L2,  L3,  L2, L1,
+		 L1,  L2,  L3, L2,
 	};
+
 	int8_t dir[6*4] = {
-		+1, +1, -1, -1,
-		+1, -1, -1, -1,
-		-1, -1, -1, +1,
-		-1, -1, +1, +1,
-		-1, +1, +1, +1,
 		+1, +1, +1, -1,
+		-1, +1, +1, +1,
+		-1, -1, +1, +1,
+		-1, -1, -1, +1,
+		+1, -1, -1, -1,
+		+1, +1, -1, -1,
 	};
 
 	while (1) {
@@ -44,7 +62,7 @@ void demo_leds(void)
 		if (badge_input_get_event(10) != 0)
 			break;
 
-		badge_leds_set_state(rgbw);
+		badge_leds_send_data(rgbw, sizeof(rgbw));
 
 		int i;
 		for (i=0; i<6*4; i++) {
@@ -56,7 +74,6 @@ void demo_leds(void)
 		}
 	}
 
-	memset(rgbw, 0, sizeof(rgbw));
-	badge_leds_set_state(rgbw);
+	badge_leds_disable();
 }
 #endif // PIN_NUM_LEDS

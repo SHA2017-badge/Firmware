@@ -40,7 +40,7 @@ badge_vibrator_off(void)
 }
 
 void
-badge_vibrator_activate(int pattern)
+badge_vibrator_activate(uint32_t pattern)
 {
 	while (pattern != 0)
 	{
