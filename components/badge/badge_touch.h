@@ -1,3 +1,4 @@
+/** @file badge_touch.h */
 #ifndef BADGE_TOUCH_H
 #define BADGE_TOUCH_H
 

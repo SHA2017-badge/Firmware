@@ -1,3 +1,4 @@
+/** @file badge_input.h */
 #ifndef BADGE_INPUT_H
 #define BADGE_INPUT_H
 

@@ -1,3 +1,4 @@
+/** @file badge_i2c.h */
 #ifndef BADGE_I2C_H
 #define BADGE_I2C_H
 

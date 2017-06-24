@@ -1,3 +1,4 @@
+/** @file badge_vibrator.h */
 #ifndef BADGE_VIBRATOR_H
 #define BADGE_VIBRATOR_H
 
