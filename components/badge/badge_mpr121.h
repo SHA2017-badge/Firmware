@@ -53,7 +53,7 @@ extern int badge_mpr121_get_interrupt_status(void);
  * @return 0 on success; -1 on error
  * @deprecated use badge_mpr121_get_touch_info() instead.
  */
-extern int badge_mpr121_get_electrode_data(uint32_t *data);
+extern int badge_mpr121_get_electrode_data(uint32_t *data) __attribute__((deprecated));
 
 /**
  * Retrieve mpr121 touch info

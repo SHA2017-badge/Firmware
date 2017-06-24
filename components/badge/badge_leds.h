@@ -28,7 +28,7 @@ extern int badge_leds_disable(void);
  * @return 0 on succes; -1 on error.
  * @deprecated use badge_leds_send_data() instead.
  */
-extern int badge_leds_set_state(uint8_t *rgbw);
+extern int badge_leds_set_state(uint8_t *rgbw) __attribute__((deprecated));
 
 /**
  * Send color-data to the leds bus.
