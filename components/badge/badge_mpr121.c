@@ -158,7 +158,7 @@ badge_mpr121_intr_handler(void *arg)
 }
 
 void
-badge_mpr121_init(void)
+badge_mpr121_init(const uint32_t *baseline)
 {
 	badge_mpr121_mux = xSemaphoreCreateMutex();
 	badge_mpr121_intr_trigger = xSemaphoreCreateBinary();
@@ -197,12 +197,25 @@ badge_mpr121_init(void)
 	int i;
 	for (i=0; i<8; i++)
 	{
+		if (baseline != NULL)
+		{
+			badge_mpr121_write_reg(MPR121_BASELINE_0 + i, baseline[i]); // baseline
+		}
+
 		badge_mpr121_write_reg(MPR121_TOUCHTH_0   + 2*i, 48); // touch
 		badge_mpr121_write_reg(MPR121_RELEASETH_0 + 2*i,  6); // release
 	}
 
-	// enable run-mode, set base-line tracking
-	badge_mpr121_write_reg(0x5e, 0x88);
+	if (baseline == NULL)
+	{
+		// enable run-mode, set base-line tracking
+		badge_mpr121_write_reg(0x5e, 0x88);
+	}
+	else
+	{
+		// enable run-mode, disable base-line tracking
+		badge_mpr121_write_reg(0x5e, 0x48);
+	}
 
 	xTaskCreate(&badge_mpr121_intr_task, "MPR121 interrupt task", 4096, NULL, 10, NULL);
 
@@ -255,10 +268,40 @@ badge_mpr121_get_electrode_data(uint32_t *data)
 	return 0;
 }
 
+int
+badge_mpr121_get_touch_info(struct badge_mpr121_touch_info *info)
+{
+	int res = badge_mpr121_read_reg(0x00);
+	if (res == -1)
+		return -1;
+	info->touch_state = res;
+
+	int i;
+	for (i=0; i<8; i++)
+	{
+		int lo = badge_mpr121_read_reg(0x04 + i*2);
+		int hi = badge_mpr121_read_reg(0x05 + i*2);
+		if (lo == -1 || hi == -1)
+			return -1;
+		info->data[i] = (hi << 8) | lo;
+		int baseline = badge_mpr121_read_reg(0x1e + i);
+		if (baseline == -1)
+			return -1;
+		info->baseline[i] = baseline;
+		int touch = badge_mpr121_read_reg(0x41 + i*2);
+		int release = badge_mpr121_read_reg(0x42 + i*2);
+		if (touch == -1 || release == -1)
+			return -1;
+		info->touch[i] = touch;
+		info->release[i] = release;
+	}
+	return 0;
+}
+
 int mpr121_gpio_bit_out[8] = { -1, -1, -1, -1, -1, -1, -1, -1 };
 
 int
-badge_mpr121_configure_gpio(int pin, int config)
+badge_mpr121_configure_gpio(int pin, enum badge_mpr121_gpio_config config)
 {
 	if (pin < 4 || pin >= 12)
 		return -1;

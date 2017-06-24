@@ -94,7 +94,21 @@ badge_init(void)
 #endif // I2C_TOUCHPAD_ADDR
 
 #ifdef I2C_MPR121_ADDR
-	badge_mpr121_init();
+#ifdef CONFIG_SHA_BADGE_MPR121_HARDCODE_BASELINE
+	static const uint32_t mpr121_baseline[8] = {
+		76,
+		78,
+		88,
+		90,
+		58,
+		62,
+		62,
+		58,
+	};
+	badge_mpr121_init(mpr121_baseline);
+#else
+	badge_mpr121_init(NULL);
+#endif // CONFIG_SHA_BADGE_MPR121_HARDCODE_BASELINE
 	badge_mpr121_set_interrupt_handler(MPR121_PIN_NUM_A     , mpr121_event_handler, (void*) (BADGE_BUTTON_A));
 	badge_mpr121_set_interrupt_handler(MPR121_PIN_NUM_B     , mpr121_event_handler, (void*) (BADGE_BUTTON_B));
 	badge_mpr121_set_interrupt_handler(MPR121_PIN_NUM_START , mpr121_event_handler, (void*) (BADGE_BUTTON_START));
