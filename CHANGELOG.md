@@ -8,6 +8,7 @@
 
 **Closed issues:**
 
+- Support for both RGB and RGBW SK6812 [\#53](https://github.com/SHA2017-badge/Firmware/issues/53)
 - uGFX 'toggle' input driver [\#15](https://github.com/SHA2017-badge/Firmware/issues/15)
 - Intermittent build failures: no rule to make target .../bootloader.bin [\#13](https://github.com/SHA2017-badge/Firmware/issues/13)
 - Add Roboto as ugfx external font [\#11](https://github.com/SHA2017-badge/Firmware/issues/11)
@@ -15,6 +16,15 @@
 
 **Merged pull requests:**
 
+- Fix WDT reset \(and RTCMEM loss\) after deepsleep [\#58](https://github.com/SHA2017-badge/Firmware/pull/58) ([rnplus](https://github.com/rnplus))
+- Misc improvements [\#57](https://github.com/SHA2017-badge/Firmware/pull/57) ([basvs](https://github.com/basvs))
+- Add hardcoded touch baselines; misc small changes. [\#56](https://github.com/SHA2017-badge/Firmware/pull/56) ([basvs](https://github.com/basvs))
+- attempt on adding some documentation; add Doxyfile [\#55](https://github.com/SHA2017-badge/Firmware/pull/55) ([basvs](https://github.com/basvs))
+- add MPR121 demo [\#54](https://github.com/SHA2017-badge/Firmware/pull/54) ([basvs](https://github.com/basvs))
+- Enabled PNG/BMP support and romFS in gfxconf [\#52](https://github.com/SHA2017-badge/Firmware/pull/52) ([aczid](https://github.com/aczid))
+- Added ugfx requirements for UI widgets [\#50](https://github.com/SHA2017-badge/Firmware/pull/50) ([aczid](https://github.com/aczid))
+- rewrite badge\_leds driver a bit; [\#49](https://github.com/SHA2017-badge/Firmware/pull/49) ([basvs](https://github.com/basvs))
+- Font improvements [\#48](https://github.com/SHA2017-badge/Firmware/pull/48) ([aczid](https://github.com/aczid))
 - Add Plain ESP32 option. [\#47](https://github.com/SHA2017-badge/Firmware/pull/47) ([annejan](https://github.com/annejan))
 - added fonts for use in the weather app [\#46](https://github.com/SHA2017-badge/Firmware/pull/46) ([doebi](https://github.com/doebi))
 - added missing fonts [\#45](https://github.com/SHA2017-badge/Firmware/pull/45) ([doebi](https://github.com/doebi))
