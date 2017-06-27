@@ -2,8 +2,9 @@
 
 #ifdef CONFIG_SHA_BADGE_EINK_GDEH029A1
 #include <badge_input.h>
-#include <badge_eink.h>
 #include <badge_eink_dev.h>
+#include <badge_eink_lut.h>
+#include <badge_eink.h>
 
 void demoDot1(void) {
   /* clear screen */
@@ -29,10 +30,9 @@ void demoDot1(void) {
   badge_eink_update(&eink_upd);
 
   // init LUT
-  static const uint8_t lut[30] = {
-      //		0x18,0,0,0,0,0,0,0,0,0,
-      0, 0x99, 0, 0, 0,  0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-      0, 0,    0, 0, 0, 17, 1, 0, 0, 0, 0, 0, 0, 0, 0,
+  struct badge_eink_lut_entry lut[] = {
+	  { .length = 1, .voltages = 0x99, },
+	  { .length = 0 }
   };
 
   int px = 100;

@@ -2,8 +2,9 @@
 
 #ifdef CONFIG_SHA_BADGE_EINK_GDEH029A1
 #include <badge_input.h>
-#include <badge_eink.h>
 #include <badge_eink_dev.h>
+#include <badge_eink_lut.h>
+#include <badge_eink.h>
 
 #include "img_hacking.h"
 
@@ -68,10 +69,10 @@ void demoGreyscaleImg1(void) {
     badge_eink_dev_write_command_end();
 
     /* update LUT */
-    uint8_t lut[30] = {
-        0x18, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-        0,    0, 0, 0, 0, i, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    };
+	struct badge_eink_lut_entry lut[] = {
+		{ .length = i, .voltages = 0x18, },
+		{ .length = 0 }
+	};
 
     struct badge_eink_update eink_upd = {
       .lut      = BADGE_EINK_LUT_CUSTOM,

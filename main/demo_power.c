@@ -61,7 +61,7 @@ demoPower(void) {
 					FONT_MONOSPACE | FONT_INVERT);
 
 			/* update display */
-			badge_eink_display(screen_buf, (3 << DISPLAY_FLAG_LUT_BIT));
+			badge_eink_display(screen_buf, DISPLAY_FLAG_LUT(2));
 		}
 
 		// wait 1 second

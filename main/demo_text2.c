@@ -20,7 +20,7 @@ demoText2(void) {
 			memset(&screen_buf[y * (BADGE_EINK_WIDTH/8)], (y&1) ? 0x55 : 0xaa, (BADGE_EINK_WIDTH/8));
 		}
 
-		badge_eink_display(screen_buf, (1 << DISPLAY_FLAG_LUT_BIT));
+		badge_eink_display(screen_buf, DISPLAY_FLAG_LUT(0));
 	}
 
 	/* draw text with 16px font */
@@ -45,7 +45,7 @@ demoText2(void) {
 
 	draw_font(screen_buf, 0, 120, BADGE_EINK_WIDTH, " Just a status line. Wifi status: not connected", FONT_FULL_WIDTH);
 
-	badge_eink_display(screen_buf, (1 << DISPLAY_FLAG_LUT_BIT));
+	badge_eink_display(screen_buf, DISPLAY_FLAG_LUT(0));
 
 	// wait for random keypress
 	badge_input_get_event(-1);

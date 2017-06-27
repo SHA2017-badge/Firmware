@@ -3,7 +3,6 @@
 #include "esp_event_loop.h"
 #include "esp_system.h"
 #include "esp_wifi.h"
-//include "freertos/FreeRTOS.h"
 #include "nvs_flash.h"
 #include <font.h>
 #include <string.h>
@@ -76,104 +75,74 @@ const struct menu_item demoMenu[] = {
     {NULL, NULL},
 };
 
-#ifndef CONFIG_SHA_BADGE_EINK_DEPG0290B1
-const uint8_t eink_upd_menu_lut[30] = {
-	0x99, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-	0,    0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-};
-#endif
-
-const struct badge_eink_update eink_upd_menu = {
-#ifndef CONFIG_SHA_BADGE_EINK_DEPG0290B1
-	.lut      = BADGE_EINK_LUT_CUSTOM,
-	.lut_custom = eink_upd_menu_lut,
-	.reg_0x3a = 2, // 2 dummy lines per gate
-	.reg_0x3b = 0, // 30us per line
-#else
-	.lut      = BADGE_EINK_LUT_FASTEST,
-	.reg_0x3a = 2, // 2 dummy lines per gate
-	.reg_0x3b = 8, // 62us per line
-#endif
-	.y_start  = 0,
-	.y_end    = 295,
-};
-
-#define MENU_UPDATE_CYCLES 8
 uint8_t screen_buf[296*16];
-void displayMenu(const char *menu_title, const struct menu_item *itemlist) {
-  int num_items = 0;
-  while (itemlist[num_items].title != NULL)
-    num_items++;
+void
+displayMenu(const char *menu_title, const struct menu_item *itemlist) {
+	int num_items = 0;
+	while (itemlist[num_items].title != NULL)
+		num_items++;
 
-  int scroll_pos = 0;
-  int item_pos = 0;
-  int num_draw = 0;
-  while (1) {
-    TickType_t xTicksToWait = portMAX_DELAY;
+	int scroll_pos = 0;
+	int item_pos = 0;
+	bool need_redraw = true;
+	while (1) {
+		/* draw menu */
+		if (need_redraw) {
+			// init buffer
+			draw_font(screen_buf, 0, 0, BADGE_EINK_WIDTH, menu_title,
+					FONT_16PX | FONT_INVERT | FONT_FULL_WIDTH | FONT_UNDERLINE_2);
+			int i;
+			for (i = 0; i < 7; i++) {
+				int pos = scroll_pos + i;
+				draw_font(screen_buf, 0, 16+16*i, BADGE_EINK_WIDTH,
+						(pos < num_items) ? itemlist[pos].title : "",
+						FONT_16PX | FONT_FULL_WIDTH |
+						((pos == item_pos) ? 0 : FONT_INVERT));
+			}
 
-    /* draw menu */
-    if (num_draw < MENU_UPDATE_CYCLES) {
-	  if (num_draw == 0) {
-		// init buffer
-		draw_font(screen_buf, 0, 0, BADGE_EINK_WIDTH, menu_title,
-			FONT_16PX | FONT_INVERT | FONT_FULL_WIDTH | FONT_UNDERLINE_2);
-		int i;
-		for (i = 0; i < 7; i++) {
-		  int pos = scroll_pos + i;
-		  draw_font(screen_buf, 0, 16+16*i, BADGE_EINK_WIDTH,
-			  (pos < num_items) ? itemlist[pos].title : "",
-			  FONT_16PX | FONT_FULL_WIDTH |
-			  ((pos == item_pos) ? 0 : FONT_INVERT));
+			badge_eink_display(screen_buf, DISPLAY_FLAG_LUT(BADGE_EINK_LUT_NORMAL) );
+			need_redraw = false;
 		}
-	  }
 
-	  // all eink displays have 2 'pages'; after writing the second one,
-	  // we don't have to write the image itself anymore.
-	  if (num_draw < 2)
-		badge_eink_display(screen_buf, DISPLAY_FLAG_NO_UPDATE);
+		/* handle input */
+		uint32_t button_id;
+		if ((button_id = badge_input_get_event(-1)) != 0)
+		{
+			if (button_id == BADGE_BUTTON_B) {
+				ets_printf("Button B handling\n");
+				return;
+			}
 
-	  badge_eink_update(&eink_upd_menu);
-      num_draw++;
-      if (num_draw < MENU_UPDATE_CYCLES)
-        xTicksToWait = 0;
-    }
+			if (button_id == BADGE_BUTTON_START) {
+				ets_printf("Selected '%s'\n", itemlist[item_pos].title);
+				if (itemlist[item_pos].handler != NULL)
+					itemlist[item_pos].handler();
+				need_redraw = true;
+				ets_printf("Button START handled\n");
+				continue;
+			}
 
-    /* handle input */
-    uint32_t button_id;
-	if ((button_id = badge_input_get_event(xTicksToWait)) != 0)
-	{
-      if (button_id == BADGE_BUTTON_B) {
-        ets_printf("Button B handling\n");
-        return;
-      }
-      if (button_id == BADGE_BUTTON_START) {
-        ets_printf("Selected '%s'\n", itemlist[item_pos].title);
-        if (itemlist[item_pos].handler != NULL)
-          itemlist[item_pos].handler();
-        num_draw = 0;
-        ets_printf("Button START handled\n");
-        continue;
-      }
-      if (button_id == BADGE_BUTTON_UP) {
-        if (item_pos > 0) {
-          item_pos--;
-          if (scroll_pos > item_pos)
-            scroll_pos = item_pos;
-          num_draw = 0;
-        }
-        ets_printf("Button UP handled\n");
-      }
-      if (button_id == BADGE_BUTTON_DOWN) {
-        if (item_pos + 1 < num_items) {
-          item_pos++;
-          if (scroll_pos + 6 < item_pos)
-            scroll_pos = item_pos - 6;
-          num_draw = 0;
-        }
-        ets_printf("Button DOWN handled\n");
-      }
-    }
-  }
+			if (button_id == BADGE_BUTTON_UP) {
+				if (item_pos > 0) {
+					item_pos--;
+					if (scroll_pos > item_pos)
+						scroll_pos = item_pos;
+					need_redraw = true;
+				}
+				ets_printf("Button UP handled\n");
+			}
+
+			if (button_id == BADGE_BUTTON_DOWN) {
+				if (item_pos + 1 < num_items) {
+					item_pos++;
+					if (scroll_pos + 6 < item_pos)
+						scroll_pos = item_pos - 6;
+					need_redraw = true;
+				}
+				ets_printf("Button DOWN handled\n");
+			}
+		}
+	}
 }
 
 // pictures
@@ -197,7 +166,7 @@ display_picture(int picture_id, int selected_lut)
 		sprintf(str, "[ pic %d, lut %d ]", picture_id, selected_lut);
 	draw_font(screen_buf, 8, 4, BADGE_EINK_WIDTH, str, FONT_INVERT);
 
-	badge_eink_display(screen_buf, (selected_lut+1) << DISPLAY_FLAG_LUT_BIT);
+	badge_eink_display(screen_buf, DISPLAY_FLAG_LUT(selected_lut));
 }
 
 void

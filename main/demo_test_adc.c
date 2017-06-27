@@ -47,7 +47,7 @@ demoTestAdc(void) {
 		}
 
 		/* update display */
-		badge_eink_display(screen_buf, (1 << DISPLAY_FLAG_LUT_BIT));
+		badge_eink_display(screen_buf, DISPLAY_FLAG_LUT(0));
 
 		// wait 1 second
 		if (badge_input_get_event(1000) != 0)
