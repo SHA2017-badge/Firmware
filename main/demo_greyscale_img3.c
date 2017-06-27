@@ -2,8 +2,9 @@
 
 #ifdef CONFIG_SHA_BADGE_EINK_GDEH029A1
 #include <badge_input.h>
-#include <badge_eink.h>
 #include <badge_eink_dev.h>
+#include <badge_eink_lut.h>
+#include <badge_eink.h>
 
 #include "img_hacking.h"
 
@@ -83,10 +84,10 @@ void demoGreyscaleImg3(void) {
       //   Do nothing when bit is not set;
       //   Make pixel whiter when bit is set;
       //   Duration is <ii> cycles.
-      uint8_t lut[30] = {
-          0, 0x88, 0, 0, 0,         0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-          0, 0   , 0, 0, 0, (ii<<4)|1, 1, 0, 0, 0, 0, 0, 0, 0, 0,
-      };
+	  struct badge_eink_lut_entry lut[] = {
+		  { .length = ii, .voltages = 0x88, },
+		  { .length = 0 }
+	  };
 
       struct badge_eink_update eink_upd = {
         .lut      = BADGE_EINK_LUT_CUSTOM,

@@ -92,7 +92,7 @@ demoMpr121(void)
 		}
 
 		/* update display */
-		badge_eink_display(screen_buf, (3 << DISPLAY_FLAG_LUT_BIT));
+		badge_eink_display(screen_buf, DISPLAY_FLAG_LUT(2));
 
 		// wait 0.1 second
 		badge_input_get_event(100);

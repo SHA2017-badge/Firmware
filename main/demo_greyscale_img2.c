@@ -4,8 +4,9 @@
 #include <string.h>
 
 #include <badge_input.h>
-#include <badge_eink.h>
 #include <badge_eink_dev.h>
+#include <badge_eink_lut.h>
+#include <badge_eink.h>
 
 #include "img_hacking.h"
 
@@ -73,40 +74,14 @@ void demoGreyscaleImg2(void) {
       //   Do nothing when bit is not set;
       //   Make pixel whiter when bit is set;
       //   Duration is <i> cycles.
-      uint8_t lut_[30];
-      if (i <= 15) {
-        uint8_t lut[30] = {
-            0x88, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-            0,    0, 0, 0, 0, i, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-        };
-        memcpy(lut_, lut, 30);
-      } else if (i <= 30) {
-        uint8_t lut[30] = {
-            0x88, 0x88, 0, 0, 0, 0, 0,
-            0,    0,    0, 0, 0, 0, 0,
-            0,    0,    0, 0, 0, 0, ((i - 15) << 4) + 15,
-            0,    0,    0, 0, 0, 0, 0,
-            0,    0,
-        };
-        memcpy(lut_, lut, 30);
-      } else if (i <= 45) {
-        uint8_t lut[30] = {
-            0x88, 0x88, 0x88, 0, 0, 0,    0,        0, 0, 0, 0, 0, 0, 0, 0,
-            0,    0,    0,    0, 0, 0xff, (i - 30), 0, 0, 0, 0, 0, 0, 0, 0,
-        };
-        memcpy(lut_, lut, 30);
-      } else if (i <= 60) {
-        uint8_t lut[30] = {
-            0x88, 0x88, 0x88, 0x88, 0, 0, 0, 0, 0, 0,    0,
-            0,    0,    0,    0,    0, 0, 0, 0, 0, 0xff, ((i - 45) << 4) + 15,
-            0,    0,    0,    0,    0, 0, 0, 0,
-        };
-        memcpy(lut_, lut, 30);
-      }
+	  struct badge_eink_lut_entry lut[] = {
+		  { .length = i, .voltages = 0x88, },
+		  { .length = 0 }
+	  };
 
       struct badge_eink_update eink_upd = {
         .lut      = BADGE_EINK_LUT_CUSTOM,
-        .lut_custom = lut_,
+        .lut_custom = lut,
         .reg_0x3a = 0,  // no dummy lines per gate
         .reg_0x3b = 0,  // 30us per line
         .y_start  = y_start,
