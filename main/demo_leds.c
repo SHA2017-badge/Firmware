@@ -23,15 +23,15 @@
 void demo_leds(void)
 {
 	{
-		uint8_t rgbw[6*4] = {
+		uint8_t grbw[6*4] = {
 			 0,  0,  0,  0,
 			 0,  0,  0,  0,
 			 0,  0,  0, 40,
 			 0,  0, 40,  0,
-			 0, 40,  0,  0,
 			40,  0,  0,  0,
+			 0, 40,  0,  0,
 		}; // show R, G, B, W
-		badge_leds_send_data(rgbw, sizeof(rgbw));
+		badge_leds_send_data(grbw, sizeof(grbw));
 		if (badge_input_get_event(10000) != 0)
 		{
 			badge_leds_disable();
@@ -39,7 +39,7 @@ void demo_leds(void)
 		}
 	}
 
-	uint8_t rgbw[6*4] = {
+	uint8_t grbw[6*4] = {
 		 L0,  L1,  L2, L3,
 		 L1,  L0,  L1, L2,
 		 L2,  L1,  L0, L1,
@@ -62,14 +62,14 @@ void demo_leds(void)
 		if (badge_input_get_event(10) != 0)
 			break;
 
-		badge_leds_send_data(rgbw, sizeof(rgbw));
+		badge_leds_send_data(grbw, sizeof(grbw));
 
 		int i;
 		for (i=0; i<6*4; i++) {
-			rgbw[i] += dir[i];
-			if (rgbw[i] == L0)
+			grbw[i] += dir[i];
+			if (grbw[i] == L0)
 				dir[i] = +1;
-			if (rgbw[i] == L3)
+			if (grbw[i] == L3)
 				dir[i] = -1;
 		}
 	}
