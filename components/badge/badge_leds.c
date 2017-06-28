@@ -8,13 +8,13 @@
 
 #include "rom/ets_sys.h"
 #include "driver/spi_master.h"
+#include "driver/gpio.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 
 #include "badge_pins.h"
 #include "badge_i2c.h"
-#include "badge_portexp.h"
-#include "badge_mpr121.h"
+#include "badge_power.h"
 
 #ifdef PIN_NUM_LEDS
 
@@ -23,23 +23,62 @@ spi_device_handle_t badge_leds_spi = NULL;
 int
 badge_leds_enable(void)
 {
-#ifdef PORTEXP_PIN_NUM_LEDS
-	return badge_portexp_set_output_state(PORTEXP_PIN_NUM_LEDS, 1);
-#elif defined(MPR121_PIN_NUM_LEDS)
-	return badge_mpr121_set_gpio_level(MPR121_PIN_NUM_LEDS, 1);
-#endif
-	return -1;
+	// return if we are already enabled and initialized
+	if (badge_leds_spi != NULL)
+		return 0;
+
+	int res = badge_power_leds_enable();
+	if (res == -1)
+		return -1;
+
+	// (re)initialize leds SPI
+	spi_bus_config_t buscfg = {
+		.mosi_io_num   = PIN_NUM_LEDS,
+		.miso_io_num   = -1,  // -1 = unused
+		.sclk_io_num   = -1,  // -1 = unused
+		.quadwp_io_num = -1,  // -1 = unused
+		.quadhd_io_num = -1,  // -1 = unused
+	};
+	esp_err_t ret = spi_bus_initialize(HSPI_HOST, &buscfg, 1);
+	assert( ret == ESP_OK );
+
+	spi_device_interface_config_t devcfg = {
+		.clock_speed_hz = 3200000, // 3.2 Mhz
+		.mode           = 0,
+		.spics_io_num   = -1,
+		.queue_size     = 1,
+	};
+	ret = spi_bus_add_device(HSPI_HOST, &devcfg, &badge_leds_spi);
+	assert( ret == ESP_OK );
+
+	return 0;
 }
 
 int
 badge_leds_disable(void)
 {
-#ifdef PORTEXP_PIN_NUM_LEDS
-	return badge_portexp_set_output_state(PORTEXP_PIN_NUM_LEDS, 0);
-#elif defined(MPR121_PIN_NUM_LEDS)
-	return badge_mpr121_set_gpio_level(MPR121_PIN_NUM_LEDS, 0);
-#endif
-	return -1;
+	// return if we are not enabled
+	if (badge_leds_spi == NULL)
+		return 0;
+
+	esp_err_t ret = spi_bus_remove_device(badge_leds_spi);
+	assert( ret == ESP_OK );
+	badge_leds_spi = NULL;
+
+	ret = spi_bus_free(HSPI_HOST);
+	assert( ret == ESP_OK );
+
+	// configure PIN_NUM_LEDS as high-impedance
+	gpio_config_t io_conf = {
+		.intr_type    = GPIO_INTR_DISABLE,
+		.mode         = GPIO_MODE_INPUT,
+		.pin_bit_mask = 1LL << PIN_NUM_LEDS,
+		.pull_down_en = 0,
+		.pull_up_en   = 0,
+	};
+	gpio_config(&io_conf);
+
+	return badge_power_leds_disable();
 }
 
 uint8_t *badge_leds_buf = NULL;
@@ -78,10 +117,12 @@ badge_leds_send_data(uint8_t *data, int len)
 		// the WS2812 doesn't have a white led; evenly distribute over other leds.
 		if (i < 6*4) // only do conversion for the internal leds
 		{
+			if ((i|3) >= len)
+				break; // not enough data; skip led
 			if ((i & 3) == 3)
 				continue; // skip the white pixel
-			int w = ((i|3) < len) ? data[i|3] : 0;
-			v += w;
+			int w = data[i|3];
+			v += (w >> 1);
 			if (v > 255)
 				v = 255;
 		}
@@ -135,34 +176,25 @@ badge_leds_set_state(uint8_t *rgbw)
 void
 badge_leds_init(void)
 {
-	// enable power to led-bar
-#ifdef PORTEXP_PIN_NUM_LEDS
-	badge_portexp_set_output_state(PORTEXP_PIN_NUM_LEDS, 0);
-	badge_portexp_set_output_high_z(PORTEXP_PIN_NUM_LEDS, 0);
-	badge_portexp_set_io_direction(PORTEXP_PIN_NUM_LEDS, 1);
-#elif defined(MPR121_PIN_NUM_LEDS)
-	badge_mpr121_configure_gpio(MPR121_PIN_NUM_LEDS, MPR121_OUTPUT);
-#endif
+	static bool badge_leds_init_done = false;
 
-	spi_bus_config_t buscfg = {
-		.mosi_io_num   = PIN_NUM_LEDS,
-		.miso_io_num   = -1,  // -1 = unused
-		.sclk_io_num   = -1,  // -1 = unused
-		.quadwp_io_num = -1,  // -1 = unused
-		.quadhd_io_num = -1,  // -1 = unused
-	};
-	esp_err_t ret = spi_bus_initialize(HSPI_HOST, &buscfg, 1);
-	assert( ret == ESP_OK );
+	if (badge_leds_init_done)
+		return;
 
-	spi_device_interface_config_t devcfg = {
-//		.clock_speed_hz = 3333333, // 3.33 Mhz -- too fast?
-		.clock_speed_hz = 3200000, // 3.2 Mhz -- works.. :-)
-		.mode           = 0,
-		.spics_io_num   = -1,
-		.queue_size     = 7,
+	// depending in badge_power
+	badge_power_init();
+
+	// configure PIN_NUM_LEDS as high-impedance
+	gpio_config_t io_conf = {
+		.intr_type    = GPIO_INTR_DISABLE,
+		.mode         = GPIO_MODE_INPUT,
+		.pin_bit_mask = 1LL << PIN_NUM_LEDS,
+		.pull_down_en = 0,
+		.pull_up_en   = 0,
 	};
-	ret = spi_bus_add_device(HSPI_HOST, &devcfg, &badge_leds_spi);
-	assert( ret == ESP_OK );
+	gpio_config(&io_conf);
+
+	badge_leds_init_done = true;
 }
 
 #endif // PIN_NUM_LEDS
