@@ -18,6 +18,7 @@ Based on template application for [Espressif IoT Development Framework (ESP-IDF)
 Copyright (C) 2016 Espressif Systems, licensed under the Apache License 2.0
 as described in the file LICENSE.
 
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/d73b02ee522942b8ae1244aa2ee62f43)](https://www.codacy.com/app/annejan/Firmware?utm_source=github.com&utm_medium=referral&utm_content=SHA2017-badge/Firmware&utm_campaign=badger)
 [![Build Status](https://travis-ci.org/SHA2017-badge/Firmware.svg?branch=master)](https://travis-ci.org/SHA2017-badge/Firmware)
 
 Debian prerequisites
