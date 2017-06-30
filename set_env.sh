@@ -1,6 +1,8 @@
+#!/usr/bin/env bash
+
 cd esp-idf
-export IDF_PATH=`pwd`
-export ESPIDF=`pwd`
+export IDF_PATH=$(pwd)
+export ESPIDF=$(pwd)
 source add_path.sh
 cd -
 
@@ -10,4 +12,4 @@ fi
 
 # Anything added to the PATH in custom_env.sh will take precedence
 # to the bundled toolchain:
-export PATH=$PATH:`pwd`/nodemcu-prebuilt-toolchains/esp32/bin
+export PATH=$PATH:$(pwd)/nodemcu-prebuilt-toolchains/esp32/bin
