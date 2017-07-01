@@ -65,8 +65,9 @@ badge_leds_disable(void)
 	assert( ret == ESP_OK );
 	badge_leds_spi = NULL;
 
-	ret = spi_bus_free(HSPI_HOST);
-	assert( ret == ESP_OK );
+//	FIXME: freeing the HSPI seems to (de)configure the VSPI as well..
+//	ret = spi_bus_free(HSPI_HOST);
+//	assert( ret == ESP_OK );
 
 	// configure PIN_NUM_LEDS as high-impedance
 	gpio_config_t io_conf = {
@@ -181,7 +182,7 @@ badge_leds_init(void)
 	if (badge_leds_init_done)
 		return;
 
-	// depending in badge_power
+	// depending on badge_power
 	badge_power_init();
 
 	// configure PIN_NUM_LEDS as high-impedance
