@@ -161,6 +161,11 @@ badge_mpr121_intr_handler(void *arg)
 void
 badge_mpr121_init(const uint32_t *baseline)
 {
+	static bool badge_mpr121_init_done = false;
+
+	if (badge_mpr121_init_done)
+		return;
+
 	badge_base_init();
 
 	badge_mpr121_mux = xSemaphoreCreateMutex();
@@ -224,6 +229,8 @@ badge_mpr121_init(const uint32_t *baseline)
 	xTaskCreate(&badge_mpr121_intr_task, "MPR121 interrupt task", 4096, NULL, 10, NULL);
 
 	badge_mpr121_intr_handler(NULL);
+
+	badge_mpr121_init_done = true;
 }
 
 void

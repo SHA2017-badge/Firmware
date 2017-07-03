@@ -119,6 +119,11 @@ badge_eink_dev_write_command_end(void)
 void
 badge_eink_dev_init(void)
 {
+	static bool badge_eink_dev_init_done = false;
+
+	if (badge_eink_dev_init_done)
+		return;
+
 	badge_base_init();
 
 #ifdef PIN_NUM_LED
@@ -177,6 +182,8 @@ badge_eink_dev_init(void)
 	for (i = 0; i < 16; i++) {
 		WRITE_PERI_REG((SPI_W0_REG(SPI_NUM) + (i << 2)), 0);
 	}
+
+	badge_eink_dev_init_done = true;
 }
 
 void

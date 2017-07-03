@@ -133,6 +133,11 @@ badge_portexp_intr_handler(void *arg)
 void
 badge_portexp_init(void)
 {
+	static bool badge_portexp_init_done = false;
+
+	if (badge_portexp_init_done)
+		return;
+
 	badge_base_init();
 
 	badge_portexp_mux = xSemaphoreCreateMutex();
@@ -181,6 +186,8 @@ badge_portexp_init(void)
 	badge_portexp_read_reg(0x13);
 
 	badge_portexp_intr_handler(NULL);
+
+	badge_portexp_init_done = true;
 }
 
 int

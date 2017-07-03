@@ -327,6 +327,11 @@ badge_eink_wakeup(void)
 void
 badge_eink_init(void)
 {
+	static bool badge_eink_init_done = false;
+
+	if (badge_eink_init_done)
+		return;
+
 	// initialize spi interface to display
 	badge_eink_dev_init();
 
@@ -391,4 +396,6 @@ badge_eink_init(void)
 	// Source voltage setting (15volt, 0 volt and -15 volt)
 	badge_eink_dev_write_command_p3(0x04, 0x41, 0x00, 0x32);
 #endif // CONFIG_SHA_BADGE_EINK_DEPG0290B1
+
+	badge_eink_init_done = true;
 }

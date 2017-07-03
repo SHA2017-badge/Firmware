@@ -60,6 +60,11 @@ mpr121_event_handler(void *b, bool pressed)
 void
 badge_init(void)
 {
+	static bool badge_init_done = false;
+
+	if (badge_init_done)
+		return;
+
 	// register isr service
 	badge_base_init();
 
@@ -135,4 +140,6 @@ badge_init(void)
 
 	// configure eink display
 	badge_eink_init();
+
+	badge_init_done = true;
 }

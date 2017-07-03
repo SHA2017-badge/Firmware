@@ -31,6 +31,11 @@ xSemaphoreHandle badge_i2c_mux = NULL;
 void
 badge_i2c_init(void)
 {
+	static bool badge_i2c_init_done = false;
+
+	if (badge_i2c_init_done)
+		return;
+
 	// create mutex for I2C bus
 	badge_i2c_mux = xSemaphoreCreateMutex();
 
@@ -48,6 +53,8 @@ badge_i2c_init(void)
 	i2c_param_config(I2C_MASTER_NUM, &conf);
 
 	i2c_driver_install(I2C_MASTER_NUM, conf.mode, I2C_MASTER_RX_BUF_DISABLE, I2C_MASTER_TX_BUF_DISABLE, 0);
+
+	badge_i2c_init_done = true;
 }
 
 int
