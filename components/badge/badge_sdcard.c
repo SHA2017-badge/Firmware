@@ -26,6 +26,11 @@ badge_sdcard_detected(void)
 void
 badge_sdcard_init(void)
 {
+	static bool badge_sdcard_init_done = false;
+
+	if (badge_sdcard_init_done)
+		return;
+
 	// configure charge-stat pin
 #ifdef PORTEXP_PIN_NUM_SD_CD
 	badge_portexp_set_io_direction(PORTEXP_PIN_NUM_SD_CD, 0);
@@ -35,4 +40,6 @@ badge_sdcard_init(void)
 #elif defined(MPR121_PIN_NUM_SD_CD)
 	badge_mpr121_configure_gpio(MPR121_PIN_NUM_SD_CD, MPR121_INPUT);
 #endif
+
+	badge_sdcard_init_done = true;
 }

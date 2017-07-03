@@ -61,12 +61,19 @@ badge_touch_intr_handler(void *arg)
 void
 badge_touch_init(void)
 {
+	static bool badge_touch_init_done = false;
+
+	if (badge_touch_init_done)
+		return;
+
 	badge_portexp_set_input_default_state(PORTEXP_PIN_NUM_TOUCH, 1);
 	badge_portexp_set_interrupt_enable(PORTEXP_PIN_NUM_TOUCH, 1);
 	badge_portexp_set_interrupt_handler(PORTEXP_PIN_NUM_TOUCH, badge_touch_intr_handler, NULL);
 
 	// read pending old events
 	badge_touch_intr_handler(NULL);
+
+	badge_touch_init_done = true;
 }
 
 void

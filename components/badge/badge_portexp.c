@@ -13,6 +13,7 @@
 #include "freertos/task.h"
 
 #include "badge_pins.h"
+#include "badge_base.h"
 #include "badge_i2c.h"
 #include "badge_portexp.h"
 
@@ -132,15 +133,23 @@ badge_portexp_intr_handler(void *arg)
 void
 badge_portexp_init(void)
 {
+	static bool badge_portexp_init_done = false;
+
+	if (badge_portexp_init_done)
+		return;
+
+	badge_base_init();
+
 	badge_portexp_mux = xSemaphoreCreateMutex();
 	badge_portexp_intr_trigger = xSemaphoreCreateBinary();
 	gpio_isr_handler_add(PIN_NUM_PORTEXP_INT, badge_portexp_intr_handler, NULL);
-	gpio_config_t io_conf;
-	io_conf.intr_type = GPIO_INTR_ANYEDGE;
-	io_conf.mode = GPIO_MODE_INPUT;
-	io_conf.pin_bit_mask = 1LL << PIN_NUM_PORTEXP_INT;
-	io_conf.pull_down_en = 0;
-	io_conf.pull_up_en = 1;
+	gpio_config_t io_conf = {
+		.intr_type    = GPIO_INTR_ANYEDGE,
+		.mode         = GPIO_MODE_INPUT,
+		.pin_bit_mask = 1LL << PIN_NUM_PORTEXP_INT,
+		.pull_down_en = 0,
+		.pull_up_en   = 1,
+	};
 	gpio_config(&io_conf);
 
 //	badge_portexp_write_reg(0x01, 0x01); // sw reset
@@ -177,6 +186,8 @@ badge_portexp_init(void)
 	badge_portexp_read_reg(0x13);
 
 	badge_portexp_intr_handler(NULL);
+
+	badge_portexp_init_done = true;
 }
 
 int

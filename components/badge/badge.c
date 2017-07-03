@@ -3,6 +3,7 @@
 #include <driver/gpio.h>
 
 #include "badge_pins.h"
+#include "badge_base.h"
 #include "badge_input.h"
 #include "badge_button.h"
 #include "badge_gpiobutton.h"
@@ -59,9 +60,13 @@ mpr121_event_handler(void *b, bool pressed)
 void
 badge_init(void)
 {
-	// install isr-service, so we can register interrupt-handlers per
-	// gpio pin.
-	gpio_install_isr_service(0);
+	static bool badge_init_done = false;
+
+	if (badge_init_done)
+		return;
+
+	// register isr service
+	badge_base_init();
 
 	// configure input queue
 	badge_input_init();
@@ -135,4 +140,6 @@ badge_init(void)
 
 	// configure eink display
 	badge_eink_init();
+
+	badge_init_done = true;
 }

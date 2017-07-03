@@ -11,7 +11,14 @@ uint32_t badge_input_button_state = 0;
 void
 badge_input_init(void)
 {
+	static bool badge_input_init_done = false;
+
+	if (badge_input_init_done)
+		return;
+
 	badge_input_queue = xQueueCreate(10, sizeof(uint32_t));
+
+	badge_input_init_done = true;
 }
 
 void

@@ -1,8 +1,8 @@
 #include "sdkconfig.h"
 
-//include <freertos/FreeRTOS.h>
 #include <driver/gpio.h>
 
+#include "badge_base.h"
 #include "badge_input.h"
 #include "badge_gpiobutton.h"
 
@@ -26,17 +26,20 @@ badge_gpiobutton_handler(void *arg)
 void
 badge_gpiobutton_add(int gpio_num, uint32_t button_id)
 {
+	badge_base_init();
+
 	badge_gpiobutton_conv[gpio_num] = button_id;
 	badge_gpiobutton_old_state[gpio_num] = 1; // released
 
 	gpio_isr_handler_add(gpio_num, badge_gpiobutton_handler, (void*) gpio_num);
 
 	// configure the gpio pin for input
-	gpio_config_t io_conf;
-	io_conf.intr_type = GPIO_INTR_ANYEDGE;
-	io_conf.mode = GPIO_MODE_INPUT;
-	io_conf.pin_bit_mask = 1LL << gpio_num;
-	io_conf.pull_down_en = 0;
-	io_conf.pull_up_en = 1;
+	gpio_config_t io_conf = {
+		.intr_type    = GPIO_INTR_ANYEDGE,
+		.mode         = GPIO_MODE_INPUT,
+		.pin_bit_mask = 1LL << gpio_num,
+		.pull_down_en = 0,
+		.pull_up_en   = 1,
+	};
 	gpio_config(&io_conf);
 }

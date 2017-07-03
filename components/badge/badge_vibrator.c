@@ -57,6 +57,11 @@ badge_vibrator_activate(uint32_t pattern)
 void
 badge_vibrator_init(void)
 {
+	static bool badge_vibrator_init_done = false;
+
+	if (badge_vibrator_init_done)
+		return;
+
 	// configure vibrator pin
 #ifdef PORTEXP_PIN_NUM_VIBRATOR
 	badge_portexp_set_output_state(PORTEXP_PIN_NUM_VIBRATOR, 0);
@@ -65,6 +70,8 @@ badge_vibrator_init(void)
 #elif defined(MPR121_PIN_NUM_VIBRATOR)
 	badge_mpr121_configure_gpio(MPR121_PIN_NUM_VIBRATOR, MPR121_OUTPUT);
 #endif
+
+	badge_vibrator_init_done = true;
 }
 
 #endif // defined(PORTEXP_PIN_NUM_VIBRATOR) || defined(MPR121_PIN_NUM_VIBRATOR)
