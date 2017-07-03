@@ -15,6 +15,7 @@
 #include <freertos/semphr.h>
 
 #include "badge_pins.h"
+#include "badge_base.h"
 #include "badge_eink_dev.h"
 
 #define SPI_NUM 0x3
@@ -118,6 +119,8 @@ badge_eink_dev_write_command_end(void)
 void
 badge_eink_dev_init(void)
 {
+	badge_base_init();
+
 #ifdef PIN_NUM_LED
 	gpio_pad_select_gpio(PIN_NUM_LED);
 	gpio_set_direction(PIN_NUM_LED, GPIO_MODE_OUTPUT);
@@ -125,12 +128,13 @@ badge_eink_dev_init(void)
 
 	badge_eink_dev_intr_trigger = xSemaphoreCreateBinary();
 	gpio_isr_handler_add(PIN_NUM_EPD_BUSY, badge_eink_dev_intr_handler, NULL);
-	gpio_config_t io_conf;
-	io_conf.intr_type = GPIO_INTR_ANYEDGE;
-	io_conf.mode = GPIO_MODE_INPUT;
-	io_conf.pin_bit_mask = 1LL << PIN_NUM_EPD_BUSY;
-	io_conf.pull_down_en = 0;
-	io_conf.pull_up_en = 1;
+	gpio_config_t io_conf = {
+		.intr_type    = GPIO_INTR_ANYEDGE,
+		.mode         = GPIO_MODE_INPUT,
+		.pin_bit_mask = 1LL << PIN_NUM_EPD_BUSY,
+		.pull_down_en = 0,
+		.pull_up_en   = 1,
+	};
 	gpio_config(&io_conf);
 
 	gpio_set_direction(PIN_NUM_EPD_CS, GPIO_MODE_OUTPUT);
