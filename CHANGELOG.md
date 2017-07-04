@@ -8,6 +8,8 @@
 
 **Closed issues:**
 
+- Skip frames when flushing [\#73](https://github.com/SHA2017-badge/Firmware/issues/73)
+- Make sure the WS2812\_DATA is in high-impedance mode before the LED power is switched off [\#59](https://github.com/SHA2017-badge/Firmware/issues/59)
 - Support for both RGB and RGBW SK6812 [\#53](https://github.com/SHA2017-badge/Firmware/issues/53)
 - uGFX 'toggle' input driver [\#15](https://github.com/SHA2017-badge/Firmware/issues/15)
 - Intermittent build failures: no rule to make target .../bootloader.bin [\#13](https://github.com/SHA2017-badge/Firmware/issues/13)
@@ -16,6 +18,13 @@
 
 **Merged pull requests:**
 
+- SSL verification [\#75](https://github.com/SHA2017-badge/Firmware/pull/75) ([annejan](https://github.com/annejan))
+- update micropython [\#74](https://github.com/SHA2017-badge/Firmware/pull/74) ([raboof](https://github.com/raboof))
+- Allow badge\_\*\_init\(\) to be called multiple times. [\#71](https://github.com/SHA2017-badge/Firmware/pull/71) ([basvs](https://github.com/basvs))
+- Destroy list before launching [\#65](https://github.com/SHA2017-badge/Firmware/pull/65) ([raboof](https://github.com/raboof))
+- Add a Codacy badge to README.md [\#63](https://github.com/SHA2017-badge/Firmware/pull/63) ([codacy-badger](https://github.com/codacy-badger))
+- Fix issue \#59; initialize SPI only on active use [\#62](https://github.com/SHA2017-badge/Firmware/pull/62) ([basvs](https://github.com/basvs))
+- Improve eink-display; add partial-updates to depg driver [\#60](https://github.com/SHA2017-badge/Firmware/pull/60) ([basvs](https://github.com/basvs))
 - Fix WDT reset \(and RTCMEM loss\) after deepsleep [\#58](https://github.com/SHA2017-badge/Firmware/pull/58) ([rnplus](https://github.com/rnplus))
 - Misc improvements [\#57](https://github.com/SHA2017-badge/Firmware/pull/57) ([basvs](https://github.com/basvs))
 - Add hardcoded touch baselines; misc small changes. [\#56](https://github.com/SHA2017-badge/Firmware/pull/56) ([basvs](https://github.com/basvs))
