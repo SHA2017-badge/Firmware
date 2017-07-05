@@ -52,7 +52,7 @@ static int socket_id = -1;
 
 static const char *REQUEST = "GET " BADGE_OTA_WEB_URL " HTTP/1.0\r\n"
     "Host: "BADGE_OTA_WEB_SERVER"\r\n"
-    "User-Agent: SHA2017-badge/1.0 esp32\r\n"
+    "User-Agent: SHA2017-Badge/1.0 esp32\r\n"
     "\r\n";
 
 /* FreeRTOS event group to signal when we are connected & ready to make a request */
