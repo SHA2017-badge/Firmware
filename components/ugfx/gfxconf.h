@@ -192,8 +192,10 @@
 #define GFX_USE_GWIN                                   TRUE
 
 #define GWIN_NEED_WINDOWMANAGER                      TRUE
-//    #define GWIN_REDRAW_IMMEDIATE                    FALSE
-//    #define GWIN_REDRAW_SINGLEOP                     FALSE
+// Redraw immediately, otherwise we run the risk of
+// flushing before the redraw actually happened
+#define GWIN_REDRAW_IMMEDIATE                    TRUE
+#define GWIN_REDRAW_SINGLEOP                     TRUE
 //    #define GWIN_NEED_FLASHING                       FALSE
 //        #define GWIN_FLASHING_PERIOD                 250
 
