@@ -5,9 +5,21 @@
 #include <stdint.h>
 
 struct badge_eink_lut_entry {
-	uint8_t length;    // 0 = end of list
-	uint8_t voltages;  // bitmap: 11 10 01 00 (from .. to ..)
-	                   // values: 0=VSS, 1=VSH, 2=VSL
+	/** the number of cycles the voltages are held; 0 = end of list */
+	uint8_t length;
+
+	/** bitmapped value containing voltages for every (old-bit, new-bit) pair:
+	 * - bits 0,1: from 0 to 0
+	 * - bits 2,3: from 0 to 1
+	 * - bits 4,5: from 1 to 0
+	 * - bits 6,7: from 1 to 1
+	 *
+	 * allowed values:
+	 * - 0: VSS
+	 * - 1: VSH
+	 * - 2: VSL
+	 */
+	uint8_t voltages;
 };
 
 enum badge_eink_lut_flags {
