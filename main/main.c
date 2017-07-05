@@ -12,14 +12,13 @@
 #include <badge_eink.h>
 #include <badge_pins.h>
 #include <badge_button.h>
+#include <sha2017_ota.h>
 
 #include "imgv2_sha.h"
 #include "imgv2_menu.h"
 #include "imgv2_nick.h"
 #include "imgv2_weather.h"
 #include "imgv2_test.h"
-
-esp_err_t event_handler(void *ctx, system_event_t *event) { return ESP_OK; }
 
 struct menu_item {
   const char *title;
@@ -66,6 +65,9 @@ const struct menu_item demoMenu[] = {
 #endif // PIN_NUM_LEDS
     {"uGFX demo", &demoUgfx},
     {"charging demo", &demoPower},
+#ifdef CONFIG_WIFI_USE
+    {"OTA update", &sha2017_ota_update},
+#endif // CONFIG_WIFI_USE
     {"tetris?", NULL},
     {"something else", NULL},
     {"test, test, test", NULL},
@@ -174,21 +176,6 @@ app_main(void) {
 	nvs_flash_init();
 
 	badge_init();
-
-  tcpip_adapter_init();
-  ESP_ERROR_CHECK(esp_event_loop_init(event_handler, NULL));
-
-#ifdef CONFIG_WIFI_USE
-  wifi_init_config_t cfg = WIFI_INIT_CONFIG_DEFAULT();
-  ESP_ERROR_CHECK(esp_wifi_init(&cfg));
-  ESP_ERROR_CHECK(esp_wifi_set_storage(WIFI_STORAGE_RAM));
-  ESP_ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_STA));
-  wifi_config_t sta_config = {
-      .sta = {.ssid = CONFIG_WIFI_SSID, .password = CONFIG_WIFI_PASSWORD, .bssid_set = false}};
-  ESP_ERROR_CHECK(esp_wifi_set_config(WIFI_IF_STA, &sta_config));
-  ESP_ERROR_CHECK(esp_wifi_start());
-  ESP_ERROR_CHECK(esp_wifi_connect());
-#endif // CONFIG_WIFI_USE
 
   int picture_id = 0;
 #if 0

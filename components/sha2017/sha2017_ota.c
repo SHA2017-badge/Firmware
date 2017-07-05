@@ -63,7 +63,7 @@ static EventGroupHandle_t wifi_event_group;
    to the AP with an IP? */
 const int CONNECTED_BIT = BIT0;
 
-static esp_err_t event_handler(void *ctx, system_event_t *event)
+static esp_err_t sha2017_ota_event_handler(void *ctx, system_event_t *event)
 {
     switch (event->event_id) {
     case SYSTEM_EVENT_STA_START:
@@ -88,7 +88,7 @@ static void sha2017_ota_initialise_wifi(void)
 {
     tcpip_adapter_init();
     wifi_event_group = xEventGroupCreate();
-    ESP_ERROR_CHECK( esp_event_loop_init(event_handler, NULL) );
+    ESP_ERROR_CHECK( esp_event_loop_init(sha2017_ota_event_handler, NULL) );
     wifi_init_config_t cfg = WIFI_INIT_CONFIG_DEFAULT();
     ESP_ERROR_CHECK( esp_wifi_init(&cfg) );
     ESP_ERROR_CHECK( esp_wifi_set_storage(WIFI_STORAGE_RAM) );
@@ -181,7 +181,6 @@ static void sha2017_ota_task(void *pvParameter)
                         false, true, portMAX_DELAY);
     ESP_LOGI(TAG, "Connect to Wifi ! Start to Connect to Server....");
 
-    char buf[512];
     int ret, flags, len;
 
     mbedtls_entropy_context entropy;
@@ -288,9 +287,9 @@ static void sha2017_ota_task(void *pvParameter)
     {
         /* In real life, we probably want to close connection if ret != 0 */
         ESP_LOGW(TAG, "Failed to verify peer certificate!");
-        bzero(buf, sizeof(buf));
-        mbedtls_x509_crt_verify_info(buf, sizeof(buf), "  ! ", flags);
-        ESP_LOGW(TAG, "verification info: %s", buf);
+        bzero(text, sizeof(text));
+        mbedtls_x509_crt_verify_info(text, sizeof(text), "  ! ", flags);
+        ESP_LOGW(TAG, "verification info: %s", text);
     }
     else {
         ESP_LOGI(TAG, "Certificate verified.");
@@ -330,9 +329,9 @@ static void sha2017_ota_task(void *pvParameter)
         memset(text, 0, TEXT_BUFFSIZE);
         memset(ota_write_data, 0, BUFFSIZE);
 
-        len = sizeof(buf) - 1;
-        bzero(buf, sizeof(buf));
-        ret = mbedtls_ssl_read(&ssl, (unsigned char *)buf, len);
+        len = sizeof(text) - 1;
+        bzero(text, sizeof(text));
+        ret = mbedtls_ssl_read(&ssl, (unsigned char *)text, len);
 
         if(ret == MBEDTLS_ERR_SSL_WANT_READ || ret == MBEDTLS_ERR_SSL_WANT_WRITE)
             continue;
