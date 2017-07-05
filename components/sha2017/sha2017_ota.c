@@ -104,7 +104,11 @@ static void sha2017_ota_initialise_wifi(void)
     ESP_ERROR_CHECK( esp_wifi_start() );
 }
 
-/*read buffer by byte still delim ,return read bytes counts*/
+/* read buffer by byte still delim ,return read bytes counts
+ *
+ * FIXME: the current sha2017_ota_read_until is very similar to memchr() and memmem().
+ *        should consider using these methods. (might need a _GNU_SOURCE define)
+ */
 static int sha2017_ota_read_until(char *buffer, char delim, int len)
 {
 //  /*TODO: delim check,buffer check,further: do an buffer length limited*/
@@ -125,6 +129,9 @@ static bool sha2017_ota_read_past_http_header(char text[], int total_len, esp_ot
     int i = 0, i_read_len = 0;
     while (text[i] != 0 && i < total_len) {
         i_read_len = sha2017_ota_read_until(&text[i], '\n', total_len);
+		/* FIXME: rewrite to using memmem()?
+		 *        btw, HTTP-servers *always* use "\r\n" line endings.
+		 */
         // if we resolve \r\n line,we think packet header is finished
         if (i_read_len == 2) {
             int i_write_len = total_len - (i + 2);
@@ -142,6 +149,12 @@ static bool sha2017_ota_read_past_http_header(char text[], int total_len, esp_ot
             }
             return true;
         }
+		/* FIXME: We should parse the result-code and the content-length.
+		 *        } else {
+		 *            // parse header
+		 *            ...
+		 *        }
+		 */
         i += i_read_len;
     }
     return false;
@@ -171,6 +184,9 @@ static void sha2017_ota_task(void *pvParameter)
     const esp_partition_t *running = esp_ota_get_running_partition();
 
     assert(configured == running); /* fresh from reset, should be running from configured boot partition */
+	/* NOTE: is this always true? what if the bootloader detects that the selected
+	 *       OTA partition is corrupted and decides to boot the old OTA partition.
+	 */
     ESP_LOGI(TAG, "Running partition type %d subtype %d (offset 0x%08x)",
              configured->type, configured->subtype, configured->address);
 
@@ -283,6 +299,9 @@ static void sha2017_ota_task(void *pvParameter)
 
     ESP_LOGI(TAG, "Verifying peer X.509 certificate...");
 
+	/* NOTE: Afaik, the mbedtls_ssl_get_verify_result() always returns 0 if
+	 *       MBEDTLS_SSL_VERIFY_REQUIRED is used.
+	 */
     if ((flags = mbedtls_ssl_get_verify_result(&ssl)) != 0)
     {
         /* In real life, we probably want to close connection if ret != 0 */
@@ -312,6 +331,9 @@ static void sha2017_ota_task(void *pvParameter)
     assert(update_partition != NULL);
 
     err = esp_ota_begin(update_partition, OTA_SIZE_UNKNOWN, &update_handle);
+	/* FIXME: first check the HTTP response and content-length. then decide if we should
+	 *        start updating one of the OTA partitions.
+	 */
     if (err != ESP_OK) {
         ESP_LOGE(TAG, "esp_ota_begin failed, error=%d", err);
         task_fatal_error();
@@ -389,6 +411,11 @@ static void sha2017_ota_task(void *pvParameter)
         ESP_LOGE(TAG, "esp_ota_end failed!");
         task_fatal_error();
     }
+
+	/* FIXME: we should really add code here which verifies the integrity of the new
+	 *        OTA partition.
+	 */
+
     err = esp_ota_set_boot_partition(update_partition);
     if (err != ESP_OK) {
         ESP_LOGE(TAG, "esp_ota_set_boot_partition failed! err=0x%x", err);
@@ -403,6 +430,9 @@ void sha2017_ota_update()
 {
     // Initialize NVS.
     esp_err_t err = nvs_flash_init();
+	/* FIXME: can't we keep the NVS. I would assume the NVS contains a lot of
+	 *        user preferences.
+	 */
     if (err == ESP_ERR_NVS_NO_FREE_PAGES) {
         // OTA app partition table has a smaller NVS partition size than the non-OTA
         // partition table. This size mismatch may cause NVS initialization to fail.
