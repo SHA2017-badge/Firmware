@@ -35,7 +35,7 @@
 
 #define BADGE_OTA_WEB_SERVER "badge.sha2017.org"
 #define BADGE_OTA_WEB_PORT "443"
-#define BADGE_OTA_WEB_URL "https://badge.sha2017.org/firmware.bin"
+#define BADGE_OTA_WEB_PATH "/firmware.bin"
 
 #define BUFFSIZE 1024
 #define TEXT_BUFFSIZE 1024
@@ -50,7 +50,7 @@ static int binary_file_length = 0;
 /*socket id*/
 static int socket_id = -1;
 
-static const char *REQUEST = "GET " BADGE_OTA_WEB_URL " HTTP/1.0\r\n"
+static const char *REQUEST = "GET " BADGE_OTA_WEB_PATH " HTTP/1.0\r\n"
     "Host: "BADGE_OTA_WEB_SERVER"\r\n"
     "User-Agent: SHA2017-Badge/1.0 esp32\r\n"
     "\r\n";
