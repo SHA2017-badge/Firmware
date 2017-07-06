@@ -41,13 +41,15 @@
 #define TEXT_BUFFSIZE 1024
 
 static const char *TAG = "ota";
-/*an ota data write buffer ready to write to the flash*/
+/* an ota data write buffer ready to write to the flash */
 static char ota_write_data[BUFFSIZE + 1] = { 0 };
-/*an packet receive buffer*/
+/* a packet receive buffer */
 static char text[BUFFSIZE + 1] = { 0 };
-/* an image total length*/
+/* image total length */
 static int binary_file_length = 0;
-/*socket id*/
+/* http content length */
+static int content_length = 0;
+/* socket id */
 static int socket_id = -1;
 
 static const char *REQUEST = "GET " BADGE_OTA_WEB_PATH " HTTP/1.0\r\n"
@@ -127,29 +129,27 @@ static bool sha2017_ota_read_past_http_header(char text[], int total_len, esp_ot
     bool first_line = true;
 
     while (ptr != NULL) {
-        ptr = memchr(&text[i], '\n', total_len);
+        ptr = memchr(text+i, '\n', total_len);
   		/* FIXME: rewrite to using memmem()?
   		 *        btw, HTTP-servers *always* use "\r\n" line endings.
   		 */
-      int len = ptr-text;
+      int len = ptr-text-i;
 
-      ESP_LOGI(TAG, "Len: %d", len);
+      // ESP_LOGI(TAG, "Len: %d", len);
 
-        // damn youths
+        // feels a bit oldschool
        char dest[BUFFSIZE];
-       strncpy(dest, &text[i], len);
+       strncpy(dest, text+i, len);
        dest[len] = 0; //null terminate destination
 
-       ESP_LOGI(TAG, "XR:\n%s\n%s\n", dest, text);
-
-      // if we resolve \r\n line,we think packet header is finished
+      // if we resolve \r\n line,we know packet header is finished
       if (strcmp("\r", dest) == 0) {
-          int i_write_len = total_len - (i + 1);
+          int i_write_len = total_len-i-2;
           memset(ota_write_data, 0, BUFFSIZE);
           /*copy first http packet body to write buffer*/
-          memcpy(ota_write_data, &(text[i + 1]), i_write_len);
+          memcpy(ota_write_data, text+i+2, i_write_len);
 
-          esp_err_t err = esp_ota_write( update_handle, (const void *)ota_write_data, i_write_len);
+          esp_err_t err = esp_ota_write(update_handle, (const void *)ota_write_data, i_write_len);
           if (err != ESP_OK) {
               ESP_LOGE(TAG, "Error: esp_ota_write failed! err=0x%x", err);
               return false;
@@ -160,27 +160,25 @@ static bool sha2017_ota_read_past_http_header(char text[], int total_len, esp_ot
           return true;
       }
 
-       //ESP_LOGI(TAG, "YO: %s", text);
-       ESP_LOGI(TAG, "Wut? %s", dest);
-
        if (first_line) {
            if (strcmp("HTTP/1.1 200 OK\r", dest) == 0) {
-             ESP_LOGI(TAG, "got ourselves a 200");
+             ESP_LOGI(TAG, "Got ourselves a 200, continue!");
            } else {
              ESP_LOGE(TAG, "Got some other val! %s", dest);
              task_fatal_error();
             }
            first_line = false;
         } else {
-
-          /* FIXME: We should parse the result-code and the content-length.
-           *        } else {
-           *            // parse header
-           *            ...
-           *        }
-           */
+          // ESP_LOGI(TAG, "Wut? %s", dest);
+          if (strstr(dest, "Content-Length:") != NULL) {
+            strncpy(dest, dest+16, len-17);
+            dest[len-17] = 0; //null terminate destination
+            // ESP_LOGI(TAG, "Length: %s", dest);
+            content_length = atoi(dest);
+            ESP_LOGI(TAG, "Length: %d", content_length);
+          }
         }
-        i += len;
+        i += (len + 1);
     }
     return false;
 }
@@ -424,6 +422,12 @@ static void sha2017_ota_task(void *pvParameter)
     if (esp_ota_end(update_handle) != ESP_OK) {
         ESP_LOGE(TAG, "esp_ota_end failed!");
         task_fatal_error();
+    }
+
+    if (binary_file_length != content_length) {
+      ESP_LOGE(TAG, "Firmware size differs, expected: %d\nReceived: %d",
+        content_length, binary_file_length);
+      task_fatal_error();
     }
 
 	/* FIXME: we should really add code here which verifies the integrity of the new
