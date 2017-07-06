@@ -34,8 +34,8 @@ extern int badge_leds_set_state(uint8_t *rgbw) __attribute__((deprecated));
  * Send color-data to the leds bus.
  * @param data the data-bytes to send on the bus.
  * @param len the data-length.
- * @note The first 6 leds on the bus are probably SK6812 leds.
- *   SK6812 expects 4 bytes per led: red, green, blue and white.
+ * @note The first 6 leds on the bus are probably SK6812RGBW leds.
+ *   SK6812RGBW expects 4 bytes per led: green, red, blue and white.
  * @return 0 on succes; -1 on error.
  */
 extern int badge_leds_send_data(uint8_t *data, int len);

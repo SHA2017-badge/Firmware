@@ -1,6 +1,6 @@
 [submodule "esp-idf"]
 	path = esp-idf
-	url = https://github.com/espressif/esp-idf
+	url = https://github.com/SHA2017-badge/esp-idf.git
 	branch = master
 [submodule "nodemcu-prebuilt-toolchains"]
 	path = nodemcu-prebuilt-toolchains
