@@ -104,62 +104,6 @@ static void sha2017_ota_initialise_wifi(void)
     ESP_ERROR_CHECK( esp_wifi_start() );
 }
 
-/* read buffer by byte still delim ,return read bytes counts
- *
- * FIXME: the current sha2017_ota_read_until is very similar to memchr() and memmem().
- *        should consider using these methods. (might need a _GNU_SOURCE define)
- */
-static int sha2017_ota_read_until(char *buffer, char delim, int len)
-{
-//  /*TODO: delim check,buffer check,further: do an buffer length limited*/
-    int i = 0;
-    while (buffer[i] != delim && i < len) {
-        ++i;
-    }
-    return i + 1;
-}
-
-/* resolve a packet from http socket
- * return true if packet including \r\n\r\n that means http packet header finished,start to receive packet body
- * otherwise return false
- * */
-static bool sha2017_ota_read_past_http_header(char text[], int total_len, esp_ota_handle_t update_handle)
-{
-    /* i means current position */
-    int i = 0, i_read_len = 0;
-    while (text[i] != 0 && i < total_len) {
-        i_read_len = sha2017_ota_read_until(&text[i], '\n', total_len);
-		/* FIXME: rewrite to using memmem()?
-		 *        btw, HTTP-servers *always* use "\r\n" line endings.
-		 */
-        // if we resolve \r\n line,we think packet header is finished
-        if (i_read_len == 2) {
-            int i_write_len = total_len - (i + 2);
-            memset(ota_write_data, 0, BUFFSIZE);
-            /*copy first http packet body to write buffer*/
-            memcpy(ota_write_data, &(text[i + 2]), i_write_len);
-
-            esp_err_t err = esp_ota_write( update_handle, (const void *)ota_write_data, i_write_len);
-            if (err != ESP_OK) {
-                ESP_LOGE(TAG, "Error: esp_ota_write failed! err=0x%x", err);
-                return false;
-            } else {
-                ESP_LOGI(TAG, "esp_ota_write header OK");
-                binary_file_length += i_write_len;
-            }
-            return true;
-        }
-		/* FIXME: We should parse the result-code and the content-length.
-		 *        } else {
-		 *            // parse header
-		 *            ...
-		 *        }
-		 */
-        i += i_read_len;
-    }
-    return false;
-}
-
 static void __attribute__((noreturn)) task_fatal_error()
 {
     ESP_LOGE(TAG, "Exiting task due to fatal error...");
@@ -169,6 +113,76 @@ static void __attribute__((noreturn)) task_fatal_error()
     while (1) {
         ;
     }
+}
+
+/* resolve a packet from http socket
+ * return true if packet including \r\n\r\n that means http packet header finished,start to receive packet body
+ * otherwise return false
+ * */
+static bool sha2017_ota_read_past_http_header(char text[], int total_len, esp_ota_handle_t update_handle)
+{
+    /* i means current position */
+    int i = 0;
+    char *ptr = text;
+    bool first_line = true;
+
+    while (ptr != NULL) {
+        ptr = memchr(&text[i], '\n', total_len);
+  		/* FIXME: rewrite to using memmem()?
+  		 *        btw, HTTP-servers *always* use "\r\n" line endings.
+  		 */
+      int len = ptr-text;
+
+      ESP_LOGI(TAG, "Len: %d", len);
+
+        // damn youths
+       char dest[BUFFSIZE];
+       strncpy(dest, &text[i], len);
+       dest[len] = 0; //null terminate destination
+
+       ESP_LOGI(TAG, "XR:\n%s\n%s\n", dest, text);
+
+      // if we resolve \r\n line,we think packet header is finished
+      if (strcmp("\r", dest) == 0) {
+          int i_write_len = total_len - (i + 1);
+          memset(ota_write_data, 0, BUFFSIZE);
+          /*copy first http packet body to write buffer*/
+          memcpy(ota_write_data, &(text[i + 1]), i_write_len);
+
+          esp_err_t err = esp_ota_write( update_handle, (const void *)ota_write_data, i_write_len);
+          if (err != ESP_OK) {
+              ESP_LOGE(TAG, "Error: esp_ota_write failed! err=0x%x", err);
+              return false;
+          } else {
+              ESP_LOGI(TAG, "esp_ota_write header OK");
+              binary_file_length += i_write_len;
+          }
+          return true;
+      }
+
+       //ESP_LOGI(TAG, "YO: %s", text);
+       ESP_LOGI(TAG, "Wut? %s", dest);
+
+       if (first_line) {
+           if (strcmp("HTTP/1.1 200 OK\r", dest) == 0) {
+             ESP_LOGI(TAG, "got ourselves a 200");
+           } else {
+             ESP_LOGE(TAG, "Got some other val! %s", dest);
+             task_fatal_error();
+            }
+           first_line = false;
+        } else {
+
+          /* FIXME: We should parse the result-code and the content-length.
+           *        } else {
+           *            // parse header
+           *            ...
+           *        }
+           */
+        }
+        i += len;
+    }
+    return false;
 }
 
 static void sha2017_ota_task(void *pvParameter)
