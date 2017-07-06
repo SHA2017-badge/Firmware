@@ -18,6 +18,9 @@
 
 **Merged pull requests:**
 
+- documentation update [\#79](https://github.com/SHA2017-badge/Firmware/pull/79) ([basvs](https://github.com/basvs))
+- Attempt to do OTA via SSL \(non BPP\) [\#77](https://github.com/SHA2017-badge/Firmware/pull/77) ([annejan](https://github.com/annejan))
+- Draw immediately [\#76](https://github.com/SHA2017-badge/Firmware/pull/76) ([raboof](https://github.com/raboof))
 - SSL verification [\#75](https://github.com/SHA2017-badge/Firmware/pull/75) ([annejan](https://github.com/annejan))
 - update micropython [\#74](https://github.com/SHA2017-badge/Firmware/pull/74) ([raboof](https://github.com/raboof))
 - Allow badge\_\*\_init\(\) to be called multiple times. [\#71](https://github.com/SHA2017-badge/Firmware/pull/71) ([basvs](https://github.com/basvs))
