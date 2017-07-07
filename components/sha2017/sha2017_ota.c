@@ -329,7 +329,7 @@ static void sha2017_ota_task(void *pvParameter) {
     }
   }
 
-  show_precentage("Updating", 0, true);
+  show_precentage("Handshaking server", 0, false);
 
   update_partition = esp_ota_get_next_update_partition(NULL);
   ESP_LOGI(TAG, "Writing to partition subtype %d at offset 0x%x",
@@ -353,7 +353,7 @@ static void sha2017_ota_task(void *pvParameter) {
   ESP_LOGI(TAG, "%d bytes written", len);
   ESP_LOGI(TAG, "Reading HTTP response...");
 
-  uint8_t percentage = 0;
+  uint8_t percentage = 110;
 
   while (flag) {
     memset(text, 0, TEXT_BUFFSIZE);
