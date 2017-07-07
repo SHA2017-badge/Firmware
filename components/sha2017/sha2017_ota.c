@@ -111,11 +111,12 @@ static void sha2017_ota_initialise_wifi(void) {
 static void __attribute__((noreturn)) task_fatal_error() {
   ESP_LOGE(TAG, "Exiting task due to fatal error...");
   close(socket_id);
+  show_precentage("OTA Update failed :(", 0, false);
+
   (void)vTaskDelete(NULL);
 
-  while (1) {
-    ;
-  }
+  vTaskDelay(1000 / portTICK_PERIOD_MS);
+  esp_restart();
 }
 
 /* resolve a packet from http socket
