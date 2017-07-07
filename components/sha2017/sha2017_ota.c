@@ -1,6 +1,7 @@
 #include <netdb.h>
 #include <string.h>
 #include <sys/socket.h>
+#include <math.h>
 
 #include "freertos/FreeRTOS.h"
 #include "freertos/event_groups.h"
@@ -31,7 +32,9 @@
 #include "mbedtls/platform.h"
 #include "mbedtls/ssl.h"
 
+#include "badge.h"
 #include "wildcard_sha2017_org.h"
+#include "sha2017_ota_graphics.h"
 
 #define BADGE_OTA_WEB_SERVER "badge.sha2017.org"
 #define BADGE_OTA_WEB_PORT "443"
@@ -198,6 +201,8 @@ static void sha2017_ota_task(void *pvParameter) {
   ESP_LOGI(TAG, "Running partition type %d subtype %d (offset 0x%08x)",
            configured->type, configured->subtype, configured->address);
 
+
+  show_precentage("Connecting to WiFi", 0, false);
   /* Wait for the callback to set the CONNECTED_BIT in the
      event group.
   */
@@ -324,6 +329,8 @@ static void sha2017_ota_task(void *pvParameter) {
     }
   }
 
+  show_precentage("Updating", 0, true);
+
   update_partition = esp_ota_get_next_update_partition(NULL);
   ESP_LOGI(TAG, "Writing to partition subtype %d at offset 0x%x",
            update_partition->subtype, update_partition->address);
@@ -345,6 +352,8 @@ static void sha2017_ota_task(void *pvParameter) {
   len = ret;
   ESP_LOGI(TAG, "%d bytes written", len);
   ESP_LOGI(TAG, "Reading HTTP response...");
+
+  uint8_t percentage = 0;
 
   while (flag) {
     memset(text, 0, TEXT_BUFFSIZE);
@@ -373,7 +382,7 @@ static void sha2017_ota_task(void *pvParameter) {
     }
 
     len = ret;
-    ESP_LOGI(TAG, "%d bytes read", len);
+    // ESP_LOGI(TAG, "%d bytes read", len);
 
     if (len < 0) { /*receive error*/
       ESP_LOGE(TAG, "Error: receive data error! errno=%d", errno);
@@ -390,7 +399,13 @@ static void sha2017_ota_task(void *pvParameter) {
         task_fatal_error();
       }
       binary_file_length += len;
-      ESP_LOGI(TAG, "Have written image length %d", binary_file_length);
+
+      uint8_t newperc = (uint8_t)round(((float)binary_file_length*100)/content_length);
+      if (newperc != percentage) {
+        percentage = newperc;
+        show_precentage("Updating", percentage, true);
+      }
+      // ESP_LOGI(TAG, "Have written image length %d", binary_file_length);
     } else if (len == 0) { /*packet over*/
       flag = false;
       ESP_LOGI(TAG, "Connection closed, all packets received");
@@ -419,6 +434,8 @@ static void sha2017_ota_task(void *pvParameter) {
    * new OTA partition.
    */
 
+   show_precentage("Rebooting the badge", 0, false);
+
   err = esp_ota_set_boot_partition(update_partition);
   if (err != ESP_OK) {
     ESP_LOGE(TAG, "esp_ota_set_boot_partition failed! err=0x%x", err);
@@ -430,11 +447,11 @@ static void sha2017_ota_task(void *pvParameter) {
 }
 
 void sha2017_ota_update() {
-  // Initialize NVS.
   esp_err_t err = nvs_flash_init();
-  /* FIXME: can't we keep the NVS. I would assume the NVS contains a lot of
-   *        user preferences.
-   */
+  // Init the badge
+  badge_init();
+  sha2017_ota_percentage_init();
+
   if (err == ESP_ERR_NVS_NO_FREE_PAGES) {
     // OTA app partition table has a smaller NVS partition size than the non-OTA
     // partition table. This size mismatch may cause NVS initialization to fail.
