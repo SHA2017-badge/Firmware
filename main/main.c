@@ -40,6 +40,7 @@ struct menu_item {
 #include "demo_ugfx.h"
 #include "demo_power.h"
 #include "demo_mpr121.h"
+#include "demo_sdcard_image.h"
 
 const struct menu_item demoMenu[] = {
 #ifdef I2C_MPR121_ADDR
@@ -55,6 +56,7 @@ const struct menu_item demoMenu[] = {
     {"greyscale image 3", &demoGreyscaleImg3},
 #endif // CONFIG_SHA_BADGE_EINK_GDEH029A1
     {"greyscale image 4", &demoGreyscaleImg4},
+	{"demo sd-card image", &demo_sdcard_image},
     {"partial update test", &demoPartialUpdate},
 #ifdef CONFIG_SHA_BADGE_EINK_GDEH029A1
     {"dot 1", &demoDot1},
