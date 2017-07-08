@@ -29,7 +29,8 @@ enum lib_deflate_error_t {
 struct lib_deflate_reader {
 	lib_reader_read_t read;
 	void *read_p;
-	uint8_t lastbyte;
+
+	uint8_t bitbuf[2];
 	uint8_t bitlen;
 
 	bool is_last_block;
@@ -38,11 +39,11 @@ struct lib_deflate_reader {
 	int lb_size;
 	int lb_pos;
 
-	uint8_t huffman_lc[288];
-	uint8_t huffman_dc[32];
-
 	int copy_dist;
 	int copy_len;
+
+	uint16_t huffman_lc_tree[288+15];
+	uint16_t huffman_dc_tree[32+15];
 };
 
 extern struct lib_deflate_reader * lib_deflate_new(lib_reader_read_t read, void *read_p);
