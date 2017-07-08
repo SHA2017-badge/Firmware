@@ -117,7 +117,7 @@ lib_png_chunk_read_data(struct lib_png_reader *pr, uint8_t *buf, size_t buf_len)
 ssize_t
 lib_png_chunk_read_idat(struct lib_png_reader *pr, uint8_t *buf, size_t buf_len)
 {
-	ssize_t res2 = 0;
+	ssize_t res_len = 0;
 	while (buf_len > 0)
 	{
 		while (!pr->chunk.in_chunk)
@@ -147,10 +147,10 @@ lib_png_chunk_read_idat(struct lib_png_reader *pr, uint8_t *buf, size_t buf_len)
 
 		buf_len -= res;
 		buf = &buf[res];
-		res2 += res;
+		res_len += res;
 	}
 
-	return res2;
+	return res_len;
 }
 
 static inline ssize_t
@@ -164,6 +164,27 @@ lib_png_deflate_read(struct lib_png_reader *pr, uint8_t *buf, size_t buf_len)
 	pr->adler = lib_adler32(buf, buf_len, pr->adler);
 
 	return res;
+}
+
+static inline uint8_t
+lib_png_paeth(uint8_t _a, uint8_t _b, uint8_t _c)
+{
+	int32_t a = _a; // left
+	int32_t b = _b; // up
+	int32_t c = _c; // up-left
+
+	int32_t p = a + b - c;
+	int32_t pa = p < a ? a - p : p - a;
+	int32_t pb = p < b ? b - p : p - b;
+	int32_t pc = p < c ? c - p : p - c;
+
+	if (pa <= pb && pa <= pc)
+		return _a;
+
+	if (pb <= pc)
+		return _b;
+
+	return _c;
 }
 
 static inline int
@@ -193,59 +214,68 @@ lib_png_decode(struct lib_png_reader *pr, uint32_t width, uint32_t height, uint3
 		}
 
 		uint32_t x;
-		uint8_t prev[8] = { 0, 0, 0, 0, 0, 0, 0, 0 };
 		uint8_t up_prev[8] = { 0, 0, 0, 0, 0, 0, 0, 0 };
+
+		uint8_t *scanline = pr->scanline;
+		int bpp = pr->scanline_bpp;
 		switch(filter_type)
 		{
 			case 0: // none
 				break;
 
 			case 1: // sub
-				for (x=0; x<scanline_width; x++)
+				scanline = &scanline[bpp];
+				for (x=bpp; x<scanline_width; x++)
 				{
-					prev[x % pr->scanline_bpp] = pr->scanline[x] = pr->scanline[x] + prev[x % pr->scanline_bpp];
+					*scanline += scanline[-bpp];
+					scanline++;
 				}
 				break;
 
 			case 2: // up
 				for (x=0; x<scanline_width; x++)
 				{
-					pr->scanline[x] += pr->scanline[scanline_width + x];
+					*scanline += scanline[scanline_width];
+					scanline++;
 				}
 				break;
 
 			case 3: // average
-				for (x=0; x<scanline_width; x++)
+				for (x=0; x<scanline_width && x<bpp; x++)
 				{
-					uint32_t left = prev[x % pr->scanline_bpp];
-					uint32_t up   = pr->scanline[x];
-					prev[x % pr->scanline_bpp] = pr->scanline[x] = ((left + up) >> 1) + pr->scanline[scanline_width + x]; 
+					uint32_t up   = *scanline;
+					*scanline = (up >> 1) + scanline[scanline_width];
+					scanline++;
+				}
+				for (; x<scanline_width; x++)
+				{
+					uint32_t left = scanline[-bpp];
+					uint32_t up   = *scanline;
+					*scanline = ((left + up) >> 1) + scanline[scanline_width];
+					scanline++;
 				}
 				break;
 
 			case 4: // paeth
-				for (x=0; x<scanline_width; x++)
+				for (x=0; x<scanline_width && x<bpp; x++)
 				{
-					int32_t a = prev[x % pr->scanline_bpp]; // left
-					int32_t b = pr->scanline[x]; // up
-					int32_t c = up_prev[x % pr->scanline_bpp]; // up-left
-					up_prev[x % pr->scanline_bpp] = b;
-					int32_t p = a + b - c;
-					int32_t pa = p < a ? a - p : p - a;
-					int32_t pb = p < b ? b - p : p - b;
-					int32_t pc = p < c ? c - p : p - c;
-					if (pa <= pb && pa <= pc)
-					{
-						prev[x % pr->scanline_bpp] = pr->scanline[x] = a + pr->scanline[scanline_width + x];
-					}
-					else if (pb <= pc)
-					{
-						prev[x % pr->scanline_bpp] = pr->scanline[x] = b + pr->scanline[scanline_width + x];
-					}
-					else
-					{
-						prev[x % pr->scanline_bpp] = pr->scanline[x] = c + pr->scanline[scanline_width + x];
-					}
+					uint8_t a = 0; // left
+					uint8_t b = *scanline; // up
+					uint8_t c = 0; // up-left
+					up_prev[x] = b;
+
+					*scanline = lib_png_paeth(a, b, c) + scanline[scanline_width];
+					scanline++;
+				}
+				for (; x<scanline_width; x++)
+				{
+					uint8_t a = scanline[-bpp]; // left
+					uint8_t b = *scanline; // up
+					uint8_t c = up_prev[(x-bpp) & 7]; // up-left
+					up_prev[x & 7] = b;
+
+					*scanline = lib_png_paeth(a, b, c) + scanline[scanline_width];
+					scanline++;
 				}
 				break;
 
@@ -551,7 +581,7 @@ lib_png_load_image(struct lib_png_reader *pr, uint8_t *dst, int dst_width, int d
 			return res;
 	}
 	else
-	{
+	{ // interlace method 1: Adam7
 		/* pass 1 */
 		uint32_t width  = ( pr->ihdr.width  + 7 ) >> 3;
 		uint32_t height = ( pr->ihdr.height + 7 ) >> 3;

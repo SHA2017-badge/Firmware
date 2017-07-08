@@ -11,44 +11,43 @@ lib_deflate_get_bit(struct lib_deflate_reader *dr)
 {
 	if (dr->bitlen == 0)
 	{
-		ssize_t res = dr->read(dr->read_p, &(dr->lastbyte), 1);
+		ssize_t res = dr->read(dr->read_p, &(dr->bitbuf[1]), 1);
 		if (res < 0)
 			return res;
 		if (res < 1)
 			return -LIB_DEFLATE_ERROR_UNEXPECTED_END_OF_FILE;
-		int value = dr->lastbyte & 1;
+		int value = dr->bitbuf[1] & 1;
 		dr->bitlen = 7;
 		return value;
 	}
 
-	int value = (dr->lastbyte >> (8 - dr->bitlen)) & 1;
+	int value = (dr->bitbuf[1] >> (8 - dr->bitlen)) & 1;
 	dr->bitlen--;
+
 	return value;
 }
 
 static inline int
 lib_deflate_get_bits(struct lib_deflate_reader *dr, int num)
 {
-	int value = dr->lastbyte;
+	int value = dr->bitbuf[1];
 	if (num > dr->bitlen + 8)
 	{
-		uint8_t rd_buf[2];
-		ssize_t res = dr->read(dr->read_p, rd_buf, 2);
+		ssize_t res = dr->read(dr->read_p, dr->bitbuf, 2);
 		if (res < 0)
 			return res;
 		if (res < 2)
 			return -LIB_DEFLATE_ERROR_UNEXPECTED_END_OF_FILE;
-		value |= (rd_buf[1] << 16) | (rd_buf[0] << 8);
-		dr->lastbyte = rd_buf[1];
+		value |= (dr->bitbuf[1] << 16) | (dr->bitbuf[0] << 8);
 	}
 	else if (num > dr->bitlen)
 	{
-		ssize_t res = dr->read(dr->read_p, &(dr->lastbyte), 1);
+		ssize_t res = dr->read(dr->read_p, &(dr->bitbuf[1]), 1);
 		if (res < 0)
 			return res;
 		if (res < 1)
 			return -LIB_DEFLATE_ERROR_UNEXPECTED_END_OF_FILE;
-		value |= dr->lastbyte << 8;
+		value |= dr->bitbuf[1] << 8;
 	}
 
 	value >>= 8 - dr->bitlen;
@@ -59,31 +58,60 @@ lib_deflate_get_bits(struct lib_deflate_reader *dr, int num)
 	return value;
 }
 
-static inline int
-lib_deflate_get_huffman(struct lib_deflate_reader *dr, const uint8_t *tbl, int tbl_len)
+static inline void
+lib_deflate_build_huffman(const uint8_t *tbl, int tbl_len, uint16_t *tree)
 {
-	int bits = 0;
-	int value = 0;
-	while (1)
+	int bits;
+	int bits_prev = 0;
+	for (bits=1; bits<=16; bits++)
 	{
-		int res = lib_deflate_get_bit(dr);
-		if (res < 0)
-			return res;
-
-		value <<= 1;
-		value |= res;
-		bits++;
-
+		uint16_t *base = NULL;
 		int i;
 		for (i=0; i<tbl_len; i++)
 		{
 			if (tbl[i] == bits)
 			{
-				if (value == 0)
-					return i;
-				value--;
+				if (base == NULL)
+				{
+					base = tree++;
+					*base = (1 << 4) | (bits - bits_prev);
+					bits_prev = bits;
+				}
+				else
+				{
+					*base += 1 << 4;
+				}
+				*tree++ = i;
 			}
 		}
+	}
+}
+
+static inline int
+lib_deflate_get_huffman(struct lib_deflate_reader *dr, const uint16_t *tbl)
+{
+	int value = 0;
+	while (1)
+	{
+		uint16_t bits = *tbl++;
+		uint16_t entries = bits >> 4;
+		bits &= 15;
+		while (bits > 0)
+		{
+			int res = lib_deflate_get_bit(dr);
+			if (res < 0)
+				return res;
+
+			value <<= 1;
+			value |= res;
+			bits--;
+		}
+
+		if (value < entries)
+			return tbl[value];
+
+		value -= entries;
+		tbl = &tbl[entries];
 	}
 
 	return value;
@@ -136,15 +164,12 @@ lib_deflate_read(struct lib_deflate_reader *dr, uint8_t *buf, size_t buf_len)
 			if (dr->is_last_block)
 				return buf_pos;
 
-			int bit = lib_deflate_get_bit(dr);
-			if (bit < 0)
-				return bit;
-
-			dr->is_last_block = bit ? true : false;
-
-			int block_type = lib_deflate_get_bits(dr, 2);
+			int block_type = lib_deflate_get_bits(dr, 3);
 			if (block_type < 0)
 				return block_type;
+
+			dr->is_last_block = (block_type & 1) ? true : false;
+			block_type >>= 1;
 
 			if (block_type == 0)
 			{ // stored block
@@ -172,11 +197,17 @@ lib_deflate_read(struct lib_deflate_reader *dr, uint8_t *buf, size_t buf_len)
 			}
 			else if (block_type == 1)
 			{ // static huffman
-				memset(&dr->huffman_lc[  0], 8, 144 - 0);
-				memset(&dr->huffman_lc[144], 9, 256 - 144);
-				memset(&dr->huffman_lc[256], 7, 280 - 256);
-				memset(&dr->huffman_lc[280], 8, 288 - 280);
-				memset(&dr->huffman_dc[  0], 5, 32);
+				uint8_t huffman_lc[288];
+				memset(&huffman_lc[  0], 8, 144 - 0);
+				memset(&huffman_lc[144], 9, 256 - 144);
+				memset(&huffman_lc[256], 7, 280 - 256);
+				memset(&huffman_lc[280], 8, 288 - 280);
+				lib_deflate_build_huffman(huffman_lc, 288, dr->huffman_lc_tree);
+
+				uint8_t huffman_dc[32];
+				memset(&huffman_dc[  0], 5, 32);
+				lib_deflate_build_huffman(huffman_dc, 32, dr->huffman_dc_tree);
+
 				dr->state = LIB_DEFLATE_STATE_HUFFMAN;
 			}
 			else if (block_type == 2)
@@ -196,7 +227,7 @@ lib_deflate_read(struct lib_deflate_reader *dr, uint8_t *buf, size_t buf_len)
 					return blc_num;
 				blc_num += 4;
 
-				static const uint8_t blco[19] = {
+				static const uint8_t blc_order[19] = {
 					16, 17, 18, 0, 8, 7, 9, 6, 10, 5, 11, 4, 12, 3, 13, 2, 14, 1, 15, 
 				};
 				uint8_t blc[19];
@@ -207,28 +238,32 @@ lib_deflate_read(struct lib_deflate_reader *dr, uint8_t *buf, size_t buf_len)
 					int bits = lib_deflate_get_bits(dr, 3);
 					if (bits < 0)
 						return bits;
-					blc[blco[i]] = bits;
+					blc[blc_order[i]] = bits;
 				}
 				int res = lib_deflate_check_huffman(blc, sizeof(blc));
 				if (res < 0)
 					return res; // invalid table
 
+				uint16_t blc_tree[19 + 15];
+				lib_deflate_build_huffman(blc, sizeof(blc), blc_tree);
+
+				uint8_t huffman_lc[288];
 				int lc_i=0;
 				while (lc_i < lc_num)
 				{
-					int len = lib_deflate_get_huffman(dr, blc, sizeof(blc));
+					int len = lib_deflate_get_huffman(dr, blc_tree);
 					if (len < 0)
 						return len;
 
 					if (len < 16)
 					{
-						dr->huffman_lc[lc_i++] = len;
+						huffman_lc[lc_i++] = len;
 					}
 					else if (len == 16)
 					{
 						if (lc_i == 0)
 							return -LIB_DEFLATE_ERROR_DYNAMIC_HUFFMAN_SETUP_ERROR;
-						uint8_t prev_len = dr->huffman_lc[lc_i - 1];
+						uint8_t prev_len = huffman_lc[lc_i - 1];
 						int repeat = lib_deflate_get_bits(dr, 2);
 						if (repeat < 0)
 							return repeat;
@@ -236,7 +271,7 @@ lib_deflate_read(struct lib_deflate_reader *dr, uint8_t *buf, size_t buf_len)
 						if (lc_i + repeat > lc_num)
 							return -LIB_DEFLATE_ERROR_DYNAMIC_HUFFMAN_SETUP_ERROR; // overflow
 						while (repeat--)
-							dr->huffman_lc[lc_i++] = prev_len;
+							huffman_lc[lc_i++] = prev_len;
 					}
 					else if (len == 17)
 					{
@@ -247,7 +282,7 @@ lib_deflate_read(struct lib_deflate_reader *dr, uint8_t *buf, size_t buf_len)
 						if (lc_i + repeat > lc_num)
 							return -LIB_DEFLATE_ERROR_DYNAMIC_HUFFMAN_SETUP_ERROR; // overflow
 						while (repeat--)
-							dr->huffman_lc[lc_i++] = 0;
+							huffman_lc[lc_i++] = 0;
 					}
 					else if (len == 18)
 					{
@@ -258,32 +293,33 @@ lib_deflate_read(struct lib_deflate_reader *dr, uint8_t *buf, size_t buf_len)
 						if (lc_i + repeat > lc_num)
 							return -LIB_DEFLATE_ERROR_DYNAMIC_HUFFMAN_SETUP_ERROR; // overflow
 						while (repeat--)
-							dr->huffman_lc[lc_i++] = 0;
+							huffman_lc[lc_i++] = 0;
 					}
 					else return -LIB_DEFLATE_ERROR_DYNAMIC_HUFFMAN_SETUP_ERROR;
 				}
-				while (lc_i < 288)
-					dr->huffman_lc[lc_i++] = 0;
-				res = lib_deflate_check_huffman(dr->huffman_lc, 288);
+				res = lib_deflate_check_huffman(huffman_lc, lc_num);
 				if (res < 0)
 					return res; // invalid table
 
+				lib_deflate_build_huffman(huffman_lc, lc_num, dr->huffman_lc_tree);
+
+				uint8_t huffman_dc[32];
 				int dc_i=0;
 				while (dc_i < dc_num)
 				{
-					int len = lib_deflate_get_huffman(dr, blc, sizeof(blc));
+					int len = lib_deflate_get_huffman(dr, blc_tree);
 					if (len < 0)
 						return len;
 
 					if (len < 16)
 					{
-						dr->huffman_dc[dc_i++] = len;
+						huffman_dc[dc_i++] = len;
 					}
 					else if (len == 16)
 					{
 						if (dc_i == 0)
 							return -LIB_DEFLATE_ERROR_DYNAMIC_HUFFMAN_SETUP_ERROR;
-						uint8_t prev_len = dr->huffman_dc[dc_i - 1];
+						uint8_t prev_len = huffman_dc[dc_i - 1];
 						int repeat = lib_deflate_get_bits(dr, 2);
 						if (repeat < 0)
 							return repeat;
@@ -291,7 +327,7 @@ lib_deflate_read(struct lib_deflate_reader *dr, uint8_t *buf, size_t buf_len)
 						if (dc_i + repeat > dc_num)
 							return -LIB_DEFLATE_ERROR_DYNAMIC_HUFFMAN_SETUP_ERROR; // overflow
 						while (repeat--)
-							dr->huffman_dc[dc_i++] = prev_len;
+							huffman_dc[dc_i++] = prev_len;
 					}
 					else if (len == 17)
 					{
@@ -302,7 +338,7 @@ lib_deflate_read(struct lib_deflate_reader *dr, uint8_t *buf, size_t buf_len)
 						if (dc_i + repeat > dc_num)
 							return -LIB_DEFLATE_ERROR_DYNAMIC_HUFFMAN_SETUP_ERROR; // overflow
 						while (repeat--)
-							dr->huffman_dc[dc_i++] = 0;
+							huffman_dc[dc_i++] = 0;
 					}
 					else if (len == 18)
 					{
@@ -313,15 +349,15 @@ lib_deflate_read(struct lib_deflate_reader *dr, uint8_t *buf, size_t buf_len)
 						if (dc_i + repeat > dc_num)
 							return -LIB_DEFLATE_ERROR_DYNAMIC_HUFFMAN_SETUP_ERROR; // overflow
 						while (repeat--)
-							dr->huffman_dc[dc_i++] = 0;
+							huffman_dc[dc_i++] = 0;
 					}
 					else return -LIB_DEFLATE_ERROR_DYNAMIC_HUFFMAN_SETUP_ERROR;
 				}
-				while (dc_i < 32)
-					dr->huffman_dc[dc_i++] = 0;
-				res = lib_deflate_check_huffman(dr->huffman_dc, 32);
+				res = lib_deflate_check_huffman(huffman_dc, dc_num);
 				if (res < 0)
 					return res; // invalid table
+
+				lib_deflate_build_huffman(huffman_dc, dc_num, dr->huffman_dc_tree);
 
 				dr->state = LIB_DEFLATE_STATE_HUFFMAN;
 			}
@@ -366,7 +402,7 @@ lib_deflate_read(struct lib_deflate_reader *dr, uint8_t *buf, size_t buf_len)
 
 		if (dr->state == LIB_DEFLATE_STATE_HUFFMAN)
 		{ // huffman encoded block.
-			int token = lib_deflate_get_huffman(dr, dr->huffman_lc, 288);
+			int token = lib_deflate_get_huffman(dr, dr->huffman_lc_tree);
 			if (token < 0)
 				return token;
 			if (token < 256)
@@ -401,7 +437,7 @@ lib_deflate_read(struct lib_deflate_reader *dr, uint8_t *buf, size_t buf_len)
 				copy_len += clp[ token ];
 
 				// determine distance
-				int token = lib_deflate_get_huffman(dr, dr->huffman_dc, 32);
+				int token = lib_deflate_get_huffman(dr, dr->huffman_dc_tree);
 				if (token < 0)
 					return token;
 				if (token >= 30)
