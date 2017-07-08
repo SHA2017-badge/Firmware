@@ -18,6 +18,8 @@
 
 **Merged pull requests:**
 
+- speed improvements in the png decoder. [\#82](https://github.com/SHA2017-badge/Firmware/pull/82) ([basvs](https://github.com/basvs))
+- Add PNG image loader. [\#81](https://github.com/SHA2017-badge/Firmware/pull/81) ([basvs](https://github.com/basvs))
 - documentation update [\#79](https://github.com/SHA2017-badge/Firmware/pull/79) ([basvs](https://github.com/basvs))
 - Attempt to do OTA via SSL \(non BPP\) [\#77](https://github.com/SHA2017-badge/Firmware/pull/77) ([annejan](https://github.com/annejan))
 - Draw immediately [\#76](https://github.com/SHA2017-badge/Firmware/pull/76) ([raboof](https://github.com/raboof))
