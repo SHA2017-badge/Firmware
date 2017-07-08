@@ -202,6 +202,7 @@ static void sha2017_ota_task(void *pvParameter) {
   ESP_LOGI(TAG, "Running partition type %d subtype %d (offset 0x%08x)",
            configured->type, configured->subtype, configured->address);
 
+  target_lut = 3;
 
   show_precentage("Connecting to WiFi", 0, false);
   /* Wait for the callback to set the CONNECTED_BIT in the
