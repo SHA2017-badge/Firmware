@@ -35,6 +35,7 @@
 #include "badge.h"
 #include "wildcard_sha2017_org.h"
 #include "sha2017_ota_graphics.h"
+#include <gfx.h>
 
 #define BADGE_OTA_WEB_SERVER "badge.sha2017.org"
 #define BADGE_OTA_WEB_PORT "443"
