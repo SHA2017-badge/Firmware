@@ -39,7 +39,14 @@
 
 #define BADGE_OTA_WEB_SERVER "badge.sha2017.org"
 #define BADGE_OTA_WEB_PORT "443"
-#define BADGE_OTA_WEB_PATH "/firmware.bin"
+
+#ifdef CONFIG_SHA_BADGE_V1
+ #define BADGE_OTA_WEB_PATH "/firmware-rev0.0.1-" CONFIG_ESPTOOLPY_FLASHSIZE ".bin"
+#elif defined(CONFIG_SHA_BADGE_V2)
+ #define BADGE_OTA_WEB_PATH "/firmware-rev0.1.0-" CONFIG_ESPTOOLPY_FLASHSIZE ".bin"
+#else
+ #define BADGE_OTA_WEB_PATH "/firmware-" CONFIG_ESPTOOLPY_FLASHSIZE ".bin"
+#endif
 
 #define BUFFSIZE 1024
 #define TEXT_BUFFSIZE 1024
@@ -112,7 +119,7 @@ static void sha2017_ota_initialise_wifi(void) {
 static void __attribute__((noreturn)) task_fatal_error() {
   ESP_LOGE(TAG, "Exiting task due to fatal error...");
   close(socket_id);
-  show_precentage("OTA Update failed :(", 0, false);
+  show_percentage("OTA Update failed :(", 0, false);
 
   (void)vTaskDelete(NULL);
 
@@ -205,7 +212,7 @@ static void sha2017_ota_task(void *pvParameter) {
 
   target_lut = 3;
 
-  show_precentage("Connecting to WiFi", 0, false);
+  show_percentage("Connecting to WiFi", 0, false);
   /* Wait for the callback to set the CONNECTED_BIT in the
      event group.
   */
@@ -332,7 +339,7 @@ static void sha2017_ota_task(void *pvParameter) {
     }
   }
 
-  show_precentage("Handshaking server", 0, false);
+  show_percentage("Handshaking server", 0, false);
 
   update_partition = esp_ota_get_next_update_partition(NULL);
   ESP_LOGI(TAG, "Writing to partition subtype %d at offset 0x%x",
@@ -406,7 +413,7 @@ static void sha2017_ota_task(void *pvParameter) {
       uint8_t newperc = (uint8_t)round(((float)binary_file_length*100)/content_length);
       if (newperc != percentage) {
         percentage = newperc;
-        show_precentage("Updating", percentage, true);
+        show_percentage("Updating", percentage, true);
       }
       // ESP_LOGI(TAG, "Have written image length %d", binary_file_length);
     } else if (len == 0) { /*packet over*/
@@ -437,7 +444,7 @@ static void sha2017_ota_task(void *pvParameter) {
    * new OTA partition.
    */
 
-   show_precentage("Rebooting the badge", 0, false);
+   show_percentage("Rebooting the badge", 0, false);
 
   err = esp_ota_set_boot_partition(update_partition);
   if (err != ESP_OK) {
