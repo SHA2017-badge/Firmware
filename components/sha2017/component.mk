@@ -2,4 +2,8 @@
 
 COMPONENT_ADD_INCLUDEDIRS := .
 
-COMPONENT_EXTRA_INCLUDES := ../../ugfx ../ugfx ../../esp-idf/components/freertos/include/freertos ../../ugfx/drivers/gdisp/framebuffer/
+COMPONENT_EXTRA_INCLUDES := \
+	$(UGFX_PATH) \
+	$(UGFX_PATH)/drivers/gdisp/framebuffer \
+	$(IDF_PATH)/components/freertos/include/freertos \
+
