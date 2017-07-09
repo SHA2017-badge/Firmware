@@ -97,4 +97,11 @@ config SHA_BADGE_EINK_LUT_DEBUG
     help
         Debugging
 
+config SHA_BADGE_POWER_DEBUG
+    bool "Enable power/charging debug messages"
+    depends on SHA_BADGE_V1 || SHA_BADGE_V2 || SHA_BADGE_V3
+    default n
+    help
+        Debugging
+
 endmenu

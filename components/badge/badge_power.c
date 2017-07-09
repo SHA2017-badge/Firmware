@@ -1,12 +1,12 @@
+#include "sdkconfig.h"
+
 #include <stdbool.h>
 #include <stdint.h>
-
 #include <stdio.h>
 #include <string.h>
 
 #include <driver/adc.h>
-
-#include "sdkconfig.h"
+#include <rom/ets_sys.h>
 
 #include "badge_pins.h"
 #include "badge_portexp.h"
@@ -21,7 +21,7 @@ badge_battery_volt_sense(void)
 	if (val == -1)
 		return -1;
 
-	return (val * 220 * 32) >> 12;
+	return (val * 22 * 9 * 32) >> 12;
 #else
 	return -1;
 #endif // ADC1_CHAN_VBAT_SENSE
@@ -35,7 +35,7 @@ badge_usb_volt_sense(void)
 	if (val == -1)
 		return -1;
 
-	return (val * 220 * 32) >> 12;
+	return (val * 22 * 9 * 32) >> 12;
 #else
 	return -1;
 #endif // ADC1_CHAN_VUSB_SENSE
@@ -68,6 +68,10 @@ badge_power_leds_enable(void)
 		return 0;
 	}
 
+#ifdef CONFIG_SHA_BADGE_POWER_DEBUG
+	ets_printf("badge_power: enabling power to sdcard and leds.\n");
+#endif // CONFIG_SHA_BADGE_POWER_DEBUG
+
 	int ret;
 #ifdef PORTEXP_PIN_NUM_LEDS
 	ret = badge_portexp_set_output_state(PORTEXP_PIN_NUM_LEDS, 1);
@@ -76,6 +80,11 @@ badge_power_leds_enable(void)
 #else
 	ret = -1;
 #endif
+
+#ifdef CONFIG_SHA_BADGE_POWER_DEBUG
+	if (ret == -1)
+		ets_printf("badge_power: failed to enable power.\n");
+#endif // CONFIG_SHA_BADGE_POWER_DEBUG
 
 	if (ret == 0)
 		badge_power_leds_sdcard = 1;
@@ -95,6 +104,10 @@ badge_power_leds_disable(void)
 		return 0;
 	}
 
+#ifdef CONFIG_SHA_BADGE_POWER_DEBUG
+	ets_printf("badge_power: disabling power to sdcard and leds.\n");
+#endif // CONFIG_SHA_BADGE_POWER_DEBUG
+
 	int ret;
 #ifdef PORTEXP_PIN_NUM_LEDS
 	ret = badge_portexp_set_output_state(PORTEXP_PIN_NUM_LEDS, 0);
@@ -103,6 +116,11 @@ badge_power_leds_disable(void)
 #else
 	ret = -1;
 #endif
+
+#ifdef CONFIG_SHA_BADGE_POWER_DEBUG
+	if (ret == -1)
+		ets_printf("badge_power: failed to disable power.\n");
+#endif // CONFIG_SHA_BADGE_POWER_DEBUG
 
 	if (ret == 0)
 		badge_power_leds_sdcard = 0;
@@ -119,6 +137,10 @@ badge_power_sdcard_enable(void)
 		return 0;
 	}
 
+#ifdef CONFIG_SHA_BADGE_POWER_DEBUG
+	ets_printf("badge_power: enabling power to sdcard and leds.\n");
+#endif // CONFIG_SHA_BADGE_POWER_DEBUG
+
 	int ret;
 #ifdef PORTEXP_PIN_NUM_LEDS
 	ret = badge_portexp_set_output_state(PORTEXP_PIN_NUM_LEDS, 1);
@@ -127,6 +149,11 @@ badge_power_sdcard_enable(void)
 #else
 	ret = -1;
 #endif
+
+#ifdef CONFIG_SHA_BADGE_POWER_DEBUG
+	if (ret == -1)
+		ets_printf("badge_power: failed to enable power.\n");
+#endif // CONFIG_SHA_BADGE_POWER_DEBUG
 
 	if (ret == 0)
 		badge_power_leds_sdcard = 2;
@@ -146,6 +173,10 @@ badge_power_sdcard_disable(void)
 		return 0;
 	}
 
+#ifdef CONFIG_SHA_BADGE_POWER_DEBUG
+	ets_printf("badge_power: disabling power to sdcard and leds.\n");
+#endif // CONFIG_SHA_BADGE_POWER_DEBUG
+
 	int ret;
 #ifdef PORTEXP_PIN_NUM_LEDS
 	ret = badge_portexp_set_output_state(PORTEXP_PIN_NUM_LEDS, 0);
@@ -154,6 +185,11 @@ badge_power_sdcard_disable(void)
 #else
 	ret = -1;
 #endif
+
+#ifdef CONFIG_SHA_BADGE_POWER_DEBUG
+	if (ret == -1)
+		ets_printf("badge_power: failed to disable power.\n");
+#endif // CONFIG_SHA_BADGE_POWER_DEBUG
 
 	if (ret == 0)
 		badge_power_leds_sdcard = 0;
@@ -168,6 +204,10 @@ badge_power_init(void)
 
 	if (badge_power_init_done)
 		return;
+
+#ifdef CONFIG_SHA_BADGE_POWER_DEBUG
+	ets_printf("badge_power: initializing.\n");
+#endif // CONFIG_SHA_BADGE_POWER_DEBUG
 
 	// configure adc width
 #if defined(ADC1_CHAN_VBAT_SENSE) || defined(ADC1_CHAN_VUSB_SENSE)
