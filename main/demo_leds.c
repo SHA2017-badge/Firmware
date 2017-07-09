@@ -2,9 +2,12 @@
 
 #include <string.h>
 
+#include <badge_eink.h>
 #include <badge_input.h>
 #include <badge_pins.h>
 #include <badge_leds.h>
+
+#include <font.h>
 
 #ifdef PIN_NUM_LEDS
 
@@ -20,12 +23,23 @@
  #define L3 30
 #endif
 
-void demo_leds(void)
+// re-use screen_buf from main.c
+extern uint8_t screen_buf[296*16];
+
+void
+demo_leds(void)
 {
+	memset(screen_buf, 0xff, sizeof(screen_buf));
+	draw_font(screen_buf, 6, 16, 284, "testing leds. colors should be:",
+		FONT_INVERT);
+	draw_font(screen_buf, 6, 26, 284, "<red>,<green>,<blue>,<white>,<dimmed white>,<black>",
+		FONT_INVERT);
+	badge_eink_display(screen_buf, DISPLAY_FLAG_LUT(2));
+
 	{
 		uint8_t grbw[6*4] = {
 			 0,  0,  0,  0,
-			 0,  0,  0,  0,
+			 0,  0,  0, 10,
 			 0,  0,  0, 40,
 			 0,  0, 40,  0,
 			40,  0,  0,  0,
@@ -38,6 +52,11 @@ void demo_leds(void)
 			return;
 		}
 	}
+
+	memset(screen_buf, 0xff, sizeof(screen_buf));
+	draw_font(screen_buf, 6, 16, 264, "now doing random updates",
+		FONT_INVERT);
+	badge_eink_display(screen_buf, DISPLAY_FLAG_LUT(2));
 
 	uint8_t grbw[6*4] = {
 		 L0,  L1,  L2, L3,
@@ -74,6 +93,16 @@ void demo_leds(void)
 		}
 	}
 
+	memset(screen_buf, 0xff, sizeof(screen_buf));
+	draw_font(screen_buf, 6, 16, 264, "key pressed. disabling leds",
+		FONT_INVERT);
+	badge_eink_display(screen_buf, DISPLAY_FLAG_LUT(2));
+
 	badge_leds_disable();
+
+	memset(screen_buf, 0xff, sizeof(screen_buf));
+	draw_font(screen_buf, 6, 16, 264, "leds are disabled.",
+		FONT_INVERT);
+	badge_eink_display(screen_buf, DISPLAY_FLAG_LUT(2));
 }
 #endif // PIN_NUM_LEDS
