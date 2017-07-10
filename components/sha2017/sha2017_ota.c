@@ -6,14 +6,13 @@
 #include "freertos/FreeRTOS.h"
 #include "freertos/event_groups.h"
 #include "freertos/task.h"
-#include "freertos/FreeRTOS.h"
-#include "freertos/event_groups.h"
-#include "freertos/task.h"
 
+#include "esp_event_loop.h"
 #include "esp_log.h"
 #include "esp_ota_ops.h"
 #include "esp_partition.h"
 #include "esp_system.h"
+#include "esp_wifi.h"
 
 #include "nvs.h"
 #include "nvs_flash.h"
@@ -34,7 +33,7 @@
 #include "mbedtls/ssl.h"
 
 #include "badge.h"
-#include "badge_wifi.h"
+#include "badge_nvs.h"
 #include "wildcard_sha2017_org.h"
 #include "sha2017_ota_graphics.h"
 #include <gfx.h>
@@ -70,6 +69,65 @@ static const char *REQUEST = "GET " BADGE_OTA_WEB_PATH " HTTP/1.0\r\n"
                              "User-Agent: SHA2017-Badge/1.0 esp32\r\n"
                              "\r\n";
 
+/* FreeRTOS event group to signal when we are connected & ready to make a
+ * request */
+static EventGroupHandle_t wifi_event_group;
+
+/* The event group allows multiple bits for each event,
+   but we only care about one event - are we connected
+   to the AP with an IP? */
+const int CONNECTED_BIT = BIT0;
+
+static esp_err_t sha2017_ota_event_handler(void *ctx, system_event_t *event) {
+  switch (event->event_id) {
+  case SYSTEM_EVENT_STA_START:
+    esp_wifi_connect();
+    break;
+  case SYSTEM_EVENT_STA_GOT_IP:
+    xEventGroupSetBits(wifi_event_group, CONNECTED_BIT);
+    break;
+  case SYSTEM_EVENT_STA_DISCONNECTED:
+    /* This is a workaround as ESP32 WiFi libs don't currently
+       auto-reassociate. */
+    esp_wifi_connect();
+    xEventGroupClearBits(wifi_event_group, CONNECTED_BIT);
+    break;
+  default:
+    break;
+  }
+  return ESP_OK;
+}
+
+static void sha2017_ota_initialise_wifi(void) {
+  tcpip_adapter_init();
+  wifi_event_group = xEventGroupCreate();
+  ESP_ERROR_CHECK(esp_event_loop_init(sha2017_ota_event_handler, NULL));
+  wifi_init_config_t cfg = WIFI_INIT_CONFIG_DEFAULT();
+  ESP_ERROR_CHECK(esp_wifi_init(&cfg));
+  ESP_ERROR_CHECK(esp_wifi_set_storage(WIFI_STORAGE_RAM));
+  char ssid[32];
+  char password[64];
+
+  esp_err_t err;
+  size_t len;
+  err = badge_nvs_get_str("badge", "wifi.ssid", ssid, &len);
+  if (err != ESP_OK || len == 0) {
+    badge_nvs_set_str("badge", "wifi.ssid", CONFIG_WIFI_SSID);
+  }
+  err = badge_nvs_get_str("badge", "wifi.password", password, &len);
+  if (err != ESP_OK || len == 0) {
+    badge_nvs_set_str("badge", "wifi.password", CONFIG_WIFI_PASSWORD);
+  }
+
+  wifi_config_t wifi_config = { };
+  strcpy((char *)wifi_config.sta.ssid, ssid);
+  strcpy((char *)wifi_config.sta.password, password);
+
+  ESP_LOGI(TAG, "Setting WiFi configuration SSID %s...", wifi_config.sta.ssid);
+  ESP_ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_STA));
+  ESP_ERROR_CHECK(esp_wifi_set_config(ESP_IF_WIFI_STA, &wifi_config));
+  ESP_ERROR_CHECK(esp_wifi_start());
+}
 
 static void __attribute__((noreturn)) task_fatal_error() {
   ESP_LOGE(TAG, "Exiting task due to fatal error...");
@@ -168,7 +226,11 @@ static void sha2017_ota_task(void *pvParameter) {
   target_lut = 3;
 
   show_percentage("Connecting to WiFi", 0, false);
-  badge_wifi_wait();
+  /* Wait for the callback to set the CONNECTED_BIT in the
+     event group.
+  */
+  xEventGroupWaitBits(wifi_event_group, CONNECTED_BIT, false, true,
+                      portMAX_DELAY);
   ESP_LOGI(TAG, "Connect to Wifi ! Start to Connect to Server....");
 
   int ret, flags, len;
@@ -232,7 +294,11 @@ static void sha2017_ota_task(void *pvParameter) {
     task_fatal_error();
   }
 
-  badge_wifi_wait();
+  /* Wait for the callback to set the CONNECTED_BIT in the
+     event group.
+  */
+  xEventGroupWaitBits(wifi_event_group, CONNECTED_BIT, false, true,
+                      portMAX_DELAY);
   ESP_LOGI(TAG, "Connected to AP");
 
   mbedtls_net_init(&server_fd);
@@ -404,11 +470,24 @@ static void sha2017_ota_task(void *pvParameter) {
 }
 
 void sha2017_ota_update() {
+  esp_err_t err = nvs_flash_init();
   // Init the badge
   badge_init();
-
   sha2017_ota_percentage_init();
-  badge_wifi_init();
 
+  if (err == ESP_ERR_NVS_NO_FREE_PAGES) {
+    // OTA app partition table has a smaller NVS partition size than the non-OTA
+    // partition table. This size mismatch may cause NVS initialization to fail.
+    // If this happens, we erase NVS partition and initialize NVS again.
+    const esp_partition_t *nvs_partition = esp_partition_find_first(
+        ESP_PARTITION_TYPE_DATA, ESP_PARTITION_SUBTYPE_DATA_NVS, NULL);
+    assert(nvs_partition && "partition table must have an NVS partition");
+    ESP_ERROR_CHECK(
+        esp_partition_erase_range(nvs_partition, 0, nvs_partition->size));
+    err = nvs_flash_init();
+  }
+  ESP_ERROR_CHECK(err);
+
+  sha2017_ota_initialise_wifi();
   xTaskCreate(&sha2017_ota_task, "sha2017_ota_task", 8192, NULL, 5, NULL);
 }
