@@ -45,10 +45,12 @@ void badge_wifi_init(void) {
     err = badge_nvs_get_str("badge", "wifi.ssid", ssid, &len);
     if (err != ESP_OK || len == 0) {
       strcpy(ssid, CONFIG_WIFI_SSID);
+      badge_nvs_set_str("badge", "wifi.ssid", ssid);
     }
     err = badge_nvs_get_str("badge", "wifi.password", password, &len);
     if (err != ESP_OK || len == 0) {
       strcpy(password, CONFIG_WIFI_PASSWORD);
+      badge_nvs_set_str("badge", "wifi.password", password);
     }
 
     wifi_config_t wifi_config = { };
