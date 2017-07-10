@@ -20,10 +20,6 @@
 
 #ifdef CONFIG_WIFI_USE
 /**
- * wifi event handler
- */
-extern esp_err_t badge_wifi_event_handler(void *ctx, system_event_t *event);
-/**
  * Initialize the WiFi driver.
  */
 extern void badge_wifi_init(void);
