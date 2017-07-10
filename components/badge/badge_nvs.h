@@ -17,7 +17,7 @@ extern esp_err_t badge_nvs_get_u8(const char* namespace, const char* key, uint8_
 /**
  *  Set a string value in namespace, key
  */
-extern esp_err_t badge_nvs_set_str(const char* namespace, const char* key, char *value);
+extern esp_err_t badge_nvs_set_str(const char* namespace, const char* key, const char *value);
 /**
  *  Get a string value from namespace, key
  */

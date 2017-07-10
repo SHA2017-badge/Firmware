@@ -70,7 +70,7 @@ esp_err_t badge_nvs_get_u8(const char* namespace, const char* key, uint8_t *valu
   return ESP_OK;
 }
 
-esp_err_t badge_nvs_set_str(const char* namespace, const char* key, char *value) {
+esp_err_t badge_nvs_set_str(const char* namespace, const char* key, const char *value) {
   nvs_handle my_handle;
   esp_err_t err;
 

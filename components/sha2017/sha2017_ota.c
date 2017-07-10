@@ -168,11 +168,7 @@ static void sha2017_ota_task(void *pvParameter) {
   target_lut = 3;
 
   show_percentage("Connecting to WiFi", 0, false);
-  /* Wait for the callback to set the CONNECTED_BIT in the
-     event group.
-  */
-  xEventGroupWaitBits(wifi_event_group, CONNECTED_BIT, false, true,
-                      portMAX_DELAY);
+  badge_wifi_wait();
   ESP_LOGI(TAG, "Connect to Wifi ! Start to Connect to Server....");
 
   int ret, flags, len;
@@ -236,11 +232,7 @@ static void sha2017_ota_task(void *pvParameter) {
     task_fatal_error();
   }
 
-  /* Wait for the callback to set the CONNECTED_BIT in the
-     event group.
-  */
-  xEventGroupWaitBits(wifi_event_group, CONNECTED_BIT, false, true,
-                      portMAX_DELAY);
+  badge_wifi_wait();
   ESP_LOGI(TAG, "Connected to AP");
 
   mbedtls_net_init(&server_fd);
