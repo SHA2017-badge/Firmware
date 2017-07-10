@@ -3,7 +3,6 @@
 #include "esp_event_loop.h"
 #include "esp_system.h"
 #include "esp_wifi.h"
-#include "nvs_flash.h"
 #include <font.h>
 #include <string.h>
 
@@ -175,7 +174,6 @@ display_picture(int picture_id, int selected_lut)
 
 void
 app_main(void) {
-	nvs_flash_init();
 
 	badge_init();
 
