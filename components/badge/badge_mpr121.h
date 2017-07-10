@@ -48,14 +48,6 @@ extern void badge_mpr121_set_interrupt_handler(uint8_t pin, badge_mpr121_intr_t 
 extern int badge_mpr121_get_interrupt_status(void);
 
 /**
- * Retrieve mpr121 internal state (for the mpr121 demo)
- * @param data pointer to uint32_t data[32] data structure.
- * @return 0 on success; -1 on error
- * @deprecated use badge_mpr121_get_touch_info() instead.
- */
-extern int badge_mpr121_get_electrode_data(uint32_t *data) __attribute__((deprecated));
-
-/**
  * Retrieve mpr121 touch info
  * @param info touch info will be written to this structure.
  * @return 0 on success; -1 on error

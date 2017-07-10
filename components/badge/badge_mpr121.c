@@ -52,7 +52,7 @@ static inline int
 badge_mpr121_read_reg(uint8_t reg)
 {
 	uint8_t value;
-	esp_err_t ret = badge_i2c_read_reg(I2C_MPR121_ADDR, reg, &value);
+	esp_err_t ret = badge_i2c_read_reg(I2C_MPR121_ADDR, reg, &value, 1);
 
 	if (ret == ESP_OK) {
 #ifdef CONFIG_SHA_BADGE_MPR121_DEBUG
@@ -61,6 +61,26 @@ badge_mpr121_read_reg(uint8_t reg)
 		return value;
 	} else {
 		ets_printf("badge_mpr121: i2c read reg(0x%02x): error %d\n", reg, ret);
+		return -1;
+	}
+}
+
+static inline int
+badge_mpr121_read_regs(uint8_t reg, uint8_t *data, size_t data_len)
+{
+	esp_err_t ret = badge_i2c_read_reg(I2C_MPR121_ADDR, reg, data, data_len);
+
+	if (ret == ESP_OK) {
+#ifdef CONFIG_SHA_BADGE_MPR121_DEBUG
+		int i;
+		ets_printf("badge_mpr121: i2c read regs(0x%02x, %d): 0x%02x", reg, data_len, data[0]);
+		for (i=1; i<data_len; i++)
+			ets_printf(", 0x%02x", data[i]);
+		ets_printf("\n");
+#endif // CONFIG_SHA_BADGE_MPR121_DEBUG
+		return 0;
+	} else {
+		ets_printf("badge_mpr121: i2c read regs(0x%02x, %d): error %d\n", reg, data_len, ret);
 		return -1;
 	}
 }
@@ -247,36 +267,11 @@ badge_mpr121_set_interrupt_handler(uint8_t pin, badge_mpr121_intr_t handler, voi
 int
 badge_mpr121_get_interrupt_status(void)
 {
-	int r0 = badge_mpr121_read_reg(0x00);
-	int r1 = badge_mpr121_read_reg(0x01);
-	if (r0 == -1 || r1 == -1)
+	uint16_t r0_1;
+	int res = badge_mpr121_read_regs(0x00, (uint8_t *) &r0_1, 2);
+	if (res == -1)
 		return -1;
-	return (r1 << 8) | r0;
-}
-
-int
-badge_mpr121_get_electrode_data(uint32_t *data)
-{
-	int i;
-	for (i=0; i<8; i++)
-	{
-		int lo = badge_mpr121_read_reg(0x04 + i*2);
-		int hi = badge_mpr121_read_reg(0x05 + i*2);
-		if (lo == -1 || hi == -1)
-			return -1;
-		data[i] = (hi << 8) | lo;
-		int baseline = badge_mpr121_read_reg(0x1e + i);
-		if (baseline == -1)
-			return -1;
-		data[i+8] = baseline << 2;
-		int touch = badge_mpr121_read_reg(0x41 + i*2);
-		int release = badge_mpr121_read_reg(0x42 + i*2);
-		if (touch == -1 || release == -1)
-			return -1;
-		data[i+16] = touch << 2;
-		data[i+24] = release << 2;
-	}
-	return 0;
+	return r0_1;
 }
 
 int
@@ -287,25 +282,30 @@ badge_mpr121_get_touch_info(struct badge_mpr121_touch_info *info)
 		return -1;
 	info->touch_state = res;
 
+	uint16_t data[8];
+	res = badge_mpr121_read_regs(0x04, (uint8_t *) &data, 16);
+	if (res == -1)
+		return -1;
+
+	uint8_t baseline[8];
+	res = badge_mpr121_read_regs(0x1e, baseline, 8);
+	if (res == -1)
+		return -1;
+
+	uint8_t touch_release[16];
+	res = badge_mpr121_read_regs(0x41, touch_release, 16);
+	if (res == -1)
+		return -1;
+
 	int i;
 	for (i=0; i<8; i++)
 	{
-		int lo = badge_mpr121_read_reg(0x04 + i*2);
-		int hi = badge_mpr121_read_reg(0x05 + i*2);
-		if (lo == -1 || hi == -1)
-			return -1;
-		info->data[i] = (hi << 8) | lo;
-		int baseline = badge_mpr121_read_reg(0x1e + i);
-		if (baseline == -1)
-			return -1;
-		info->baseline[i] = baseline;
-		int touch = badge_mpr121_read_reg(0x41 + i*2);
-		int release = badge_mpr121_read_reg(0x42 + i*2);
-		if (touch == -1 || release == -1)
-			return -1;
-		info->touch[i] = touch;
-		info->release[i] = release;
+		info->data[i] = data[i];
+		info->baseline[i] = baseline[i];
+		info->touch[i] = touch_release[i*2+0];
+		info->release[i] = touch_release[i*2+1];
 	}
+
 	return 0;
 }
 
