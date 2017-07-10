@@ -329,7 +329,7 @@ static void sha2017_ota_task(void *pvParameter) {
     ESP_LOGI(TAG, "Certificate verified.");
   }
 
-  ESP_LOGI(TAG, "Writing HTTP request...");
+  ESP_LOGI(TAG, "Sending HTTP request for %s", BADGE_OTA_WEB_PATH);
 
   while ((ret = mbedtls_ssl_write(&ssl, (const unsigned char *)REQUEST,
                                   strlen(REQUEST))) <= 0) {
