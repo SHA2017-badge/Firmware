@@ -26,6 +26,28 @@
 
 uint8_t image_buf[296 * 128];
 
+uint32_t baseline_def[8] = {
+	0x0138,
+	0x0144,
+	0x0170,
+	0x0174, // guessed; 0x01c9, // too high on my badge
+	0x00f0,
+	0x0103,
+	0x00ff,
+	0x00ed,
+};
+
+const char *touch_name[8] = {
+	"A",
+	"B",
+	"START",
+	"SELECT",
+	"DOWN",
+	"RIGHT",
+	"UP",
+	"LEFT",
+};
+
 void
 display_png(const uint8_t *png, size_t png_size)
 {
@@ -92,6 +114,33 @@ disp_line(const char *line, int flags)
 }
 
 void
+update_mpr121_bars( const struct badge_mpr121_touch_info *ti, const uint32_t *baseline_top, const uint32_t *baseline_bottom )
+{
+	int y;
+	for (y=0; y<8; y++) {
+		int x  = ti->data[y]        - 180;
+		int xu = baseline_top[y]    - 180;
+		int xd = baseline_bottom[y] - 180;
+
+		if (x > 295) x = 295;
+		if (xu > 295) xu = 295;
+		if (xd > 295) xd = 295;
+
+		int pos = ( 102 + y*3 ) * (296/8);
+		memset(&image_buf[pos-(296/8)], 0xff, (296/8)*3);
+		while (x >= 0)
+		{
+			image_buf[pos + (x >> 3)] &= ~( 1 << (x&7) );
+			x--;
+		}
+		image_buf[pos - (296/8) + (xu >> 3)] &= ~( 1 << (xu&7) );
+		image_buf[pos + (296/8) + (xd >> 3)] &= ~( 1 << (xd&7) );
+	}
+	badge_eink_display(image_buf, DISPLAY_FLAG_LUT(1));
+	vTaskDelay(100 / portTICK_PERIOD_MS);
+}
+
+void
 first_run(void)
 {
 	// initialize display
@@ -104,9 +153,8 @@ first_run(void)
 	// add line in split-screen
 	if (NUM_DISP_LINES < 16) {
 		memset(&image_buf[NUM_DISP_LINES*296], 0x00, 296/8);
-		draw_font(image_buf, 0, 8 + 8*NUM_DISP_LINES, 296, " <some data>", FONT_FULL_WIDTH|FONT_16PX|FONT_INVERT);
 	}
-#define NUM_DISP_LINES 12
+
 	disp_line("SHA2017-Badge build #18", FONT_16PX);
 	disp_line("",0);
 	disp_line("Initializing and testing badge.",0);
@@ -125,16 +173,94 @@ first_run(void)
 	// mpr121
 	disp_line("initializing MPR121.",0);
 	badge_mpr121_init(NULL);
+
 	disp_line("reading touch data.",0);
-	// read touch data for 2 seconds; take average as baseline.
-	// compare baseline with stored defaults.
-	// if more than 5% off, then request touch/release
-	disp_line("odd readings for button SELECT.",FONT_MONOSPACE);
+	int i;
+	uint32_t baseline[8] = { 0,0,0,0,0,0,0,0 };
+	// read touch data for a few seconds; take average as baseline.
+	for (i=0; i<16; i++) {
+		struct badge_mpr121_touch_info ti;
+		int res = badge_mpr121_get_touch_info(&ti);
+		if (res != 0)
+		{
+			disp_line("Error: failed to read touch info!", FONT_MONOSPACE);
+			return;
+		}
+		int y;
+		for (y=0; y<8; y++) {
+			baseline[y] += ti.data[y];
+		}
+		update_mpr121_bars(&ti, baseline_def, baseline_def);
+	}
+
+	for (i=0; i<8; i++) {
+		baseline[i] = (baseline[i] + 8) >> 4;
+	}
+
 	disp_line("re-initializing MPR121.",0);
-	disp_line("*ACTION* touch button SELECT.",FONT_INVERT|NO_NEWLINE);
-	disp_line("button SELECT touch ok.",0);
-	disp_line("*ACTION* release button SELECT.",FONT_INVERT|NO_NEWLINE);
-	disp_line("button SELECT release ok.",0);
+	{
+		uint32_t baseline_8bit[8];
+		for (i=0; i<8; i++)
+			baseline_8bit[i] = baseline[i] >> 2;
+		badge_mpr121_reconfigure(baseline_8bit);
+	}
+
+	for (i=0; i<8; i++) {
+		bool check = false;
+		char line[100];
+		if (baseline[i] * 100 < baseline_def[i] * 95) {
+			// more than 5% off
+			sprintf(line, "odd readings for button %s. (low)", touch_name[i]);
+			disp_line(line,FONT_MONOSPACE);
+			check = true;
+		} else if (baseline[i] * 95 > baseline_def[i] * 100) {
+			// more than 5% off
+			sprintf(line, "odd readings for button %s. (high)", touch_name[i]);
+			disp_line(line,FONT_MONOSPACE);
+			check = true;
+		}
+
+		if (check) {
+			sprintf(line, "*ACTION* touch button %s.", touch_name[i]);
+			disp_line(line, FONT_INVERT|NO_NEWLINE);
+			// wait for touch event
+			while (1) {
+				struct badge_mpr121_touch_info ti;
+				int res = badge_mpr121_get_touch_info(&ti);
+				if (res != 0)
+				{
+					disp_line("Error: failed to read touch info!", FONT_MONOSPACE);
+					return;
+				}
+				update_mpr121_bars(&ti, baseline_def, baseline);
+				if (((ti.touch_state >> i) & 1) == 1)
+					break;
+			}
+
+			sprintf(line, "button %s touch ok.", touch_name[i]);
+			disp_line(line, 0);
+
+			sprintf(line, "*ACTION* release button %s.", touch_name[i]);
+			disp_line(line, FONT_INVERT|NO_NEWLINE);
+			// wait for release event
+			while (1) {
+				struct badge_mpr121_touch_info ti;
+				int res = badge_mpr121_get_touch_info(&ti);
+				if (res != 0)
+				{
+					disp_line("Error: failed to read touch info!", FONT_MONOSPACE);
+					return;
+				}
+				update_mpr121_bars(&ti, baseline_def, baseline);
+				if (((ti.touch_state >> i) & 1) == 0)
+					break;
+			}
+
+			sprintf(line, "button %s release ok.", touch_name[i]);
+			disp_line(line, 0);
+		}
+	}
+
 	disp_line("MPR121 ok.",0);
 
 	// power measurements
