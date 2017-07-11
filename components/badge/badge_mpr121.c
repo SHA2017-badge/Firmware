@@ -187,6 +187,7 @@ badge_mpr121_init(const uint32_t *baseline)
 		return;
 
 	badge_base_init();
+	badge_i2c_init();
 
 	badge_mpr121_mux = xSemaphoreCreateMutex();
 	badge_mpr121_intr_trigger = xSemaphoreCreateBinary();
