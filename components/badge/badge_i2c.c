@@ -58,7 +58,7 @@ badge_i2c_init(void)
 }
 
 int
-badge_i2c_read_reg(uint8_t addr, uint8_t reg, uint8_t *value)
+badge_i2c_read_reg(uint8_t addr, uint8_t reg, uint8_t *value, size_t value_len)
 {
 	xSemaphoreTake(badge_i2c_mux, portMAX_DELAY);
 
@@ -69,7 +69,11 @@ badge_i2c_read_reg(uint8_t addr, uint8_t reg, uint8_t *value)
 
 	i2c_master_start(cmd);
 	i2c_master_write_byte(cmd, ( addr << 1 ) | READ_BIT, ACK_CHECK_EN);
-	i2c_master_read_byte(cmd, value, NACK_VAL);
+	if (value_len > 1)
+	{
+		i2c_master_read(cmd, value, value_len-1, ACK_VAL);
+	}
+	i2c_master_read_byte(cmd, &value[value_len-1], NACK_VAL);
 	i2c_master_stop(cmd);
 
 	esp_err_t ret = i2c_master_cmd_begin(I2C_MASTER_NUM, cmd, 1000 / portTICK_RATE_MS);
@@ -108,7 +112,8 @@ badge_i2c_read_event(uint8_t addr, uint8_t *buf)
 	i2c_cmd_handle_t cmd = i2c_cmd_link_create();
 	i2c_master_start(cmd);
 	i2c_master_write_byte(cmd, ( addr << 1 ) | READ_BIT, ACK_CHECK_EN);
-	i2c_master_read(cmd, buf, 3, ACK_VAL);
+	i2c_master_read(cmd, buf, 2, ACK_VAL);
+	i2c_master_read_byte(cmd, &buf[2], NACK_VAL);
 	i2c_master_stop(cmd);
 
 	esp_err_t ret = i2c_master_cmd_begin(I2C_MASTER_NUM, cmd, 1000 / portTICK_RATE_MS);

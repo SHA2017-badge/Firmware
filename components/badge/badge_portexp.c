@@ -47,7 +47,7 @@ static inline int
 badge_portexp_read_reg(uint8_t reg)
 {
 	uint8_t value;
-	esp_err_t ret = badge_i2c_read_reg(I2C_PORTEXP_ADDR, reg, &value);
+	esp_err_t ret = badge_i2c_read_reg(I2C_PORTEXP_ADDR, reg, &value, 1);
 
 	if (ret == ESP_OK) {
 #ifdef CONFIG_SHA_BADGE_PORTEXP_DEBUG
