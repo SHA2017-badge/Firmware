@@ -8,9 +8,12 @@
 
 **Closed issues:**
 
+- mpr121 Left and A sometimes 'hang' [\#80](https://github.com/SHA2017-badge/Firmware/issues/80)
 - Skip frames when flushing [\#73](https://github.com/SHA2017-badge/Firmware/issues/73)
+- OTA updates \(over wifi\) [\#66](https://github.com/SHA2017-badge/Firmware/issues/66)
 - Make sure the WS2812\_DATA is in high-impedance mode before the LED power is switched off [\#59](https://github.com/SHA2017-badge/Firmware/issues/59)
 - Support for both RGB and RGBW SK6812 [\#53](https://github.com/SHA2017-badge/Firmware/issues/53)
+- Support for wake-up events or keeping a background process running periodically [\#51](https://github.com/SHA2017-badge/Firmware/issues/51)
 - uGFX 'toggle' input driver [\#15](https://github.com/SHA2017-badge/Firmware/issues/15)
 - Intermittent build failures: no rule to make target .../bootloader.bin [\#13](https://github.com/SHA2017-badge/Firmware/issues/13)
 - Add Roboto as ugfx external font [\#11](https://github.com/SHA2017-badge/Firmware/issues/11)
@@ -18,6 +21,13 @@
 
 **Merged pull requests:**
 
+- Update badge-i2c code to support reading multiple values. [\#91](https://github.com/SHA2017-badge/Firmware/pull/91) ([basvs](https://github.com/basvs))
+- NVS as config store [\#90](https://github.com/SHA2017-badge/Firmware/pull/90) ([annejan](https://github.com/annejan))
+- Let remote filename depend on current config. [\#88](https://github.com/SHA2017-badge/Firmware/pull/88) ([basvs](https://github.com/basvs))
+- improve leds demo [\#87](https://github.com/SHA2017-badge/Firmware/pull/87) ([basvs](https://github.com/basvs))
+- add extra firmware app. [\#86](https://github.com/SHA2017-badge/Firmware/pull/86) ([basvs](https://github.com/basvs))
+- PNG updates [\#85](https://github.com/SHA2017-badge/Firmware/pull/85) ([basvs](https://github.com/basvs))
+- Add badge\_power debugging; add 0.9 factor to voltage reads [\#84](https://github.com/SHA2017-badge/Firmware/pull/84) ([basvs](https://github.com/basvs))
 - speed improvements in the png decoder. [\#82](https://github.com/SHA2017-badge/Firmware/pull/82) ([basvs](https://github.com/basvs))
 - Add PNG image loader. [\#81](https://github.com/SHA2017-badge/Firmware/pull/81) ([basvs](https://github.com/basvs))
 - documentation update [\#79](https://github.com/SHA2017-badge/Firmware/pull/79) ([basvs](https://github.com/basvs))
