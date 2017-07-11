@@ -16,6 +16,7 @@
 #include "badge_vibrator.h"
 #include "badge_sdcard.h"
 #include "badge_eink.h"
+#include "badge_nvs.h"
 
 #ifdef I2C_TOUCHPAD_ADDR
 void
@@ -67,6 +68,9 @@ badge_init(void)
 
 	// register isr service
 	badge_base_init();
+
+	// initialise nvs config store
+	badge_nvs_init();
 
 	// configure input queue
 	badge_input_init();

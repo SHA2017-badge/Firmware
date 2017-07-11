@@ -33,6 +33,7 @@
 #include "mbedtls/ssl.h"
 
 #include "badge.h"
+#include "badge_nvs.h"
 #include "wildcard_sha2017_org.h"
 #include "sha2017_ota_graphics.h"
 #include <gfx.h>
@@ -104,12 +105,24 @@ static void sha2017_ota_initialise_wifi(void) {
   wifi_init_config_t cfg = WIFI_INIT_CONFIG_DEFAULT();
   ESP_ERROR_CHECK(esp_wifi_init(&cfg));
   ESP_ERROR_CHECK(esp_wifi_set_storage(WIFI_STORAGE_RAM));
-  wifi_config_t wifi_config = {
-      .sta =
-          {
-              .ssid = CONFIG_WIFI_SSID, .password = CONFIG_WIFI_PASSWORD,
-          },
-  };
+  char ssid[32];
+  char password[64];
+
+  esp_err_t err;
+  size_t len;
+  err = badge_nvs_get_str("badge", "wifi.ssid", ssid, &len);
+  if (err != ESP_OK || len == 0) {
+    badge_nvs_set_str("badge", "wifi.ssid", CONFIG_WIFI_SSID);
+  }
+  err = badge_nvs_get_str("badge", "wifi.password", password, &len);
+  if (err != ESP_OK || len == 0) {
+    badge_nvs_set_str("badge", "wifi.password", CONFIG_WIFI_PASSWORD);
+  }
+
+  wifi_config_t wifi_config = { };
+  strcpy((char *)wifi_config.sta.ssid, ssid);
+  strcpy((char *)wifi_config.sta.password, password);
+
   ESP_LOGI(TAG, "Setting WiFi configuration SSID %s...", wifi_config.sta.ssid);
   ESP_ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_STA));
   ESP_ERROR_CHECK(esp_wifi_set_config(ESP_IF_WIFI_STA, &wifi_config));
