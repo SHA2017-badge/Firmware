@@ -73,7 +73,6 @@ uint32_t nvs_baseline_helper(uint8_t idx, uint8_t fallback) {
 	esp_err_t err = badge_nvs_get_u8("badge", key, &value);
 	if (err != ESP_OK) {
 		value = fallback;
-		badge_nvs_set_u8("badge", key, value);
 	}
 	return (uint32_t)value;
 }
