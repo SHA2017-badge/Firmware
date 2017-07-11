@@ -17,6 +17,9 @@
 #include "badge_sdcard.h"
 #include "badge_eink.h"
 #include "badge_nvs.h"
+#include "esp_log.h"
+
+static const char *TAG = "badge";
 
 #ifdef I2C_TOUCHPAD_ADDR
 void
@@ -57,6 +60,22 @@ mpr121_event_handler(void *b, bool pressed)
 	badge_input_add_event((uint32_t) b, pressed ? EVENT_BUTTON_PRESSED : EVENT_BUTTON_RELEASED, NOT_IN_ISR);
 }
 #endif // I2C_MPR121_ADDR
+
+// NVS helper
+uint32_t nvs_baseline_helper(uint8_t idx, uint8_t fallback) {
+	if (idx > 7) {
+		ESP_LOGE(TAG, "NVS baseline index out of range: %d", idx);
+		return fallback;
+	}
+	char key[14];
+	sprintf(key, "mpr121.base.%d", idx);
+	uint8_t value = 0;
+	esp_err_t err = badge_nvs_get_u8("badge", key, &value);
+	if (err != ESP_OK) {
+		value = fallback;
+	}
+	return (uint32_t)value;
+}
 
 void
 badge_init(void)
@@ -104,16 +123,15 @@ badge_init(void)
 
 #ifdef I2C_MPR121_ADDR
 #ifdef CONFIG_SHA_BADGE_MPR121_HARDCODE_BASELINE
-	static const uint32_t mpr121_baseline[8] = {
-		76,
-		78,
-		88,
-		90,
-		58,
-		62,
-		62,
-		58,
-	};
+	uint32_t mpr121_baseline[8] = {};
+	mpr121_baseline[0] = nvs_baseline_helper(0, 76);
+	mpr121_baseline[1] = nvs_baseline_helper(1, 78);
+	mpr121_baseline[2] = nvs_baseline_helper(2, 88);
+	mpr121_baseline[3] = nvs_baseline_helper(3, 90);
+	mpr121_baseline[4] = nvs_baseline_helper(4, 58);
+	mpr121_baseline[5] = nvs_baseline_helper(5, 62);
+	mpr121_baseline[6] = nvs_baseline_helper(6, 62);
+	mpr121_baseline[7] = nvs_baseline_helper(7, 58);
 	badge_mpr121_init(mpr121_baseline);
 #else
 	badge_mpr121_init(NULL);
