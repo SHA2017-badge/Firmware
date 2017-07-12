@@ -16,6 +16,8 @@
 #include <badge_eink.h>
 #include <badge_pins.h>
 #include <badge_button.h>
+#include <badge_power.h>
+#include <badge_sdcard.h>
 #include <font.h>
 #include <sha2017_ota.h>
 
@@ -134,6 +136,8 @@ update_mpr121_bars( const struct badge_mpr121_touch_info *ti, const uint32_t *ba
 			x--;
 		}
 		image_buf[pos - (296/8) + (xu >> 3)] &= ~( 1 << (xu&7) );
+		image_buf[pos           + (xu >> 3)] &= ~( 1 << (xu&7) );
+		image_buf[pos           + (xd >> 3)] &= ~( 1 << (xd&7) );
 		image_buf[pos + (296/8) + (xd >> 3)] &= ~( 1 << (xd&7) );
 	}
 	badge_eink_display(image_buf, DISPLAY_FLAG_LUT(1));
@@ -143,6 +147,8 @@ update_mpr121_bars( const struct badge_mpr121_touch_info *ti, const uint32_t *ba
 void
 first_run(void)
 {
+	char line[100];
+
 	// initialize display
 	badge_eink_init();
 
@@ -207,7 +213,6 @@ first_run(void)
 
 	for (i=0; i<8; i++) {
 		bool check = false;
-		char line[100];
 		if (baseline[i] * 100 < baseline_def[i] * 95) {
 			// more than 5% off
 			sprintf(line, "odd readings for button %s. (low)", touch_name[i]);
@@ -264,12 +269,33 @@ first_run(void)
 	disp_line("MPR121 ok.",0);
 
 	// power measurements
-	disp_line("TODO: measure power.",0);
+	disp_line("measure power.",0);
+	badge_power_init();
+	bool bat_chrg = badge_battery_charge_status();
+	if (bat_chrg)
+		disp_line("battery is charging",0);
+	else
+		disp_line("battery is not charging",0);
+
+	int pwr_vbat = badge_battery_volt_sense();
+	sprintf(line, "Vbat = %u.%03u V", pwr_vbat/1000, pwr_vbat % 1000);
+	disp_line(line, 0);
+
+	int pwr_vusb = badge_usb_volt_sense();
+	sprintf(line, "Vusb = %u.%03u V", pwr_vusb/1000, pwr_vusb % 1000);
+	disp_line(line, 0);
+
+	// TODO:
 	disp_line("power measurements ok.",0); // i guess.. :)
 
 	// sdcard detect (not expecting an sd-card)
-	disp_line("TODO: read sdcard-detect line.",0);
-	disp_line("no sdcard detected. (as expected)",0);
+	disp_line("read sdcard-detect line.",0);
+	badge_sdcard_init();
+	bool sdcard = badge_sdcard_detected();
+	if (sdcard)
+		disp_line("sdcard detected. (error?)",0);
+	else
+		disp_line("no sdcard detected. (as expected)",0);
 
 	// test wifi
 	disp_line("TODO: test wifi.",0);
