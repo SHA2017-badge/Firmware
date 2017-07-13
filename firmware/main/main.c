@@ -9,6 +9,7 @@
 #include <esp_spi_flash.h>
 #include <esp_partition.h>
 #include <nvs_flash.h>
+#include <nvs.h>
 
 #include <badge.h>
 #include <badge_input.h>
@@ -178,7 +179,7 @@ first_run(void)
 
 	// mpr121
 	disp_line("initializing MPR121.",0);
-	badge_mpr121_init(NULL);
+	badge_mpr121_init(NULL, false);
 
 	disp_line("reading touch data.",0);
 	int i;
@@ -192,6 +193,9 @@ first_run(void)
 			disp_line("Error: failed to read touch info!", FONT_MONOSPACE);
 			return;
 		}
+#ifdef CONFIG_BASVS_BROKEN_BADGE
+/* FIXME */ ti.data[3] = baseline_def[3]; /* FIXME */
+#endif // CONFIG_BASVS_BROKEN_BADGE
 		int y;
 		for (y=0; y<8; y++) {
 			baseline[y] += ti.data[y];
@@ -205,10 +209,7 @@ first_run(void)
 
 	disp_line("re-initializing MPR121.",0);
 	{
-		uint32_t baseline_8bit[8];
-		for (i=0; i<8; i++)
-			baseline_8bit[i] = baseline[i] >> 2;
-		badge_mpr121_reconfigure(baseline_8bit);
+		badge_mpr121_reconfigure(baseline, true);
 	}
 
 	for (i=0; i<8; i++) {
@@ -277,39 +278,148 @@ first_run(void)
 	else
 		disp_line("battery is not charging",0);
 
+	disp_line("Vbat = ...",NO_NEWLINE);
 	int pwr_vbat = badge_battery_volt_sense();
 	sprintf(line, "Vbat = %u.%03u V", pwr_vbat/1000, pwr_vbat % 1000);
 	disp_line(line, 0);
+	if (pwr_vbat > 100) {
+		disp_line("Error: Did not expect any power on Vbat.",FONT_MONOSPACE);
+		return;
+	}
 
+	disp_line("Vusb = ...",NO_NEWLINE);
 	int pwr_vusb = badge_usb_volt_sense();
 	sprintf(line, "Vusb = %u.%03u V", pwr_vusb/1000, pwr_vusb % 1000);
 	disp_line(line, 0);
+	if (pwr_vusb < 4500 || pwr_vusb > 5500) {
+		disp_line("Error: Vusb should be approx. 5 volt.",FONT_MONOSPACE);
+		return;
+	}
 
-	// TODO:
-	disp_line("power measurements ok.",0); // i guess.. :)
+	disp_line("power measurements ok.",0);
 
 	// sdcard detect (not expecting an sd-card)
 	disp_line("read sdcard-detect line.",0);
 	badge_sdcard_init();
 	bool sdcard = badge_sdcard_detected();
-	if (sdcard)
-		disp_line("sdcard detected. (error?)",0);
-	else
-		disp_line("no sdcard detected. (as expected)",0);
+	if (sdcard) {
+		disp_line("sdcard detected. (error)",FONT_MONOSPACE);
+		return;
+	}
+	disp_line("no sdcard detected. (as expected)",0);
 
 	// test wifi
-	disp_line("TODO: test wifi.",0);
+	disp_line("testing wifi.",0);
+	wifi_init_config_t cfg = WIFI_INIT_CONFIG_DEFAULT();
+	cfg.nvs_enable = 0;
+	int res = esp_wifi_init(&cfg);
+	if (res == ESP_OK) {
+		res = esp_wifi_set_country(WIFI_COUNTRY_EU);
+	}
+	if (res == ESP_OK) {
+		res = esp_wifi_set_mode(WIFI_MODE_STA);
+	}
+	if (res == ESP_OK) {
+		wifi_config_t wifi_config = {
+			.sta = {
+				.ssid     = CONFIG_WIFI_SSID,
+				.password = CONFIG_WIFI_PASSWORD,
+			},
+		};
+		res = esp_wifi_set_config(ESP_IF_WIFI_STA, &wifi_config);
+	}
+	if (res == ESP_OK) {
+		res = esp_wifi_start();
+	}
+	if (res == ESP_OK) {
+		wifi_scan_config_t config = {
+			.scan_time = {
+				.active = {
+					.min = 100,
+					.max = 200,
+				},
+			},
+		};
+		res = esp_wifi_scan_start(&config, true);
+	}
+	uint16_t num_ap = 0;
+	if (res == ESP_OK) {
+		res = esp_wifi_scan_get_ap_num(&num_ap);
+	}
+	wifi_ap_record_t *ap_records = NULL;
+	if (res == ESP_OK) {
+		ap_records = (wifi_ap_record_t *) malloc(sizeof(wifi_ap_record_t) * num_ap);
+		assert(ap_records != NULL);
+		res = esp_wifi_scan_get_ap_records(&num_ap, ap_records);
+	}
+	if (res == ESP_OK) {
+		int i;
+		sprintf(line, "available ssids: (%d)\n", num_ap);
+		disp_line(line, 0);
+		for (i=0; i<num_ap; i++) {
+			sprintf(line, "ssid '%s'\n", ap_records[i].ssid);
+			disp_line(line, 0);
+		}
+	}
+	free(ap_records);
+	if (res != ESP_OK) {
+		disp_line("wifi init failed.",FONT_MONOSPACE);
+		return;
+	}
+
 	disp_line("wifi test ok.",0);
 
 	disp_line("Testing done.",0);
-	return;
+	vTaskDelay(10000 / portTICK_PERIOD_MS);
 
 
 	// store initial nvs data
+	esp_err_t err = nvs_flash_init();
+	if (err == ESP_ERR_NVS_NO_FREE_PAGES) {
+		// NVS partition was truncated and needs to be erased
+		const esp_partition_t* nvs_partition = esp_partition_find_first(
+				ESP_PARTITION_TYPE_DATA, ESP_PARTITION_SUBTYPE_DATA_NVS, NULL);
+		assert(nvs_partition && "partition table must have an NVS partition");
+		ESP_ERROR_CHECK( esp_partition_erase_range(nvs_partition, 0, nvs_partition->size) );
+		// Retry nvs_flash_init
+		err = nvs_flash_init();
+	}
+	ESP_ERROR_CHECK( err );
+
+	nvs_handle my_handle;
+	err = nvs_open("badge", NVS_READWRITE, &my_handle);
+	ESP_ERROR_CHECK( err );
+
+	err = nvs_set_u16(my_handle, "mpr121.base.0", baseline[0]);
+	ESP_ERROR_CHECK( err );
+	err = nvs_set_u16(my_handle, "mpr121.base.1", baseline[1]);
+	ESP_ERROR_CHECK( err );
+	err = nvs_set_u16(my_handle, "mpr121.base.2", baseline[2]);
+	ESP_ERROR_CHECK( err );
+	err = nvs_set_u16(my_handle, "mpr121.base.3", baseline[3]);
+	ESP_ERROR_CHECK( err );
+	err = nvs_set_u16(my_handle, "mpr121.base.4", baseline[4]);
+	ESP_ERROR_CHECK( err );
+	err = nvs_set_u16(my_handle, "mpr121.base.5", baseline[5]);
+	ESP_ERROR_CHECK( err );
+	err = nvs_set_u16(my_handle, "mpr121.base.6", baseline[6]);
+	ESP_ERROR_CHECK( err );
+	err = nvs_set_u16(my_handle, "mpr121.base.7", baseline[7]);
+	ESP_ERROR_CHECK( err );
+
+	err = nvs_commit(my_handle);
+	ESP_ERROR_CHECK( err );
+
+	nvs_close(my_handle);
 
 	// if we get here, the badge is ok.
 	badge_init();
 	display_png(png_hacking, sizeof(png_hacking));
+
+	while (1)
+	{
+		// infinite loop
+	}
 }
 
 void
@@ -338,6 +448,11 @@ app_main(void)
 		if (memcmp(buf, empty, 16) == 0)
 		{ // nvs partition seems empty. start first_run();
 			first_run();
+
+			// error occurred; erase nvs sector
+			int res = spi_flash_erase_sector(nvs_partition->address / SPI_FLASH_SEC_SIZE);
+			assert(res == ESP_OK);
+
 			while (1)
 			{
 				// infinite loop

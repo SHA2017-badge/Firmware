@@ -23,5 +23,15 @@ config WIFI_PASSWORD
 
         Can be left blank if the network has no security set.
 
+config BASVS_BROKEN_BADGE
+    bool "debug -- basvs broken badge"
+    default n
+    help
+        One of my badges has a non-functioning SELECT button.
+        Am using this config-option to avoid building final images
+        with workarounds for it.
+
+        You probably don't want this, unless you're using my badge.
+
 endmenu
 
