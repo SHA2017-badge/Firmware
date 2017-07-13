@@ -22,7 +22,7 @@
 static const char *TAG = "badge";
 
 #ifdef I2C_TOUCHPAD_ADDR
-void
+static void
 touch_event_handler(int event)
 {
 	// convert into button queue event
@@ -54,28 +54,31 @@ touch_event_handler(int event)
 #endif // I2C_TOUCHPAD_ADDR
 
 #ifdef I2C_MPR121_ADDR
-void
+static void
 mpr121_event_handler(void *b, bool pressed)
 {
 	badge_input_add_event((uint32_t) b, pressed ? EVENT_BUTTON_PRESSED : EVENT_BUTTON_RELEASED, NOT_IN_ISR);
 }
 #endif // I2C_MPR121_ADDR
 
+#ifdef CONFIG_SHA_BADGE_MPR121_HARDCODE_BASELINE
 // NVS helper
-uint32_t nvs_baseline_helper(uint8_t idx, uint8_t fallback) {
+static uint32_t
+nvs_baseline_helper(uint8_t idx, uint16_t fallback) {
 	if (idx > 7) {
 		ESP_LOGE(TAG, "NVS baseline index out of range: %d", idx);
 		return fallback;
 	}
 	char key[14];
 	sprintf(key, "mpr121.base.%d", idx);
-	uint8_t value = 0;
-	esp_err_t err = badge_nvs_get_u8("badge", key, &value);
+	uint16_t value = 0;
+	esp_err_t err = badge_nvs_get_u16("badge", key, &value);
 	if (err != ESP_OK) {
 		value = fallback;
 	}
 	return (uint32_t)value;
 }
+#endif // CONFIG_SHA_BADGE_MPR121_HARDCODE_BASELINE
 
 void
 badge_init(void)
@@ -123,18 +126,22 @@ badge_init(void)
 
 #ifdef I2C_MPR121_ADDR
 #ifdef CONFIG_SHA_BADGE_MPR121_HARDCODE_BASELINE
-	uint32_t mpr121_baseline[8] = {};
-	mpr121_baseline[0] = nvs_baseline_helper(0, 76);
-	mpr121_baseline[1] = nvs_baseline_helper(1, 78);
-	mpr121_baseline[2] = nvs_baseline_helper(2, 88);
-	mpr121_baseline[3] = nvs_baseline_helper(3, 90);
-	mpr121_baseline[4] = nvs_baseline_helper(4, 58);
-	mpr121_baseline[5] = nvs_baseline_helper(5, 62);
-	mpr121_baseline[6] = nvs_baseline_helper(6, 62);
-	mpr121_baseline[7] = nvs_baseline_helper(7, 58);
-	badge_mpr121_init(mpr121_baseline);
+	uint32_t mpr121_baseline[8] = {
+		0x0138,
+		0x0144,
+		0x0170,
+		0x0174,
+		0x00f0,
+		0x0103,
+		0x00ff,
+		0x00ed,
+	};
+	int i;
+	for (i=0; i<8; i++)
+		mpr121_baseline[i] = nvs_baseline_helper(i, mpr121_baseline[i]);
+	badge_mpr121_init(mpr121_baseline, true);
 #else
-	badge_mpr121_init(NULL);
+	badge_mpr121_init(NULL, false);
 #endif // CONFIG_SHA_BADGE_MPR121_HARDCODE_BASELINE
 	badge_mpr121_set_interrupt_handler(MPR121_PIN_NUM_A     , mpr121_event_handler, (void*) (BADGE_BUTTON_A));
 	badge_mpr121_set_interrupt_handler(MPR121_PIN_NUM_B     , mpr121_event_handler, (void*) (BADGE_BUTTON_B));
