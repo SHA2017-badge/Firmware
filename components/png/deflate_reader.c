@@ -6,26 +6,62 @@
 
 #include "deflate_reader.h"
 
+#define likely(x)   __builtin_expect(!!(x), 1)
+#define unlikely(x) __builtin_expect(!!(x), 0)
+
 static inline int
-lib_deflate_get_bits(struct lib_deflate_reader *dr, int num)
+lib_deflate_get_bits_long(struct lib_deflate_reader *dr, int num)
 {
 	int value = dr->bitbuf[1];
 	if (num > dr->bitlen + 8)
 	{
 		ssize_t res = dr->read(dr->read_p, dr->bitbuf, 2);
-		if (res < 0)
-			return res;
-		if (res < 2)
+		if (unlikely(res < 2))
+		{
+			if (res < 0)
+				return res;
 			return -LIB_DEFLATE_ERROR_UNEXPECTED_END_OF_FILE;
-		value |= (dr->bitbuf[1] << 16) | (dr->bitbuf[0] << 8);
+		}
+		uint16_t *bitbuf = (uint16_t *) dr->bitbuf;
+#if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
+		value |= *bitbuf << 8;
+#elif __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
+		value |= __builtin_bswap16(*bitbuf) << 8;
+#endif
 	}
 	else if (num > dr->bitlen)
 	{
 		ssize_t res = dr->read(dr->read_p, &(dr->bitbuf[1]), 1);
-		if (res < 0)
-			return res;
-		if (res < 1)
+		if (unlikely(res < 1))
+		{
+			if (res < 0)
+				return res;
 			return -LIB_DEFLATE_ERROR_UNEXPECTED_END_OF_FILE;
+		}
+		value |= dr->bitbuf[1] << 8;
+	}
+
+	value >>= 8 - dr->bitlen;
+	value &= (1 << num) - 1;
+	dr->bitlen -= num;
+	dr->bitlen &= 7;
+
+	return value;
+}
+
+static inline int
+lib_deflate_get_bits(struct lib_deflate_reader *dr, int num)
+{
+	int value = dr->bitbuf[1];
+	if (num > dr->bitlen)
+	{
+		ssize_t res = dr->read(dr->read_p, &(dr->bitbuf[1]), 1);
+		if (unlikely(res < 1))
+		{
+			if (res < 0)
+				return res;
+			return -LIB_DEFLATE_ERROR_UNEXPECTED_END_OF_FILE;
+		}
 		value |= dr->bitbuf[1] << 8;
 	}
 
@@ -48,15 +84,20 @@ lib_deflate_build_huffman(const uint8_t *tbl, int tbl_len, uint16_t *tree)
 		int i;
 		for (i=0; i<tbl_len; i++)
 		{
-			if (tbl[i] == bits)
+			if (unlikely(tbl[i] == bits))
 			{
+				if (unlikely(bits - bits_prev > 8))
+				{
+					*tree++ = 8;
+					bits_prev += 8;
+				}
 				uint16_t *base = tree++;
 				*tree++ = i;
 				int count = 1;
 				i++;
 				for (; i<tbl_len; i++)
 				{
-					if (tbl[i] == bits)
+					if (unlikely(tbl[i] == bits))
 					{
 						*tree++ = i;
 						count++;
@@ -70,7 +111,7 @@ lib_deflate_build_huffman(const uint8_t *tbl, int tbl_len, uint16_t *tree)
 		}
 	}
 
-	if (total != 0x10000)
+	if (unlikely(total != 0x10000))
 	{
 		// table not well-balanced. something is wrong.
 		return -LIB_DEFLATE_ERROR_UNBALANCED_HUFFMAN_TREE;
@@ -90,15 +131,20 @@ lib_deflate_get_huffman(struct lib_deflate_reader *dr, const uint16_t *tbl)
 
 		bits &= 15;
 		int res = lib_deflate_get_bits(dr, bits);
-		if (res < 0)
+		if (unlikely(res < 0))
 			return res;
 
-		while (bits > 0)
+		// shift res into value, in reverse order.
+		switch (bits)
 		{
-			value <<= 1;
-			value |= res&1;
-			res >>= 1;
-			bits--;
+			case 8: value <<= 1; value += res & 1; res >>= 1;
+			case 7: value <<= 1; value += res & 1; res >>= 1;
+			case 6: value <<= 1; value += res & 1; res >>= 1;
+			case 5: value <<= 1; value += res & 1; res >>= 1;
+			case 4: value <<= 1; value += res & 1; res >>= 1;
+			case 3: value <<= 1; value += res & 1; res >>= 1;
+			case 2: value <<= 1; value += res & 1; res >>= 1;
+			case 1: value <<= 1; value += res;
 		}
 
 		if (value < entries)
@@ -115,7 +161,7 @@ struct lib_deflate_reader *
 lib_deflate_new(lib_reader_read_t read, void *read_p)
 {
 	struct lib_deflate_reader *dr = (struct lib_deflate_reader *) malloc(sizeof(struct lib_deflate_reader));
-	if (dr == NULL)
+	if (unlikely(dr == NULL))
 		return NULL;
 
 	memset(dr, 0, sizeof(struct lib_deflate_reader));
@@ -133,11 +179,11 @@ lib_deflate_read(struct lib_deflate_reader *dr, uint8_t *buf, size_t buf_len)
 	{
 		if (dr->state == LIB_DEFLATE_STATE_NEW_BLOCK)
 		{ // initial state; have to read block header
-			if (dr->is_last_block)
+			if (unlikely(dr->is_last_block))
 				return buf_pos;
 
 			int block_type = lib_deflate_get_bits(dr, 3);
-			if (block_type < 0)
+			if (unlikely(block_type < 0))
 				return block_type;
 
 			dr->is_last_block = (block_type & 1) ? true : false;
@@ -149,19 +195,21 @@ lib_deflate_read(struct lib_deflate_reader *dr, uint8_t *buf, size_t buf_len)
 
 				uint16_t rd_buf[2];
 				ssize_t res = dr->read(dr->read_p, (uint8_t *) rd_buf, 4);
-				if (res < 0)
-					return res;
-				if (res < 4)
+				if (unlikely(res < 4))
+				{
+					if (res < 0)
+						return res;
 					return -LIB_DEFLATE_ERROR_UNEXPECTED_END_OF_FILE;
+				}
 
 #if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
 				int len = rd_buf[0];
 				int nlen = rd_buf[1];
-#elif __BYTE__ORDER__ == __ORDER_BIG_ENDIAN__
+#elif __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
 				int len = __builtin_bswap16(rd_buf[0]);
 				int nlen = __builtin_bswap16(rd_buf[1]);
 #endif
-				if (len + nlen != 0xffff)
+				if (unlikely(len + nlen != 0xffff))
 					return -LIB_DEFLATE_ERROR_INVALID_COPY_LENGTH;
 
 				dr->copy_len = len;
@@ -169,163 +217,164 @@ lib_deflate_read(struct lib_deflate_reader *dr, uint8_t *buf, size_t buf_len)
 			}
 			else if (block_type == 1)
 			{ // static huffman
-				uint8_t huffman_lc[288];
-				memset(&huffman_lc[  0], 8, 144 - 0);
-				memset(&huffman_lc[144], 9, 256 - 144);
-				memset(&huffman_lc[256], 7, 280 - 256);
-				memset(&huffman_lc[280], 8, 288 - 280);
-				lib_deflate_build_huffman(huffman_lc, 288, dr->huffman_lc_tree);
+				int i;
+				uint16_t *tree = dr->huffman_lc_tree;
+				*tree++ = ((280-256) << 4) | 7;
+				for (i=256; i<280; i++)
+					*tree++ = i;
+				*tree++ = ((144-0+288-280) << 4) | 1;
+				for (i=0; i<144; i++)
+					*tree++ = i;
+				for (i=280; i<288; i++)
+					*tree++ = i;
+				*tree++ = ((256-144) << 4) | 1;
+				for (i=144; i<256; i++)
+					*tree++ = i;
 
-				uint8_t huffman_dc[32];
-				memset(&huffman_dc[  0], 5, 32);
-				lib_deflate_build_huffman(huffman_dc, 32, dr->huffman_dc_tree);
+				tree = dr->huffman_dc_tree;
+				*tree++ = ((32-0) << 4) | 5;
+				for (i=0; i<32; i++)
+					*tree++ = i;
 
 				dr->state = LIB_DEFLATE_STATE_HUFFMAN;
 			}
 			else if (block_type == 2)
 			{ // dynamic huffman
-				int lc_num = lib_deflate_get_bits(dr, 5);
-				if (lc_num < 0)
-					return lc_num;
-				lc_num += 257;
+				int blc_dc_lc = lib_deflate_get_bits_long(dr, 14);
+				if (unlikely(blc_dc_lc < 0))
+					return blc_dc_lc;
 
-				int dc_num = lib_deflate_get_bits(dr, 5);
-				if (dc_num < 0)
-					return dc_num;
-				dc_num += 1;
+				int lc_num  = 257 + ( blc_dc_lc        & 31);
+				int dc_num  = 1   + ((blc_dc_lc >>  5) & 31);
+				int blc_num = 4   +  (blc_dc_lc >> 10);
 
-				int blc_num = lib_deflate_get_bits(dr, 4);
-				if (blc_num < 0)
-					return blc_num;
-				blc_num += 4;
+				// use the temp huffman array for all huffman table creates.
+				uint8_t huffman[288];
 
 				static const uint8_t blc_order[19] = {
 					16, 17, 18, 0, 8, 7, 9, 6, 10, 5, 11, 4, 12, 3, 13, 2, 14, 1, 15, 
 				};
-				uint8_t blc[19];
-				memset(blc, 0, sizeof(blc));
+				memset(huffman, 0, 19);
 				int i;
 				for (i=0; i<blc_num; i++)
 				{
 					int bits = lib_deflate_get_bits(dr, 3);
-					if (bits < 0)
+					if (unlikely(bits < 0))
 						return bits;
-					blc[blc_order[i]] = bits;
+					huffman[blc_order[i]] = bits;
 				}
 
-				uint16_t blc_tree[19 + 15];
-				int res = lib_deflate_build_huffman(blc, sizeof(blc), blc_tree);
-				if (res < 0)
+				uint16_t blc_tree[19 + 7];
+				int res = lib_deflate_build_huffman(huffman, 19, blc_tree);
+				if (unlikely(res < 0))
 					return res; // invalid table
 
-				uint8_t huffman_lc[288];
 				int lc_i=0;
 				while (lc_i < lc_num)
 				{
 					int len = lib_deflate_get_huffman(dr, blc_tree);
-					if (len < 0)
+					if (unlikely(len < 0))
 						return len;
 
 					if (len < 16)
 					{
-						huffman_lc[lc_i++] = len;
+						huffman[lc_i++] = len;
 					}
 					else if (len == 16)
 					{
-						if (lc_i == 0)
+						if (unlikely(lc_i == 0))
 							return -LIB_DEFLATE_ERROR_DYNAMIC_HUFFMAN_SETUP_ERROR;
-						uint8_t prev_len = huffman_lc[lc_i - 1];
+						uint8_t prev_len = huffman[lc_i - 1];
 						int repeat = lib_deflate_get_bits(dr, 2);
-						if (repeat < 0)
+						if (unlikely(repeat < 0))
 							return repeat;
 						repeat += 3;
-						if (lc_i + repeat > lc_num)
+						if (unlikely(lc_i + repeat > lc_num))
 							return -LIB_DEFLATE_ERROR_DYNAMIC_HUFFMAN_SETUP_ERROR; // overflow
 						while (repeat--)
-							huffman_lc[lc_i++] = prev_len;
+							huffman[lc_i++] = prev_len;
 					}
 					else if (len == 17)
 					{
 						int repeat = lib_deflate_get_bits(dr, 3);
-						if (repeat < 0)
+						if (unlikely(repeat < 0))
 							return repeat;
 						repeat += 3;
-						if (lc_i + repeat > lc_num)
+						if (unlikely(lc_i + repeat > lc_num))
 							return -LIB_DEFLATE_ERROR_DYNAMIC_HUFFMAN_SETUP_ERROR; // overflow
 						while (repeat--)
-							huffman_lc[lc_i++] = 0;
+							huffman[lc_i++] = 0;
 					}
 					else if (len == 18)
 					{
 						int repeat = lib_deflate_get_bits(dr, 7);
-						if (repeat < 0)
+						if (unlikely(repeat < 0))
 							return repeat;
 						repeat += 11;
-						if (lc_i + repeat > lc_num)
+						if (unlikely(lc_i + repeat > lc_num))
 							return -LIB_DEFLATE_ERROR_DYNAMIC_HUFFMAN_SETUP_ERROR; // overflow
 						while (repeat--)
-							huffman_lc[lc_i++] = 0;
+							huffman[lc_i++] = 0;
 					}
 					else return -LIB_DEFLATE_ERROR_DYNAMIC_HUFFMAN_SETUP_ERROR;
 				}
 
-				res = lib_deflate_build_huffman(huffman_lc, lc_num, dr->huffman_lc_tree);
-				if (res < 0)
+				res = lib_deflate_build_huffman(huffman, lc_i, dr->huffman_lc_tree);
+				if (unlikely(res < 0))
 					return res; // invalid table
 
-				uint8_t huffman_dc[32];
 				int dc_i=0;
 				while (dc_i < dc_num)
 				{
 					int len = lib_deflate_get_huffman(dr, blc_tree);
-					if (len < 0)
+					if (unlikely(len < 0))
 						return len;
 
 					if (len < 16)
 					{
-						huffman_dc[dc_i++] = len;
+						huffman[dc_i++] = len;
 					}
 					else if (len == 16)
 					{
-						if (dc_i == 0)
+						if (unlikely(dc_i == 0))
 							return -LIB_DEFLATE_ERROR_DYNAMIC_HUFFMAN_SETUP_ERROR;
-						uint8_t prev_len = huffman_dc[dc_i - 1];
+						uint8_t prev_len = huffman[dc_i - 1];
 						int repeat = lib_deflate_get_bits(dr, 2);
-						if (repeat < 0)
+						if (unlikely(repeat < 0))
 							return repeat;
 						repeat += 3;
-						if (dc_i + repeat > dc_num)
+						if (unlikely(dc_i + repeat > dc_num))
 							return -LIB_DEFLATE_ERROR_DYNAMIC_HUFFMAN_SETUP_ERROR; // overflow
 						while (repeat--)
-							huffman_dc[dc_i++] = prev_len;
+							huffman[dc_i++] = prev_len;
 					}
 					else if (len == 17)
 					{
 						int repeat = lib_deflate_get_bits(dr, 3);
-						if (repeat < 0)
+						if (unlikely(repeat < 0))
 							return repeat;
 						repeat += 3;
-						if (dc_i + repeat > dc_num)
+						if (unlikely(dc_i + repeat > dc_num))
 							return -LIB_DEFLATE_ERROR_DYNAMIC_HUFFMAN_SETUP_ERROR; // overflow
 						while (repeat--)
-							huffman_dc[dc_i++] = 0;
+							huffman[dc_i++] = 0;
 					}
 					else if (len == 18)
 					{
 						int repeat = lib_deflate_get_bits(dr, 7);
-						if (repeat < 0)
+						if (unlikely(repeat < 0))
 							return repeat;
 						repeat += 11;
-						if (dc_i + repeat > dc_num)
+						if (unlikely(dc_i + repeat > dc_num))
 							return -LIB_DEFLATE_ERROR_DYNAMIC_HUFFMAN_SETUP_ERROR; // overflow
 						while (repeat--)
-							huffman_dc[dc_i++] = 0;
+							huffman[dc_i++] = 0;
 					}
 					else return -LIB_DEFLATE_ERROR_DYNAMIC_HUFFMAN_SETUP_ERROR;
 				}
 
-				res = lib_deflate_build_huffman(huffman_dc, dc_num, dr->huffman_dc_tree);
-				if (res < 0)
+				res = lib_deflate_build_huffman(huffman, dc_i, dr->huffman_dc_tree);
+				if (unlikely(res < 0))
 					return res; // invalid table
 
 				dr->state = LIB_DEFLATE_STATE_HUFFMAN;
@@ -351,10 +400,12 @@ lib_deflate_read(struct lib_deflate_reader *dr, uint8_t *buf, size_t buf_len)
 
 				uint8_t *rd_buf = &dr->look_behind[ dr->lb_pos ];
 				ssize_t res = dr->read(dr->read_p, rd_buf, copylen);
-				if (res < 0)
-					return res;
-				if (res < copylen)
+				if (unlikely(res < copylen))
+				{
+					if (res < 0)
+						return res;
 					return -LIB_DEFLATE_ERROR_UNEXPECTED_END_OF_FILE;
+				}
 
 				memcpy(&buf[buf_pos], rd_buf, copylen);
 				buf_pos += copylen;
@@ -372,7 +423,7 @@ lib_deflate_read(struct lib_deflate_reader *dr, uint8_t *buf, size_t buf_len)
 		if (dr->state == LIB_DEFLATE_STATE_HUFFMAN)
 		{ // huffman encoded block.
 			int token = lib_deflate_get_huffman(dr, dr->huffman_lc_tree);
-			if (token < 0)
+			if (unlikely(token < 0))
 				return token;
 			if (token < 256)
 			{ // store token and return
@@ -392,37 +443,41 @@ lib_deflate_read(struct lib_deflate_reader *dr, uint8_t *buf, size_t buf_len)
 			{ // copy data from look_behind
 				// determine copy-length
 				token -= 257;
-				if (token >= 29)
+				if (unlikely(token >= 29))
 					return -LIB_DEFLATE_ERROR_HUFFMAN_RESERVED_LENGTH; // invalid index
+
 				static const uint16_t clp[29] = {
 					3,4,5,6,7,8,9,10,11,13,15,17,19,23,27,31,35,43,51,59,67,83,99,115,131,163,195,227,258
 				};
 				static const uint8_t clb[29] = {
 					0,0,0,0,0,0,0,0,1,1,1,1,2,2,2,2,3,3,3,3,4,4,4,4,5,5,5,5,0
 				};
-				int copy_len = lib_deflate_get_bits(dr, clb[ token ]);
-				if (copy_len < 0)
+
+				int copy_len = clb[ token ] ? lib_deflate_get_bits(dr, clb[ token ]) : 0;
+				if (unlikely(copy_len < 0))
 					return copy_len;
 				copy_len += clp[ token ];
 
 				// determine distance
 				int token = lib_deflate_get_huffman(dr, dr->huffman_dc_tree);
-				if (token < 0)
+				if (unlikely(token < 0))
 					return token;
-				if (token >= 30)
+				if (unlikely(token >= 30))
 					return -LIB_DEFLATE_ERROR_HUFFMAN_RESERVED_LENGTH; // invalid index
+
 				static const uint16_t dcp[30] = {
 					1,2,3,4,5,7,9,13,17,25,33,49,65,97,129,193,257,385,513,769,1025,1537,2049,3073,4097,6145,8193,12289,16385,24577
 				};
 				static const uint8_t dcb[30] = {
 					0,0,0,0,1,1,2,2,3,3,4,4,5,5,6,6,7,7,8,8,9,9,10,10,11,11,12,12,13,13
 				};
-				int dist = lib_deflate_get_bits(dr, dcb[ token ]);
-				if (dist < 0)
+
+				int dist = dcb[ token ] ? lib_deflate_get_bits_long(dr, dcb[ token ]) : 0;
+				if (unlikely(dist < 0))
 					return dist;
 				dist += dcp[ token ];
 
-				if (dist > dr->lb_size)
+				if (unlikely(dist > dr->lb_size))
 					return -LIB_DEFLATE_ERROR_HUFFMAN_INVALID_DISTANCE; // invalid distance
 
 				dr->copy_dist = dist;
