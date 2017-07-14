@@ -232,7 +232,7 @@ badge_mpr121_init(const uint32_t *baseline)
 		}
 
 		badge_mpr121_write_reg(MPR121_TOUCHTH_0   + 2*i, 48); // touch
-		badge_mpr121_write_reg(MPR121_RELEASETH_0 + 2*i, 12); // release
+		badge_mpr121_write_reg(MPR121_RELEASETH_0 + 2*i, 24); // release
 	}
 
 	if (baseline == NULL)
