@@ -316,10 +316,10 @@
 //#define GFILE_NEED_NOAUTOSYNC                        FALSE
 
 //#define GFILE_NEED_MEMFS                             FALSE
-#define GFILE_NEED_ROMFS                             TRUE
+// #define GFILE_NEED_ROMFS                             TRUE
 //#define GFILE_NEED_RAMFS                             FALSE
-//#define GFILE_NEED_FATFS                             TRUE
-//#define GFILE_FATFS_EXTERNAL_LIB                     TRUE
+#define GFILE_NEED_FATFS                             TRUE
+#define GFILE_FATFS_EXTERNAL_LIB                     TRUE
 //#define GFILE_NEED_NATIVEFS                          FALSE
 //#define GFILE_NEED_CHBIOSFS                          FALSE
 //#define GFILE_NEED_USERFS                            FALSE

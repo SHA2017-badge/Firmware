@@ -8,7 +8,9 @@
 
 **Closed issues:**
 
+- Use nvs for configuration storage. [\#89](https://github.com/SHA2017-badge/Firmware/issues/89)
 - mpr121 Left and A sometimes 'hang' [\#80](https://github.com/SHA2017-badge/Firmware/issues/80)
+- Micropython unix uos has no listdir just ilistdir [\#78](https://github.com/SHA2017-badge/Firmware/issues/78)
 - Skip frames when flushing [\#73](https://github.com/SHA2017-badge/Firmware/issues/73)
 - OTA updates \(over wifi\) [\#66](https://github.com/SHA2017-badge/Firmware/issues/66)
 - Make sure the WS2812\_DATA is in high-impedance mode before the LED power is switched off [\#59](https://github.com/SHA2017-badge/Firmware/issues/59)
@@ -21,6 +23,10 @@
 
 **Merged pull requests:**
 
+- \*UNTESTED\* change locfd partititon type to data/fat [\#96](https://github.com/SHA2017-badge/Firmware/pull/96) ([basvs](https://github.com/basvs))
+- misc png fixes and optimizations. [\#95](https://github.com/SHA2017-badge/Firmware/pull/95) ([basvs](https://github.com/basvs))
+- add partition-table for 4MB flash chips. [\#94](https://github.com/SHA2017-badge/Firmware/pull/94) ([basvs](https://github.com/basvs))
+- Magical mpr121\_baseline init [\#92](https://github.com/SHA2017-badge/Firmware/pull/92) ([annejan](https://github.com/annejan))
 - Update badge-i2c code to support reading multiple values. [\#91](https://github.com/SHA2017-badge/Firmware/pull/91) ([basvs](https://github.com/basvs))
 - NVS as config store [\#90](https://github.com/SHA2017-badge/Firmware/pull/90) ([annejan](https://github.com/annejan))
 - Let remote filename depend on current config. [\#88](https://github.com/SHA2017-badge/Firmware/pull/88) ([basvs](https://github.com/basvs))
