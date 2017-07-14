@@ -8,4 +8,4 @@ ota_0,    0,    ota_0,   0x10000, 1536K
 ota_1,    0,    ota_1,   ,        1536K
 remfs, 0x20,     0x17,   ,        8M
 remfsota,0x20,   0x18,   ,        64K
-locfd, 0x20,     0x19,   ,        4992K
+locfd,    data, fat,     ,        4992K
