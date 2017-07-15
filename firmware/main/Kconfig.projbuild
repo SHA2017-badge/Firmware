@@ -23,6 +23,12 @@ config WIFI_PASSWORD
 
         Can be left blank if the network has no security set.
 
+config DEBUG_ADD_DELAYS
+    bool "debug -- add delays"
+    default n
+    help
+        Add delays to make all output readable.
+
 config BASVS_BROKEN_BADGE
     bool "debug -- basvs broken badge"
     default n
