@@ -322,7 +322,7 @@
 #define GFILE_FATFS_EXTERNAL_LIB                     TRUE
 //#define GFILE_NEED_NATIVEFS                          FALSE
 //#define GFILE_NEED_CHBIOSFS                          FALSE
-//#define GFILE_NEED_USERFS                            FALSE
+//#define GFILE_NEED_USERFS                            TRUE
 
 //#define GFILE_ALLOW_FLOATS                           FALSE
 //#define GFILE_ALLOW_DEVICESPECIFIC                   FALSE
