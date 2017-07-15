@@ -24,6 +24,14 @@
 #define PIN_NUM_EPD_RESET    23
 #define PIN_NUM_EPD_BUSY     21
 
+#define PIN_NUM_SD_CD        16
+#define PIN_NUM_SD_CLK       14
+#define PIN_NUM_SD_CMD       15
+#define PIN_NUM_SD_DATA_0     2
+#define PIN_NUM_SD_DATA_1     4
+#define PIN_NUM_SD_DATA_2    12
+#define PIN_NUM_SD_DATA_3    13
+
 #elif defined(CONFIG_SHA_BADGE_V2)
 
 // Badge revision 0.1.0

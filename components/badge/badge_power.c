@@ -6,6 +6,7 @@
 #include <string.h>
 
 #include <driver/adc.h>
+#include <driver/gpio.h>
 #include <rom/ets_sys.h>
 
 #include "badge_pins.h"
@@ -56,18 +57,9 @@ badge_battery_charge_status(void)
 // shared power
 static int badge_power_leds_sdcard = 0; // bit 0 = leds, bit 1 = sd-card
 
-int
-badge_power_leds_enable(void)
+static int
+badge_power_sdcard_leds_enable(void)
 {
-	if (badge_power_leds_sdcard & 1)
-		return 0;
-
-	if (badge_power_leds_sdcard)
-	{
-		badge_power_leds_sdcard |= 1;
-		return 0;
-	}
-
 #ifdef CONFIG_SHA_BADGE_POWER_DEBUG
 	ets_printf("badge_power: enabling power to sdcard and leds.\n");
 #endif // CONFIG_SHA_BADGE_POWER_DEBUG
@@ -85,6 +77,71 @@ badge_power_leds_enable(void)
 	if (ret == -1)
 		ets_printf("badge_power: failed to enable power.\n");
 #endif // CONFIG_SHA_BADGE_POWER_DEBUG
+
+	return ret;
+}
+
+static int
+badge_power_sdcard_leds_disable(void)
+{
+#ifdef PIN_NUM_SD_CLK
+	// configure PIN_NUM_LEDS as high-impedance
+	gpio_config_t io_conf = {
+		.intr_type    = GPIO_INTR_DISABLE,
+		.mode         = GPIO_MODE_INPUT,
+		.pin_bit_mask = (0
+#ifdef PIN_NUM_LEDS
+			| (1LL << PIN_NUM_LEDS)
+#endif // PIN_NUM_LEDS
+			| (1LL << PIN_NUM_SD_CLK)
+			| (1LL << PIN_NUM_SD_CMD)
+			| (1LL << PIN_NUM_SD_DATA_0)
+#ifdef PIN_NUM_SD_DATA_1
+			| (1LL << PIN_NUM_SD_DATA_1)
+			| (1LL << PIN_NUM_SD_DATA_2)
+#endif // PIN_NUM_SD_DATA_1
+			| (1LL << PIN_NUM_SD_DATA_3)
+			),
+		.pull_down_en = 0,
+		.pull_up_en   = 0,
+	};
+	gpio_config(&io_conf);
+#endif // PIN_NUM_SD_CLK
+
+#ifdef CONFIG_SHA_BADGE_POWER_DEBUG
+	ets_printf("badge_power: disabling power to sdcard and leds.\n");
+#endif // CONFIG_SHA_BADGE_POWER_DEBUG
+
+	int ret;
+#ifdef PORTEXP_PIN_NUM_LEDS
+	ret = badge_portexp_set_output_state(PORTEXP_PIN_NUM_LEDS, 0);
+#elif defined(MPR121_PIN_NUM_LEDS)
+	ret = badge_mpr121_set_gpio_level(MPR121_PIN_NUM_LEDS, 0);
+#else
+	ret = -1;
+#endif
+
+#ifdef CONFIG_SHA_BADGE_POWER_DEBUG
+	if (ret == -1)
+		ets_printf("badge_power: failed to disable power.\n");
+#endif // CONFIG_SHA_BADGE_POWER_DEBUG
+
+	return ret;
+}
+
+int
+badge_power_leds_enable(void)
+{
+	if (badge_power_leds_sdcard & 1)
+		return 0;
+
+	if (badge_power_leds_sdcard)
+	{
+		badge_power_leds_sdcard |= 1;
+		return 0;
+	}
+
+	int ret = badge_power_sdcard_leds_enable();
 
 	if (ret == 0)
 		badge_power_leds_sdcard = 1;
@@ -104,23 +161,7 @@ badge_power_leds_disable(void)
 		return 0;
 	}
 
-#ifdef CONFIG_SHA_BADGE_POWER_DEBUG
-	ets_printf("badge_power: disabling power to sdcard and leds.\n");
-#endif // CONFIG_SHA_BADGE_POWER_DEBUG
-
-	int ret;
-#ifdef PORTEXP_PIN_NUM_LEDS
-	ret = badge_portexp_set_output_state(PORTEXP_PIN_NUM_LEDS, 0);
-#elif defined(MPR121_PIN_NUM_LEDS)
-	ret = badge_mpr121_set_gpio_level(MPR121_PIN_NUM_LEDS, 0);
-#else
-	ret = -1;
-#endif
-
-#ifdef CONFIG_SHA_BADGE_POWER_DEBUG
-	if (ret == -1)
-		ets_printf("badge_power: failed to disable power.\n");
-#endif // CONFIG_SHA_BADGE_POWER_DEBUG
+	int ret = badge_power_sdcard_leds_disable();
 
 	if (ret == 0)
 		badge_power_leds_sdcard = 0;
@@ -137,23 +178,7 @@ badge_power_sdcard_enable(void)
 		return 0;
 	}
 
-#ifdef CONFIG_SHA_BADGE_POWER_DEBUG
-	ets_printf("badge_power: enabling power to sdcard and leds.\n");
-#endif // CONFIG_SHA_BADGE_POWER_DEBUG
-
-	int ret;
-#ifdef PORTEXP_PIN_NUM_LEDS
-	ret = badge_portexp_set_output_state(PORTEXP_PIN_NUM_LEDS, 1);
-#elif defined(MPR121_PIN_NUM_LEDS)
-	ret = badge_mpr121_set_gpio_level(MPR121_PIN_NUM_LEDS, 1);
-#else
-	ret = -1;
-#endif
-
-#ifdef CONFIG_SHA_BADGE_POWER_DEBUG
-	if (ret == -1)
-		ets_printf("badge_power: failed to enable power.\n");
-#endif // CONFIG_SHA_BADGE_POWER_DEBUG
+	int ret = badge_power_sdcard_leds_enable();
 
 	if (ret == 0)
 		badge_power_leds_sdcard = 2;
@@ -173,23 +198,7 @@ badge_power_sdcard_disable(void)
 		return 0;
 	}
 
-#ifdef CONFIG_SHA_BADGE_POWER_DEBUG
-	ets_printf("badge_power: disabling power to sdcard and leds.\n");
-#endif // CONFIG_SHA_BADGE_POWER_DEBUG
-
-	int ret;
-#ifdef PORTEXP_PIN_NUM_LEDS
-	ret = badge_portexp_set_output_state(PORTEXP_PIN_NUM_LEDS, 0);
-#elif defined(MPR121_PIN_NUM_LEDS)
-	ret = badge_mpr121_set_gpio_level(MPR121_PIN_NUM_LEDS, 0);
-#else
-	ret = -1;
-#endif
-
-#ifdef CONFIG_SHA_BADGE_POWER_DEBUG
-	if (ret == -1)
-		ets_printf("badge_power: failed to disable power.\n");
-#endif // CONFIG_SHA_BADGE_POWER_DEBUG
+	int ret = badge_power_sdcard_leds_disable();
 
 	if (ret == 0)
 		badge_power_leds_sdcard = 0;
