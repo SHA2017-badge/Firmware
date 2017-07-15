@@ -179,7 +179,8 @@ first_run(void)
 
 	// mpr121
 	disp_line("initializing MPR121.",0);
-	badge_mpr121_init(NULL, false);
+	badge_mpr121_init();
+	badge_mpr121_configure(NULL, false);
 
 	disp_line("reading touch data.",0);
 	int i;
@@ -209,7 +210,7 @@ first_run(void)
 
 	disp_line("re-initializing MPR121.",0);
 	{
-		badge_mpr121_reconfigure(baseline, true);
+		badge_mpr121_configure(baseline, true);
 	}
 
 	for (i=0; i<8; i++) {
@@ -470,4 +471,8 @@ app_main(void)
 	{
 		// infinite loop
 	}
+}
+
+void vPortCleanUpTCB ( void *pxTCB ) {
+	// place clean up code here
 }
