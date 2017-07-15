@@ -64,14 +64,18 @@ mpr121_event_handler(void *b, bool pressed)
 #ifdef CONFIG_SHA_BADGE_MPR121_HARDCODE_BASELINE
 // NVS helper
 static esp_err_t
-nvs_baseline_helper(uint8_t idx, uint16_t *value) {
+nvs_baseline_helper(uint8_t idx, uint32_t *value) {
 	if (idx > 7) {
 		ESP_LOGE(TAG, "NVS baseline index out of range: %d", idx);
-		return fallback;
+		return -1;
 	}
 	char key[14];
 	sprintf(key, "mpr121.base.%d", idx);
-	return badge_nvs_get_u16("badge", key, value);
+	uint16_t v;
+	esp_err_t err = badge_nvs_get_u16("badge", key, &v);
+	if (err == ESP_OK)
+		*value = v;
+	return err;
 }
 #endif // CONFIG_SHA_BADGE_MPR121_HARDCODE_BASELINE
 
@@ -135,7 +139,7 @@ badge_init(void)
 	bool mpr121_strict = true;
 	for (i=0; i<8; i++)
 	{
-		esp_err_t err = nvs_baseline_helper(i, mpr121_baseline[i]);
+		esp_err_t err = nvs_baseline_helper(i, &mpr121_baseline[i]);
 		if (err != ESP_OK)
 			mpr121_strict = false;
 	}
