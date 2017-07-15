@@ -1,10 +1,9 @@
+#include <sdkconfig.h>
+
 #include <stdbool.h>
 #include <stdint.h>
-
 #include <stdio.h>
 #include <string.h>
-
-#include "sdkconfig.h"
 
 #include "badge_pins.h"
 #include "badge_portexp.h"
@@ -23,13 +22,13 @@ badge_sdcard_detected(void)
 }
 #endif // defined(PORTEXP_PIN_NUM_SD_CD) || defined(MPR121_PIN_NUM_SD_CD)
 
-void
+esp_err_t
 badge_sdcard_init(void)
 {
 	static bool badge_sdcard_init_done = false;
 
 	if (badge_sdcard_init_done)
-		return;
+		return ESP_OK;
 
 	// configure charge-stat pin
 #ifdef PORTEXP_PIN_NUM_SD_CD
@@ -42,4 +41,6 @@ badge_sdcard_init(void)
 #endif
 
 	badge_sdcard_init_done = true;
+
+	return ESP_OK;
 }

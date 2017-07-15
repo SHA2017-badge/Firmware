@@ -1,5 +1,6 @@
-#include "sdkconfig.h"
+#include <sdkconfig.h>
 
+#include <esp_log.h>
 #include <driver/gpio.h>
 
 #include "badge_pins.h"
@@ -17,7 +18,6 @@
 #include "badge_sdcard.h"
 #include "badge_eink.h"
 #include "badge_nvs.h"
-#include "esp_log.h"
 
 static const char *TAG = "badge";
 
@@ -143,9 +143,10 @@ badge_init(void)
 		if (err != ESP_OK)
 			mpr121_strict = false;
 	}
-	badge_mpr121_init(mpr121_baseline, mpr121_strict);
+	badge_mpr121_init();
+	badge_mpr121_configure(mpr121_baseline, mpr121_strict);
 #else
-	badge_mpr121_init(NULL, false);
+	badge_mpr121_configure(NULL, false);
 #endif // CONFIG_SHA_BADGE_MPR121_HARDCODE_BASELINE
 	badge_mpr121_set_interrupt_handler(MPR121_PIN_NUM_A     , mpr121_event_handler, (void*) (BADGE_BUTTON_A));
 	badge_mpr121_set_interrupt_handler(MPR121_PIN_NUM_B     , mpr121_event_handler, (void*) (BADGE_BUTTON_B));

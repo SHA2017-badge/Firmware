@@ -1,17 +1,16 @@
+#include <sdkconfig.h>
+
 #include <stdbool.h>
 #include <stdint.h>
-
 #include <stdio.h>
 #include <string.h>
 
-#include "sdkconfig.h"
+#include <rom/ets_sys.h>
 
-#include "rom/ets_sys.h"
-
-#include "badge_pins.h"
-#include "badge_i2c.h"
-#include "badge_portexp.h"
-#include "badge_touch.h"
+#include <badge_pins.h>
+#include <badge_i2c.h>
+#include <badge_portexp.h>
+#include <badge_touch.h>
 
 #ifdef I2C_TOUCHPAD_ADDR
 
@@ -58,13 +57,13 @@ badge_touch_intr_handler(void *arg)
 	}
 }
 
-void
+esp_err_t
 badge_touch_init(void)
 {
 	static bool badge_touch_init_done = false;
 
 	if (badge_touch_init_done)
-		return;
+		return ESP_OK;
 
 	badge_portexp_set_input_default_state(PORTEXP_PIN_NUM_TOUCH, 1);
 	badge_portexp_set_interrupt_enable(PORTEXP_PIN_NUM_TOUCH, 1);
@@ -74,6 +73,8 @@ badge_touch_init(void)
 	badge_touch_intr_handler(NULL);
 
 	badge_touch_init_done = true;
+
+	return ESP_OK;
 }
 
 void
