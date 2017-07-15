@@ -27,11 +27,22 @@ struct badge_mpr121_touch_info {
 };
 
 /**
+ * Reconfigure the mpr121 with new baselines.
+ * @param baseline if not NULL, the MPR121 will be configured to use
+ *   these baseline values for inputs 0..7.
+ * @param strict if set, the touch and release values will be configured
+ *   more sensitive.
+ */
+extern void badge_mpr121_reconfigure(const uint32_t *baseline, bool strict);
+
+/**
  * Initialize interrupt-handling for the MPR121.
  * @param baseline if not NULL, the MPR121 will be configured to use
  *   these baseline values for inputs 0..7.
+ * @param strict if set, the touch and release values will be configured
+ *   more sensitive.
  */
-extern void badge_mpr121_init(const uint32_t *baseline);
+extern void badge_mpr121_init(const uint32_t *baseline, bool strict);
 
 /**
  * Configure interrupt handler for a specific pin.

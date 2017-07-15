@@ -70,6 +70,49 @@ esp_err_t badge_nvs_get_u8(const char* namespace, const char* key, uint8_t *valu
   return ESP_OK;
 }
 
+esp_err_t badge_nvs_set_u16(const char* namespace, const char* key, uint16_t value)
+{
+  nvs_handle my_handle;
+  esp_err_t err;
+
+  // Open
+  err = nvs_open(namespace, NVS_READWRITE, &my_handle);
+  if (err != ESP_OK) return err;
+
+  // Write
+  err = nvs_set_u16(my_handle, key, value);
+  if (err != ESP_OK) return err;
+
+  // Commit written value.
+  // After setting any values, nvs_commit() must be called to ensure changes are written
+  // to flash storage. Implementations may write to storage at other times,
+  // but this is not guaranteed.
+  err = nvs_commit(my_handle);
+  if (err != ESP_OK) return err;
+
+  // Close
+  nvs_close(my_handle);
+  return ESP_OK;
+}
+
+esp_err_t badge_nvs_get_u16(const char* namespace, const char* key, uint16_t *value)
+{
+  nvs_handle my_handle;
+  esp_err_t err;
+
+  // Open
+  err = nvs_open(namespace, NVS_READONLY, &my_handle);
+  if (err != ESP_OK) return err;
+
+  // Read
+  err = nvs_get_u16(my_handle, key, value);
+  if (err != ESP_OK) return err;
+
+  // Close
+  nvs_close(my_handle);
+  return ESP_OK;
+}
+
 esp_err_t badge_nvs_set_str(const char* namespace, const char* key, const char *value) {
   nvs_handle my_handle;
   esp_err_t err;

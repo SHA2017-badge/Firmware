@@ -179,27 +179,8 @@ badge_mpr121_intr_handler(void *arg)
 }
 
 void
-badge_mpr121_init(const uint32_t *baseline)
+badge_mpr121_reconfigure(const uint32_t *baseline, bool strict)
 {
-	static bool badge_mpr121_init_done = false;
-
-	if (badge_mpr121_init_done)
-		return;
-
-	badge_base_init();
-
-	badge_mpr121_mux = xSemaphoreCreateMutex();
-	badge_mpr121_intr_trigger = xSemaphoreCreateBinary();
-	gpio_isr_handler_add(PIN_NUM_MPR121_INT, badge_mpr121_intr_handler, NULL);
-	gpio_config_t io_conf = {
-		.intr_type    = GPIO_INTR_ANYEDGE,
-		.mode         = GPIO_MODE_INPUT,
-		.pin_bit_mask = 1LL << PIN_NUM_MPR121_INT,
-		.pull_down_en = 0,
-		.pull_up_en   = 1,
-	};
-	gpio_config(&io_conf);
-
 	// soft reset
 	badge_mpr121_write_reg(0x80, 0x63);
 
@@ -228,11 +209,19 @@ badge_mpr121_init(const uint32_t *baseline)
 	{
 		if (baseline != NULL)
 		{
-			badge_mpr121_write_reg(MPR121_BASELINE_0 + i, baseline[i]); // baseline
+			badge_mpr121_write_reg(MPR121_BASELINE_0 + i, baseline[i] >> 2); // baseline
 		}
 
-		badge_mpr121_write_reg(MPR121_TOUCHTH_0   + 2*i, 48); // touch
-		badge_mpr121_write_reg(MPR121_RELEASETH_0 + 2*i, 24); // release
+		if (strict)
+		{
+			badge_mpr121_write_reg(MPR121_TOUCHTH_0   + 2*i, 16); // touch
+			badge_mpr121_write_reg(MPR121_RELEASETH_0 + 2*i,  8); // release
+		}
+		else
+		{
+			badge_mpr121_write_reg(MPR121_TOUCHTH_0   + 2*i, 48); // touch
+			badge_mpr121_write_reg(MPR121_RELEASETH_0 + 2*i, 24); // release
+		}
 	}
 
 	if (baseline == NULL)
@@ -245,6 +234,32 @@ badge_mpr121_init(const uint32_t *baseline)
 		// enable run-mode, disable base-line tracking
 		badge_mpr121_write_reg(0x5e, 0x48);
 	}
+}
+
+void
+badge_mpr121_init(const uint32_t *baseline, bool strict)
+{
+	static bool badge_mpr121_init_done = false;
+
+	if (badge_mpr121_init_done)
+		return;
+
+	badge_base_init();
+	badge_i2c_init();
+
+	badge_mpr121_mux = xSemaphoreCreateMutex();
+	badge_mpr121_intr_trigger = xSemaphoreCreateBinary();
+	gpio_isr_handler_add(PIN_NUM_MPR121_INT, badge_mpr121_intr_handler, NULL);
+	gpio_config_t io_conf = {
+		.intr_type    = GPIO_INTR_ANYEDGE,
+		.mode         = GPIO_MODE_INPUT,
+		.pin_bit_mask = 1LL << PIN_NUM_MPR121_INT,
+		.pull_down_en = 0,
+		.pull_up_en   = 1,
+	};
+	gpio_config(&io_conf);
+
+	badge_mpr121_reconfigure(baseline, strict);
 
 	xTaskCreate(&badge_mpr121_intr_task, "MPR121 interrupt task", 4096, NULL, 10, NULL);
 
