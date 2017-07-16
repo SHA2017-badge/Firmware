@@ -26,18 +26,35 @@ esp_err_t
 badge_sdcard_init(void)
 {
 	static bool badge_sdcard_init_done = false;
+	esp_err_t res;
 
 	if (badge_sdcard_init_done)
 		return ESP_OK;
 
 	// configure charge-stat pin
 #ifdef PORTEXP_PIN_NUM_SD_CD
-	badge_portexp_set_io_direction(PORTEXP_PIN_NUM_SD_CD, 0);
-	badge_portexp_set_input_default_state(PORTEXP_PIN_NUM_SD_CD, 0);
-	badge_portexp_set_pull_enable(PORTEXP_PIN_NUM_SD_CD, 0);
-	badge_portexp_set_interrupt_enable(PORTEXP_PIN_NUM_SD_CD, 0);
+	res = badge_portexp_init();
+	if (res != ESP_OK)
+		return res;
+	res = badge_portexp_set_io_direction(PORTEXP_PIN_NUM_SD_CD, 0);
+	if (res != ESP_OK)
+		return res;
+	res = badge_portexp_set_input_default_state(PORTEXP_PIN_NUM_SD_CD, 0);
+	if (res != ESP_OK)
+		return res;
+	res = badge_portexp_set_pull_enable(PORTEXP_PIN_NUM_SD_CD, 0);
+	if (res != ESP_OK)
+		return res;
+	res = badge_portexp_set_interrupt_enable(PORTEXP_PIN_NUM_SD_CD, 0);
+	if (res != ESP_OK)
+		return res;
 #elif defined(MPR121_PIN_NUM_SD_CD)
-	badge_mpr121_configure_gpio(MPR121_PIN_NUM_SD_CD, MPR121_INPUT);
+	res = badge_mpr121_init();
+	if (res != ESP_OK)
+		return res;
+	res = badge_mpr121_configure_gpio(MPR121_PIN_NUM_SD_CD, MPR121_INPUT);
+	if (res != ESP_OK)
+		return res;
 #endif
 
 	badge_sdcard_init_done = true;

@@ -65,8 +65,16 @@ badge_touch_init(void)
 	if (badge_touch_init_done)
 		return ESP_OK;
 
-	badge_portexp_set_input_default_state(PORTEXP_PIN_NUM_TOUCH, 1);
-	badge_portexp_set_interrupt_enable(PORTEXP_PIN_NUM_TOUCH, 1);
+	esp_err_t res;
+	res = badge_portexp_init();
+	if (res != ESP_OK)
+		return res;
+	res = badge_portexp_set_input_default_state(PORTEXP_PIN_NUM_TOUCH, 1);
+	if (res != ESP_OK)
+		return res;
+	res = badge_portexp_set_interrupt_enable(PORTEXP_PIN_NUM_TOUCH, 1);
+	if (res != ESP_OK)
+		return res;
 	badge_portexp_set_interrupt_handler(PORTEXP_PIN_NUM_TOUCH, badge_touch_intr_handler, NULL);
 
 	// read pending old events
