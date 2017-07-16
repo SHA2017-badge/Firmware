@@ -100,10 +100,6 @@ badge_leds_send_data(uint8_t *data, int len)
 {
 	static const uint8_t conv[4] = { 0x11, 0x13, 0x31, 0x33 };
 
-	esp_err_t res = badge_leds_enable();
-	if (res != 0)
-		return res;
-
 	if (badge_leds_buf_len < len * 4 + 3)
 	{
 		if (badge_leds_buf != NULL)
@@ -113,6 +109,10 @@ badge_leds_send_data(uint8_t *data, int len)
 		if (badge_leds_buf == NULL)
 			return ESP_ERR_NO_MEM;
 	}
+
+	esp_err_t res = badge_leds_enable();
+	if (res != 0)
+		return res;
 
 	// 3 * 24 us 'reset'
 	int pos=0;
@@ -196,7 +196,9 @@ badge_leds_init(void)
 		return ESP_OK;
 
 	// depending on badge_power
-	badge_power_init();
+	esp_err_t res = badge_power_init();
+	if (res != ESP_OK)
+		return res;
 
 	// configure PIN_NUM_LEDS as high-impedance
 	gpio_config_t io_conf = {
@@ -206,7 +208,7 @@ badge_leds_init(void)
 		.pull_down_en = 0,
 		.pull_up_en   = 0,
 	};
-	esp_err_t res = gpio_config(&io_conf);
+	res = gpio_config(&io_conf);
 	if (res != ESP_OK)
 		return res;
 

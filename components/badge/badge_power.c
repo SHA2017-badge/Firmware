@@ -226,21 +226,24 @@ badge_power_init(void)
 
 	// configure adc width
 #if defined(ADC1_CHAN_VBAT_SENSE) || defined(ADC1_CHAN_VUSB_SENSE)
-	adc1_config_width(ADC_WIDTH_12Bit);
+	res = adc1_config_width(ADC_WIDTH_12Bit);
+	assert( res == ESP_OK );
 #endif // defined(ADC1_CHAN_VBAT_SENSE) || defined(ADC1_CHAN_VUSB_SENSE)
 
 	// configure vbat-sense
 #ifdef ADC1_CHAN_VBAT_SENSE
 	// When VDD_A is 3.3V:
 	// 6dB attenuation (ADC_ATTEN_6db) gives full-scale voltage 2.2V
-	adc1_config_channel_atten(ADC1_CHAN_VBAT_SENSE, ADC_ATTEN_6db);
+	res = adc1_config_channel_atten(ADC1_CHAN_VBAT_SENSE, ADC_ATTEN_6db);
+	assert( res == ESP_OK );
 #endif // ADC1_CHAN_VBAT_SENSE
 
 	// configure vusb-sense
 #ifdef ADC1_CHAN_VUSB_SENSE
 	// When VDD_A is 3.3V:
 	// 6dB attenuation (ADC_ATTEN_6db) gives full-scale voltage 2.2V
-	adc1_config_channel_atten(ADC1_CHAN_VUSB_SENSE, ADC_ATTEN_6db);
+	res = adc1_config_channel_atten(ADC1_CHAN_VUSB_SENSE, ADC_ATTEN_6db);
+	assert( res == ESP_OK );
 #endif // ADC1_CHAN_VUSB_SENSE
 
 #if defined(PORTEXP_PIN_NUM_CHRGSTAT) || defined(PORTEXP_PIN_NUM_LEDS)
@@ -257,21 +260,39 @@ badge_power_init(void)
 
 	// configure charge-stat pin
 #ifdef PORTEXP_PIN_NUM_CHRGSTAT
-	badge_portexp_set_io_direction(PORTEXP_PIN_NUM_CHRGSTAT, 0);
-	badge_portexp_set_input_default_state(PORTEXP_PIN_NUM_CHRGSTAT, 0);
-	badge_portexp_set_pull_enable(PORTEXP_PIN_NUM_CHRGSTAT, 0);
-	badge_portexp_set_interrupt_enable(PORTEXP_PIN_NUM_CHRGSTAT, 0);
+	res = badge_portexp_set_io_direction(PORTEXP_PIN_NUM_CHRGSTAT, 0);
+	if (res != ESP_OK)
+		return res;
+	res = badge_portexp_set_input_default_state(PORTEXP_PIN_NUM_CHRGSTAT, 0);
+	if (res != ESP_OK)
+		return res;
+	res = badge_portexp_set_pull_enable(PORTEXP_PIN_NUM_CHRGSTAT, 0);
+	if (res != ESP_OK)
+		return res;
+	res = badge_portexp_set_interrupt_enable(PORTEXP_PIN_NUM_CHRGSTAT, 0);
+	if (res != ESP_OK)
+		return res;
 #elif defined(MPR121_PIN_NUM_CHRGSTAT)
-	badge_mpr121_configure_gpio(MPR121_PIN_NUM_CHRGSTAT, MPR121_INPUT);
+	res = badge_mpr121_configure_gpio(MPR121_PIN_NUM_CHRGSTAT, MPR121_INPUT);
+	if (res != ESP_OK)
+		return res;
 #endif
 
 	// configure power to the leds and sd-card
 #ifdef PORTEXP_PIN_NUM_LEDS
-	badge_portexp_set_output_state(PORTEXP_PIN_NUM_LEDS, 0);
-	badge_portexp_set_output_high_z(PORTEXP_PIN_NUM_LEDS, 0);
-	badge_portexp_set_io_direction(PORTEXP_PIN_NUM_LEDS, 1);
+	res = badge_portexp_set_output_state(PORTEXP_PIN_NUM_LEDS, 0);
+	if (res != ESP_OK)
+		return res;
+	res = badge_portexp_set_output_high_z(PORTEXP_PIN_NUM_LEDS, 0);
+	if (res != ESP_OK)
+		return res;
+	res = badge_portexp_set_io_direction(PORTEXP_PIN_NUM_LEDS, 1);
+	if (res != ESP_OK)
+		return res;
 #elif defined(MPR121_PIN_NUM_LEDS)
-	badge_mpr121_configure_gpio(MPR121_PIN_NUM_LEDS, MPR121_OUTPUT);
+	res = badge_mpr121_configure_gpio(MPR121_PIN_NUM_LEDS, MPR121_OUTPUT);
+	if (res != ESP_OK)
+		return res;
 #endif
 
 	badge_power_init_done = true;

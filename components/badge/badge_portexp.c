@@ -46,10 +46,10 @@ static inline int
 badge_portexp_read_reg(uint8_t reg)
 {
 	uint8_t value;
-	esp_err_t ret = badge_i2c_read_reg(I2C_PORTEXP_ADDR, reg, &value, 1);
+	esp_err_t res = badge_i2c_read_reg(I2C_PORTEXP_ADDR, reg, &value, 1);
 
-	if (ret != ESP_OK) {
-		ets_printf("badge_portexp: i2c read reg(0x%02x): error %d\n", reg, ret);
+	if (res != ESP_OK) {
+		ets_printf("badge_portexp: i2c read reg(0x%02x): error %d\n", reg, res);
 		return -1;
 	}
 

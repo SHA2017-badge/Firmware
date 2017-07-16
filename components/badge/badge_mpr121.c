@@ -146,10 +146,14 @@ badge_mpr121_intr_task(void *arg)
 				vTaskDelay(1000 / portTICK_PERIOD_MS);
 
 				// clear OVCF by writing a 1
-				badge_mpr121_write_reg(0x01, state >> 8);
+				esp_err_t res = badge_mpr121_write_reg(0x01, state >> 8);
+				if (res != ESP_OK)
+					ets_printf("badge_mpr121: failed to reset over-current.\n");
 
 				// enable run-mode, set base-line tracking
-				badge_mpr121_write_reg(0x5e, 0x88);
+				res = badge_mpr121_write_reg(0x5e, 0x88);
+				if (res != ESP_OK)
+					ets_printf("badge_mpr121: failed to re-enable touch.\n");
 			}
 
 			old_state = state;
@@ -183,58 +187,84 @@ badge_mpr121_intr_handler(void *arg)
 esp_err_t
 badge_mpr121_configure(const uint32_t *baseline, bool strict)
 {
-	// soft reset
-	badge_mpr121_write_reg(0x80, 0x63);
+	static const uint8_t conf[2*15] = {
+		// soft reset
+		0x80, 0x63,
 
-	// set baseline filters
-	badge_mpr121_write_reg(MPR121_MHDR, 0x01);
-	badge_mpr121_write_reg(MPR121_NHDR, 0x01);
-	badge_mpr121_write_reg(MPR121_NCLR, 0x0E);
-	badge_mpr121_write_reg(MPR121_FDLR, 0x00);
+		// set baseline filters
+		MPR121_MHDR, 0x01,
+		MPR121_NHDR, 0x01,
+		MPR121_NCLR, 0x0E,
+		MPR121_FDLR, 0x00,
 
-	badge_mpr121_write_reg(MPR121_MHDF, 0x01);
-	badge_mpr121_write_reg(MPR121_NHDF, 0x05);
-	badge_mpr121_write_reg(MPR121_NCLF, 0x01);
-	badge_mpr121_write_reg(MPR121_FDLF, 0x00);
+		MPR121_MHDF, 0x01,
+		MPR121_NHDF, 0x05,
+		MPR121_NCLF, 0x01,
+		MPR121_FDLF, 0x00,
 
-	badge_mpr121_write_reg(MPR121_NHDT, 0x00);
-	badge_mpr121_write_reg(MPR121_NCLT, 0x00);
-	badge_mpr121_write_reg(MPR121_FDLT, 0x00);
+		MPR121_NHDT, 0x00,
+		MPR121_NCLT, 0x00,
+		MPR121_FDLT, 0x00,
 
-	badge_mpr121_write_reg(MPR121_DEBOUNCE, 0x00);
-	badge_mpr121_write_reg(MPR121_CONFIG1, 0x10); // default, 16µA charge current
-	badge_mpr121_write_reg(MPR121_CONFIG2, 0x20); // 0x5µs encoding, 1ms period
+		MPR121_DEBOUNCE, 0x00,
+		MPR121_CONFIG1, 0x10,  // default, 16µA charge current
+		MPR121_CONFIG2, 0x20,  // 0x5µs encoding, 1ms period
+	};
+	esp_err_t res;
+
+	int i;
+	for (i=0; i<sizeof(conf); i += 2)
+	{
+		res = badge_mpr121_write_reg(conf[i], conf[i+1]);
+		if (res != ESP_OK)
+			return res;
+	}
 
 	// set thresholds
-	int i;
 	for (i=0; i<8; i++)
 	{
 		if (baseline != NULL)
 		{
-			badge_mpr121_write_reg(MPR121_BASELINE_0 + i, baseline[i] >> 2); // baseline
+			res = badge_mpr121_write_reg(MPR121_BASELINE_0 + i, baseline[i] >> 2); // baseline
+			if (res != ESP_OK)
+				return res;
 		}
 
 		if (strict)
 		{
-			badge_mpr121_write_reg(MPR121_TOUCHTH_0   + 2*i, 16); // touch
-			badge_mpr121_write_reg(MPR121_RELEASETH_0 + 2*i,  8); // release
+			res = badge_mpr121_write_reg(MPR121_TOUCHTH_0   + 2*i, 16); // touch
+			if (res != ESP_OK)
+				return res;
+
+			res = badge_mpr121_write_reg(MPR121_RELEASETH_0 + 2*i,  8); // release
+			if (res != ESP_OK)
+				return res;
 		}
 		else
 		{
-			badge_mpr121_write_reg(MPR121_TOUCHTH_0   + 2*i, 48); // touch
-			badge_mpr121_write_reg(MPR121_RELEASETH_0 + 2*i, 24); // release
+			res = badge_mpr121_write_reg(MPR121_TOUCHTH_0   + 2*i, 48); // touch
+			if (res != ESP_OK)
+				return res;
+
+			res = badge_mpr121_write_reg(MPR121_RELEASETH_0 + 2*i, 24); // release
+			if (res != ESP_OK)
+				return res;
 		}
 	}
 
 	if (baseline == NULL)
 	{
 		// enable run-mode, set base-line tracking
-		badge_mpr121_write_reg(0x5e, 0x88);
+		res = badge_mpr121_write_reg(0x5e, 0x88);
+		if (res != ESP_OK)
+			return res;
 	}
 	else
 	{
 		// enable run-mode, disable base-line tracking
-		badge_mpr121_write_reg(0x5e, 0x48);
+		res = badge_mpr121_write_reg(0x5e, 0x48);
+		if (res != ESP_OK)
+			return res;
 	}
 
 	return ESP_OK;
@@ -303,7 +333,7 @@ int
 badge_mpr121_get_interrupt_status(void)
 {
 	uint16_t value;
-	int res = badge_mpr121_read_regs(0x00, (uint8_t *) &value, 2);
+	esp_err_t res = badge_mpr121_read_regs(0x00, (uint8_t *) &value, 2);
 	if (res != ESP_OK)
 		return -1;
 
@@ -313,13 +343,13 @@ badge_mpr121_get_interrupt_status(void)
 esp_err_t
 badge_mpr121_get_touch_info(struct badge_mpr121_touch_info *info)
 {
-	int res = badge_mpr121_read_reg(0x00);
-	if (res == -1)
+	int value = badge_mpr121_read_reg(0x00);
+	if (value == -1)
 		return ESP_FAIL; // need more-specific error?
-	info->touch_state = res;
+	info->touch_state = value;
 
 	uint16_t data[8];
-	res = badge_mpr121_read_regs(0x04, (uint8_t *) &data, 16);
+	esp_err_t res = badge_mpr121_read_regs(0x04, (uint8_t *) &data, 16);
 	if (res != ESP_OK)
 		return res;
 
@@ -360,70 +390,70 @@ badge_mpr121_configure_gpio(int pin, enum badge_mpr121_gpio_config config)
 	mpr121_gpio_bit_out[pin] = -1;
 
 	// set control 0: 0
-	int res = badge_mpr121_read_reg(0x73);
-	if (res == -1)
+	int value = badge_mpr121_read_reg(0x73);
+	if (value == -1)
 		return -1;
 
 	if ((config & 1) == 0)
-		res &= bit_rst;
+		value &= bit_rst;
 	else
-		res |= bit_set;
+		value |= bit_set;
 
-	res = badge_mpr121_write_reg(0x73, res);
+	esp_err_t res = badge_mpr121_write_reg(0x73, value);
 	if (res != ESP_OK)
 		return -1;
 
 	// set control 1: 0
-	res = badge_mpr121_read_reg(0x74);
-	if (res == -1)
+	value = badge_mpr121_read_reg(0x74);
+	if (value == -1)
 		return -1;
 
 	if ((config & 2) == 0)
-		res &= bit_rst;
+		value &= bit_rst;
 	else
-		res |= bit_set;
+		value |= bit_set;
 
-	res = badge_mpr121_write_reg(0x74, res);
+	res = badge_mpr121_write_reg(0x74, value);
 	if (res != ESP_OK)
 		return -1;
 
 	// set data: 0 = low
-	res = badge_mpr121_read_reg(0x75);
-	if (res == -1)
+	value = badge_mpr121_read_reg(0x75);
+	if (value == -1)
 		return -1;
 
 	// always reset data out bit
-	res &= bit_rst;
+	value &= bit_rst;
 
-	res = badge_mpr121_write_reg(0x75, res);
+	res = badge_mpr121_write_reg(0x75, value);
 	if (res != ESP_OK)
 		return -1;
 
 	// set direction: 1 = output
-	res = badge_mpr121_read_reg(0x76);
-	if (res == -1)
+	value = badge_mpr121_read_reg(0x76);
+	if (value == -1)
 		return -1;
 
 	if ((config & 4) == 0)
-		res &= bit_rst;
+		value &= bit_rst;
 	else
-		res |= bit_set;
+		value |= bit_set;
 
-	res = badge_mpr121_write_reg(0x76, res);
+	res = badge_mpr121_write_reg(0x76, value);
 	if (res != ESP_OK)
 		return -1;
 
 	// enable gpio pin: 1 = enable
-	res = badge_mpr121_read_reg(0x77);
-	if (res == -1)
+	value = badge_mpr121_read_reg(0x77);
+	if (value == -1)
 		return -1;
 
 	if ((config & 8) == 0)
-		res &= bit_rst;
+		value &= bit_rst;
 	else
-		res |= bit_set;
+		value |= bit_set;
 
-	res = badge_mpr121_write_reg(0x77, res);
+	res = badge_mpr121_write_reg(0x77, value);
 	if (res != ESP_OK)
 		return -1;
 
@@ -439,11 +469,11 @@ badge_mpr121_get_gpio_level(int pin)
 	pin &= 7;
 
 	// read data from status register
-	int res = badge_mpr121_read_reg(pin < 4 ? 0x01: 0x00);
-	if (res == -1)
+	int value = badge_mpr121_read_reg(pin < 4 ? 0x01: 0x00);
+	if (value == -1)
 		return -1;
 
-	return (res >> pin) & 1;
+	return (value >> pin) & 1;
 }
 
 int

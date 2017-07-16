@@ -69,24 +69,34 @@ badge_i2c_init(void)
 esp_err_t
 badge_i2c_read_reg(uint8_t addr, uint8_t reg, uint8_t *value, size_t value_len)
 {
+	esp_err_t res;
 	if (xSemaphoreTake(badge_i2c_mux, portMAX_DELAY) != pdTRUE)
 		return ESP_ERR_TIMEOUT;
 
 	i2c_cmd_handle_t cmd = i2c_cmd_link_create();
-	i2c_master_start(cmd);
-	i2c_master_write_byte(cmd, ( addr << 1 ) | WRITE_BIT, ACK_CHECK_EN);
-	i2c_master_write_byte(cmd, reg, ACK_CHECK_EN);
 
-	i2c_master_start(cmd);
-	i2c_master_write_byte(cmd, ( addr << 1 ) | READ_BIT, ACK_CHECK_EN);
+	res = i2c_master_start(cmd);
+	assert( res == ESP_OK );
+	res = i2c_master_write_byte(cmd, ( addr << 1 ) | WRITE_BIT, ACK_CHECK_EN);
+	assert( res == ESP_OK );
+	res = i2c_master_write_byte(cmd, reg, ACK_CHECK_EN);
+	assert( res == ESP_OK );
+
+	res = i2c_master_start(cmd);
+	assert( res == ESP_OK );
+	res = i2c_master_write_byte(cmd, ( addr << 1 ) | READ_BIT, ACK_CHECK_EN);
+	assert( res == ESP_OK );
 	if (value_len > 1)
 	{
-		i2c_master_read(cmd, value, value_len-1, ACK_VAL);
+		res = i2c_master_read(cmd, value, value_len-1, ACK_VAL);
+		assert( res == ESP_OK );
 	}
-	i2c_master_read_byte(cmd, &value[value_len-1], NACK_VAL);
-	i2c_master_stop(cmd);
+	res = i2c_master_read_byte(cmd, &value[value_len-1], NACK_VAL);
+	assert( res == ESP_OK );
+	res = i2c_master_stop(cmd);
+	assert( res == ESP_OK );
 
-	esp_err_t ret = i2c_master_cmd_begin(I2C_MASTER_NUM, cmd, 1000 / portTICK_RATE_MS);
+	res = i2c_master_cmd_begin(I2C_MASTER_NUM, cmd, 1000 / portTICK_RATE_MS);
 	i2c_cmd_link_delete(cmd);
 
 	if (xSemaphoreGive(badge_i2c_mux) != pdTRUE)
@@ -94,23 +104,30 @@ badge_i2c_read_reg(uint8_t addr, uint8_t reg, uint8_t *value, size_t value_len)
 		ets_printf("badge_i2c: xSemaphoreGive() did not return pdTRUE.\n");
 	}
 
-	return ret;
+	return res;
 }
 
 esp_err_t
 badge_i2c_write_reg(uint8_t addr, uint8_t reg, uint8_t value)
 {
+	esp_err_t res;
 	if (xSemaphoreTake(badge_i2c_mux, portMAX_DELAY) != pdTRUE)
 		return ESP_ERR_TIMEOUT;
 
 	i2c_cmd_handle_t cmd = i2c_cmd_link_create();
-	i2c_master_start(cmd);
-	i2c_master_write_byte(cmd, ( addr << 1 ) | WRITE_BIT, ACK_CHECK_EN);
-	i2c_master_write_byte(cmd, reg, ACK_CHECK_EN);
-	i2c_master_write_byte(cmd, value, ACK_CHECK_EN);
-	i2c_master_stop(cmd);
 
-	esp_err_t ret = i2c_master_cmd_begin(I2C_MASTER_NUM, cmd, 1000 / portTICK_RATE_MS);
+	res = i2c_master_start(cmd);
+	assert( res == ESP_OK );
+	res = i2c_master_write_byte(cmd, ( addr << 1 ) | WRITE_BIT, ACK_CHECK_EN);
+	assert( res == ESP_OK );
+	res = i2c_master_write_byte(cmd, reg, ACK_CHECK_EN);
+	assert( res == ESP_OK );
+	res = i2c_master_write_byte(cmd, value, ACK_CHECK_EN);
+	assert( res == ESP_OK );
+	res = i2c_master_stop(cmd);
+	assert( res == ESP_OK );
+
+	res = i2c_master_cmd_begin(I2C_MASTER_NUM, cmd, 1000 / portTICK_RATE_MS);
 	i2c_cmd_link_delete(cmd);
 
 	if (xSemaphoreGive(badge_i2c_mux) != pdTRUE)
@@ -118,23 +135,30 @@ badge_i2c_write_reg(uint8_t addr, uint8_t reg, uint8_t value)
 		ets_printf("badge_i2c: xSemaphoreGive() did not return pdTRUE.\n");
 	}
 
-	return ret;
+	return res;
 }
 
 esp_err_t
 badge_i2c_read_event(uint8_t addr, uint8_t *buf)
 {
+	esp_err_t res;
 	if (xSemaphoreTake(badge_i2c_mux, portMAX_DELAY) != pdTRUE)
 		return ESP_ERR_TIMEOUT;
 
 	i2c_cmd_handle_t cmd = i2c_cmd_link_create();
-	i2c_master_start(cmd);
-	i2c_master_write_byte(cmd, ( addr << 1 ) | READ_BIT, ACK_CHECK_EN);
-	i2c_master_read(cmd, buf, 2, ACK_VAL);
-	i2c_master_read_byte(cmd, &buf[2], NACK_VAL);
-	i2c_master_stop(cmd);
 
-	esp_err_t ret = i2c_master_cmd_begin(I2C_MASTER_NUM, cmd, 1000 / portTICK_RATE_MS);
+	res = i2c_master_start(cmd);
+	assert( res == ESP_OK );
+	res = i2c_master_write_byte(cmd, ( addr << 1 ) | READ_BIT, ACK_CHECK_EN);
+	assert( res == ESP_OK );
+	res = i2c_master_read(cmd, buf, 2, ACK_VAL);
+	assert( res == ESP_OK );
+	res = i2c_master_read_byte(cmd, &buf[2], NACK_VAL);
+	assert( res == ESP_OK );
+	res = i2c_master_stop(cmd);
+	assert( res == ESP_OK );
+
+	res = i2c_master_cmd_begin(I2C_MASTER_NUM, cmd, 1000 / portTICK_RATE_MS);
 	i2c_cmd_link_delete(cmd);
 
 	if (xSemaphoreGive(badge_i2c_mux) != pdTRUE)
@@ -142,7 +166,7 @@ badge_i2c_read_event(uint8_t addr, uint8_t *buf)
 		ets_printf("badge_i2c: xSemaphoreGive() did not return pdTRUE.\n");
 	}
 
-	return ret;
+	return res;
 }
 
 #endif // PIN_NUM_I2C_CLK

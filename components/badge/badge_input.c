@@ -48,9 +48,19 @@ badge_input_add_event(uint32_t button_id, bool pressed, bool in_isr)
 	{
 		badge_input_button_state |= 1 << button_id;
 		if (in_isr)
-			xQueueSendFromISR(badge_input_queue, &button_id, NULL);
+		{
+			if (xQueueSendFromISR(badge_input_queue, &button_id, NULL) != pdTRUE)
+			{
+				ets_printf("badge_input: input queue full.\n");
+			}
+		}
 		else
-			xQueueSend(badge_input_queue, &button_id, 0);
+		{
+			if (xQueueSend(badge_input_queue, &button_id, 0) != pdTRUE)
+			{
+				ets_printf("badge_input: input queue full.\n");
+			}
+		}
 	}
 	else
 	{

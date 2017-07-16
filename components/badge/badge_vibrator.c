@@ -57,17 +57,32 @@ esp_err_t
 badge_vibrator_init(void)
 {
 	static bool badge_vibrator_init_done = false;
+	esp_err_t res;
 
 	if (badge_vibrator_init_done)
 		return ESP_OK;
 
 	// configure vibrator pin
 #ifdef PORTEXP_PIN_NUM_VIBRATOR
-	badge_portexp_set_output_state(PORTEXP_PIN_NUM_VIBRATOR, 0);
-	badge_portexp_set_output_high_z(PORTEXP_PIN_NUM_VIBRATOR, 0);
-	badge_portexp_set_io_direction(PORTEXP_PIN_NUM_VIBRATOR, 1);
+	res = badge_portexp_init();
+	if (res != ESP_OK)
+		return res;
+	res = badge_portexp_set_output_state(PORTEXP_PIN_NUM_VIBRATOR, 0);
+	if (res != ESP_OK)
+		return res;
+	res = badge_portexp_set_output_high_z(PORTEXP_PIN_NUM_VIBRATOR, 0);
+	if (res != ESP_OK)
+		return res;
+	res = badge_portexp_set_io_direction(PORTEXP_PIN_NUM_VIBRATOR, 1);
+	if (res != ESP_OK)
+		return res;
 #elif defined(MPR121_PIN_NUM_VIBRATOR)
-	badge_mpr121_configure_gpio(MPR121_PIN_NUM_VIBRATOR, MPR121_OUTPUT);
+	res = badge_mpr121_init();
+	if (res != ESP_OK)
+		return res;
+	res = badge_mpr121_configure_gpio(MPR121_PIN_NUM_VIBRATOR, MPR121_OUTPUT);
+	if (res != ESP_OK)
+		return res;
 #endif
 
 	badge_vibrator_init_done = true;
