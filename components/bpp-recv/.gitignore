@@ -1,0 +1,4 @@
+part-*.img
+tst/
+*.o
+recv

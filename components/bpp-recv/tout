@@ -1,0 +1,1185 @@
+File part-12-34.img created and filled with random crap.
+
+
+
+Starting test phase 0
+bd_ropart: Managing partition of 31 blocks (124K). Bdesc is 2 blocks, reserved len is 12 blocks (48 K), fs size is 17 blocks (68K).
+bd_ropart: Filesystem has 1021 invalid sectors. Assuming uninitialized; initializing.
+bd_ropart: 1024 descriptors, of which 0 in use.
+*** Check for uninitialized
+Checking sector 0, seed 0
+Lower-level error reading sect 0
+Checking sector 1, seed 0
+Lower-level error reading sect 1
+Checking sector 2, seed 0
+Lower-level error reading sect 2
+Checking sector 3, seed 0
+Lower-level error reading sect 3
+Checking sector 4, seed 0
+Lower-level error reading sect 4
+Checking sector 5, seed 0
+Lower-level error reading sect 5
+Checking sector 6, seed 0
+Lower-level error reading sect 6
+Checking sector 7, seed 0
+Lower-level error reading sect 7
+Checking sector 8, seed 0
+Lower-level error reading sect 8
+Checking sector 9, seed 0
+Lower-level error reading sect 9
+Checking sector 10, seed 0
+Lower-level error reading sect 10
+Checking sector 11, seed 0
+Lower-level error reading sect 11
+Checking sector 12, seed 0
+Lower-level error reading sect 12
+Checking sector 13, seed 0
+Lower-level error reading sect 13
+Checking sector 14, seed 0
+Lower-level error reading sect 14
+Checking sector 15, seed 0
+Lower-level error reading sect 15
+Checking sector 16, seed 0
+Lower-level error reading sect 16
+*** Check read out-of-bounds sector
+Checking sector 18, seed 0
+Lower-level error reading sect 18
+*** Full populate, chid=1
+Filling sector 16, seed 16, chid 1
+bd_ropart: Writing data for virt sect 16 to phys sect 1.
+Filling sector 15, seed 15, chid 1
+bd_ropart: Writing data for virt sect 15 to phys sect 2.
+Filling sector 14, seed 14, chid 1
+bd_ropart: Writing data for virt sect 14 to phys sect 3.
+Filling sector 13, seed 13, chid 1
+bd_ropart: Writing data for virt sect 13 to phys sect 4.
+Filling sector 12, seed 12, chid 1
+bd_ropart: Writing data for virt sect 12 to phys sect 5.
+Filling sector 11, seed 11, chid 1
+bd_ropart: Writing data for virt sect 11 to phys sect 6.
+Filling sector 10, seed 10, chid 1
+bd_ropart: Writing data for virt sect 10 to phys sect 7.
+Filling sector 9, seed 9, chid 1
+bd_ropart: Writing data for virt sect 9 to phys sect 8.
+Filling sector 8, seed 8, chid 1
+bd_ropart: Writing data for virt sect 8 to phys sect 9.
+Filling sector 7, seed 7, chid 1
+bd_ropart: Writing data for virt sect 7 to phys sect 10.
+Filling sector 6, seed 6, chid 1
+bd_ropart: Writing data for virt sect 6 to phys sect 11.
+Filling sector 5, seed 5, chid 1
+bd_ropart: Writing data for virt sect 5 to phys sect 12.
+Filling sector 4, seed 4, chid 1
+bd_ropart: Writing data for virt sect 4 to phys sect 13.
+Filling sector 3, seed 3, chid 1
+bd_ropart: Writing data for virt sect 3 to phys sect 14.
+Filling sector 2, seed 2, chid 1
+bd_ropart: Writing data for virt sect 2 to phys sect 15.
+Filling sector 1, seed 1, chid 1
+bd_ropart: Writing data for virt sect 1 to phys sect 16.
+Filling sector 0, seed 0, chid 1
+bd_ropart: NotifyComplete for id 1. Last marker we have is 0.
+bd_ropart: Writing data for virt sect 0 to phys sect 17.
+*** Check full populate, chid=1
+Checking sector 0, seed 0
+bd_ropart: Reading data for virt sect 0 from phys sect 17.
+Checking sector 1, seed 1
+bd_ropart: Reading data for virt sect 1 from phys sect 16.
+Checking sector 2, seed 2
+bd_ropart: Reading data for virt sect 2 from phys sect 15.
+Checking sector 3, seed 3
+bd_ropart: Reading data for virt sect 3 from phys sect 14.
+Checking sector 4, seed 4
+bd_ropart: Reading data for virt sect 4 from phys sect 13.
+Checking sector 5, seed 5
+bd_ropart: Reading data for virt sect 5 from phys sect 12.
+Checking sector 6, seed 6
+bd_ropart: Reading data for virt sect 6 from phys sect 11.
+Checking sector 7, seed 7
+bd_ropart: Reading data for virt sect 7 from phys sect 10.
+Checking sector 8, seed 8
+bd_ropart: Reading data for virt sect 8 from phys sect 9.
+Checking sector 9, seed 9
+bd_ropart: Reading data for virt sect 9 from phys sect 8.
+Checking sector 10, seed 10
+bd_ropart: Reading data for virt sect 10 from phys sect 7.
+Checking 
+
+
+Starting test phase 1
+bd_ropart: Managing partition of 31 blocks (124K). Bdesc is 2 blocks, reserved len is 12 blocks (48 K), fs size is 17 blocks (68K).
+bd_ropart: 1024 descriptors, of which 17 in use.
+bd_ropart: NotifyComplete for id 1. Last marker we have is 0.
+*** Re-check full populate, chid=1
+Checking sector 0, seed 0
+bd_ropart: Reading data for virt sect 0 from phys sect 17.
+Checking sector 1, seed 1
+bd_ropart: Reading data for virt sect 1 from phys sect 16.
+Checking sector 2, seed 2
+bd_ropart: Reading data for virt sect 2 from phys sect 15.
+Checking sector 3, seed 3
+bd_ropart: Reading data for virt sect 3 from phys sect 14.
+Checking sector 4, seed 4
+bd_ropart: Reading data for virt sect 4 from phys sect 13.
+Checking sector 5, seed 5
+bd_ropart: Reading data for virt sect 5 from phys sect 12.
+Checking sector 6, seed 6
+bd_ropart: Reading data for virt sect 6 from phys sect 11.
+Checking sector 7, seed 7
+bd_ropart: Reading data for virt sect 7 from phys sect 10.
+Checking sector 8, seed 8
+bd_ropart: Reading data for virt sect 8 from phys sect 9.
+Checking sector 9, seed 9
+bd_ropart: Reading data for virt sect 9 from phys sect 8.
+Checking sector 10, seed 10
+bd_ropart: Reading data for virt sect 10 from phys sect 7.
+Checking sector 11, seed 11
+bd_ropart: Reading data for virt sect 11 from phys sect 6.
+Checking sector 12, seed 12
+bd_ropart: Reading data for virt sect 12 from phys sect 5.
+Checking sector 13, seed 13
+bd_ropart: Reading data for virt sect 13 from phys sect 4.
+Checking sector 14, seed 14
+bd_ropart: Reading data for virt sect 14 from phys sect 3.
+Checking sector 15, seed 15
+bd_ropart: Reading data for virt sect 15 from phys sect 2.
+Checking sector 16, seed 16
+bd_ropart: Reading data for virt sect 16 from phys sect 1.
+*** Partial change, chid=2
+Filling sector 0, seed 100, chid 2
+bd_ropart: Writing data for virt sect 0 to phys sect 18.
+Filling sector 1, seed 101, chid 2
+bd_ropart: Writing data for virt sect 1 to phys sect 19.
+Filling sector 2, seed 102, chid 2
+bd_ropart: Writing data for virt sect 2 to phys sect 20.
+Filling sector 3, seed 103, chid 2
+bd_ropart: Writing data for virt sect 3 to phys sect 21.
+Filling sector 4, seed 104, chid 2
+bd_ropart: Writing data for virt sect 4 to phys sect 22.
+*** Checking if data still is old snapshot data
+Checking sector 0, seed 0
+bd_ropart: Reading data for virt sect 0 from phys sect 17.
+Checking sector 1, seed 1
+bd_ropart: Reading data for virt sect 1 from phys sect 16.
+Checking sector 2, seed 2
+bd_ropart: Reading data for virt sect 2 from phys sect 15.
+Checking sector 3, seed 3
+bd_ropart: Reading data for virt sect 3 from phys sect 14.
+Checking sector 4, seed 4
+bd_ropart: Reading data for virt sect 4 from phys sect 13.
+Checking sector 5, seed 5
+bd_ropart: Reading data for virt sect 5 from phys sect 12.
+Checking sector 6, seed 6
+bd_ropart: Reading data for virt sect 6 from phys sect 11.
+Checking sector 7, seed 7
+bd_ropart: Reading data for virt sect 7 from phys sect 10.
+Checking sector 8, seed 8
+bd_ropart: Reading data for virt sect 8 from phys sect 9.
+Checking sector 9, seed 9
+bd_ropart: Reading data for virt sect 9 from phys sect 8.
+Checking sector 10, seed 10
+bd_ropart: Reading data for virt sect 10 from phys sect 7.
+Checking sector 11, seed 11
+bd_ropart: Reading data for virt sect 11 from phys sect 6.
+Checking sector 12, seed 12
+bd_ropart: Reading data for virt sect 12 from phys sect 5.
+Checking sector 13, seed 13
+bd_ropart: Reading data for virt sect 13 from phys sect 4.
+Checking sector 14, seed 14
+bd_ropart: Reading data for virt sect 14 from phys sect 3.
+Checking sector 15, seed 15
+bd_ropart: Reading data for virt sect 15 from phys sect 2.
+Checking sector 16, seed 16
+bd_ropart: Reading data for virt sect 16 from phys sect 1.
+*** Updating rest of sectors
+bd_ropart: NotifyComplete for id 2. Last marker we have is 1.
+*** Checking for new snapshot data
+Checking sector 0, seed 100
+bd_ropart: Reading data for virt sect 0 from phys sect 18.
+Checking sector 1, seed 101
+bd_ropart: Reading data for virt sect 1 from phys sect 19.
+Checking sector 2, seed 102
+bd_ropart: Reading data for virt sect 2 from phys sect 20.
+Checking sector 3, seed 103
+bd_ropart: Reading data for virt sect 3 from phys sect 21.
+Checking sector 4, seed 104
+bd_ropart: Reading data for virt sect 4 from phys sect 22.
+Checking sector 5, seed 5
+bd_ropart: Reading data for virt sect 5 from phys sect 12.
+Checking sector 6, seed 6
+bd_ropart: Reading data for virt sect 6 from phys sect 11.
+Checking sector 7, seed 7
+bd_ropart: Reading data for virt sect 7 from phys sect 10.
+Checking sector 8, seed 8
+bd_ropart: Reading data for virt sect 8 from phys sect 9.
+Checking sector 9, seed 9
+bd_ropart: Reading data for virt sect 9 from phys sect 8.
+Checking sector 10, seed 10
+bd_ropart: Reading data for virt sect 10 from phys sect 7.
+Checking sector 11, seed 11
+bd_ropart: Reading data for virt sect 11 from phys sect 6.
+Checking sector 12, seed 12
+bd_ropart: Reading data for virt sect 12 from phys sect 5.
+Checking sector 13, seed 13
+bd_ropart: Reading data for virt sect 13 from phys sect 4.
+Checking sector 14, seed 14
+bd_ropart: Reading data for virt sect 14 from phys sect 3.
+Checking sector 15, seed 15
+bd_ropart: Reading data for virt sect 15 from phys sect 2.
+Checking sector 16, seed 16
+bd_ropart: Reading data for virt sect 16 from phys sect 1.
+*** JOURNAL DUMP *** Current lastCompleteId is 2.
+Entry 00: V:  16 P:   1 ChID 1
+Entry 01: V:  15 P:   2 ChID 1
+Entry 02: V:  14 P:   3 ChID 1
+Entry 03: V:  13 P:   4 ChID 1
+Entry 04: V:  12 P:   5 ChID 1
+Entry 05: V:  11 P:   6 ChID 1
+Entry 06: V:  10 P:   7 ChID 1
+Entry 07: V:   9 P:   8 ChID 1
+Entry 08: V:   8 P:   9 ChID 1
+Entry 09: V:   7 P:  10 ChID 1
+Entry 10: V:   6 P:  11 ChID 1
+Entry 11: V:   5 P:  12 ChID 1
+Entry 12: V:   4 P:  13 ChID 1
+Entry 13: V:   3 P:  14 ChID 1
+Entry 14: V:   2 P:  15 ChID 1
+Entry 15: V:   1 P:  16 ChID 1
+Entry 16: V:   0 P:  17 ChID 1
+Entry 17: V:   0 P:  18 ChID 2
+Entry 18: V:   1 P:  19 ChID 2
+Entry 19: V:   2 P:  20 ChID 2
+Entry 20: V:   3 P:  21 ChID 2
+Entry 21: V:   4 P:  22 ChID 2
+*** Filling almost entirely with new data, killing snapshot
+Filling sector 0, seed 200, chid 3
+bd_ropart: Writing data for virt sect 0 to phys sect 23.
+Filling sector 1, seed 201, chid 3
+bd_ropart: Writing data for virt sect 1 to phys sect 24.
+Filling sector 2, seed 202, chid 3
+bd_ropart: Writing data for virt sect 2 to phys sect 25.
+Filling sector 3, seed 203, chid 3
+bd_ropart: Writing data for virt sect 3 to phys sect 26.
+Filling sector 4, seed 204, chid 3
+bd_ropart: Writing data for virt sect 4 to phys sect 27.
+Filling sector 5, seed 205, chid 3
+bd_ropart: Writing data for virt sect 5 to phys sect 28.
+Filling sector 6, seed 206, chid 3
+bd_ropart: Writing data for virt sect 6 to phys sect 0.
+Filling sector 7, seed 207, chid 3
+bd_ropart: No free phys sectors left. Running cleanup, hope that helps...
+bd_ropart: Starting cleanup of desc 0 to 512. Also keeping snapshot id 2 sectors.
+Write ptr (29) is in block to be cleaned. Advancing to start of next block (512).
+Desc 0, mostRecent=0 (1) mostRecentSnapshotted=0 (1)
+Desc 1, mostRecent=1 (1) mostRecentSnapshotted=1 (1)
+Desc 2, mostRecent=2 (1) mostRecentSnapshotted=2 (1)
+Desc 3, mostRecent=3 (1) mostRecentSnapshotted=3 (1)
+Desc 4, mostRecent=4 (1) mostRecentSnapshotted=4 (1)
+Desc 5, mostRecent=5 (1) mostRecentSnapshotted=5 (1)
+Desc 6, mostRecent=6 (1) mostRecentSnapshotted=6 (1)
+Desc 7, mostRecent=7 (1) mostRecentSnapshotted=7 (1)
+Desc 8, mostRecent=8 (1) mostRecentSnapshotted=8 (1)
+Desc 9, mostRecent=9 (1) mostRecentSnapshotted=9 (1)
+Desc 10, mostRecent=28 (3) mostRecentSnapshotted=10 (1)
+Desc 11, mostRecent=27 (3) mostRecentSnapshotted=11 (1)
+Desc 12, mostRecent=26 (3) mostRecentSnapshotted=21 (2)
+Desc 13, mostRecent=25 (3) mostRecentSnapshotted=20 (2)
+Desc 14, mostRecent=24 (3) mostRecentSnapshotted=19 (2)
+Desc 15, mostRecent=23 (3) mostRecentSnapshotted=18 (2)
+Desc 16, mostRecent=22 (3) mostRecentSnapshotted=17 (2)
+Desc 17, mostRecent=22 (3) mostRecentSnapshotted=17 (2)
+Desc 18, mostRecent=23 (3) mostRecentSnapshotted=18 (2)
+Desc 19, mostRecent=24 (3) mostRecentSnapshotted=19 (2)
+Desc 20, mostRecent=25 (3) mostRecentSnapshotted=20 (2)
+Desc 21, mostRecent=26 (3) mostRecentSnapshotted=21 (2)
+Desc 22, mostRecent=22 (3) mostRecentSnapshotted=17 (2)
+Desc 23, mostRecent=23 (3) mostRecentSnapshotted=18 (2)
+Desc 24, mostRecent=24 (3) mostRecentSnapshotted=19 (2)
+Desc 25, mostRecent=25 (3) mostRecentSnapshotted=20 (2)
+Desc 26, mostRecent=26 (3) mostRecentSnapshotted=21 (2)
+Desc 27, mostRecent=27 (3) mostRecentSnapshotted=11 (1)
+Desc 28, mostRecent=28 (3) mostRecentSnapshotted=10 (1)
+bd_ropart: Cleanup done. Of 512 descs, relocated 24 and discarded 5 valid ones.
+bd_ropart: Writing data for virt sect 7 to phys sect 13.
+Filling sector 8, seed 208, chid 3
+bd_ropart: Writing data for virt sect 8 to phys sect 14.
+Filling sector 9, seed 209, chid 3
+bd_ropart: Writing data for virt sect 9 to phys sect 15.
+Filling sector 10, seed 210, chid 3
+bd_ropart: Writing data for virt sect 10 to phys sect 16.
+Filling sector 11, seed 211, chid 3
+bd_ropart: Writing data for virt sect 11 to phys sect 17.
+Filling sector 12, seed 212, chid 3
+bd_ropart: No free phys sectors left. Running cleanup, hope that helps...
+bd_ropart: Starting cleanup of desc 512 to 1024. Also keeping snapshot id 2 sectors.
+Write ptr (541) is in block to be cleaned. Advancing to start of next block (0).
+Desc 512, mostRecent=512 (1) mostRecentSnapshotted=512 (1)
+Desc 513, mostRecent=513 (1) mostRecentSnapshotted=513 (1)
+Desc 514, mostRecent=514 (1) mostRecentSnapshotted=514 (1)
+Desc 515, mostRecent=515 (1) mostRecentSnapshotted=515 (1)
+Desc 516, mostRecent=516 (1) mostRecentSnapshotted=516 (1)
+Desc 517, mostRecent=540 (3) mostRecentSnapshotted=517 (1)
+Desc 518, mostRecent=539 (3) mostRecentSnapshotted=518 (1)
+Desc 519, mostRecent=538 (3) mostRecentSnapshotted=519 (1)
+Desc 520, mostRecent=537 (3) mostRecentSnapshotted=520 (1)
+Desc 521, mostRecent=536 (3) mostRecentSnapshotted=521 (1)
+Desc 522, mostRecent=535 (3) mostRecentSnapshotted=522 (1)
+Desc 523, mostRecent=534 (3) mostRecentSnapshotted=523 (1)
+Desc 524, mostRecent=529 (3) mostRecentSnapshotted=524 (2)
+Desc 525, mostRecent=530 (3) mostRecentSnapshotted=525 (2)
+Desc 526, mostRecent=531 (3) mostRecentSnapshotted=526 (2)
+Desc 527, mostRecent=532 (3) mostRecentSnapshotted=527 (2)
+Desc 528, mostRecent=533 (3) mostRecentSnapshotted=528 (2)
+Desc 529, mostRecent=529 (3) mostRecentSnapshotted=524 (2)
+Desc 530, mostRecent=530 (3) mostRecentSnapshotted=525 (2)
+Desc 531, mostRecent=531 (3) mostRecentSnapshotted=526 (2)
+Desc 532, mostRecent=532 (3) mostRecentSnapshotted=527 (2)
+Desc 533, mostRecent=533 (3) mostRecentSnapshotted=528 (2)
+Desc 534, mostRecent=534 (3) mostRecentSnapshotted=523 (1)
+Desc 535, mostRecent=535 (3) mostRecentSnapshotted=522 (1)
+Desc 536, mostRecent=536 (3) mostRecentSnapshotted=521 (1)
+Desc 537, mostRecent=537 (3) mostRecentSnapshotted=520 (1)
+Desc 538, mostRecent=538 (3) mostRecentSnapshotted=519 (1)
+Desc 539, mostRecent=539 (3) mostRecentSnapshotted=518 (1)
+Desc 540, mostRecent=540 (3) mostRecentSnapshotted=517 (1)
+bd_ropart: Cleanup done. Of 512 descs, relocated 29 and discarded 0 valid ones.
+bd_ropart: No free phys sectors left. Running cleanup, hope that helps...
+bd_ropart: Starting cleanup of desc 0 to 512. Also keeping snapshot id 2 sectors.
+Write ptr (29) is in block to be cleaned. Advancing to start of next block (512).
+Desc 0, mostRecent=0 (1) mostRecentSnapshotted=0 (1)
+Desc 1, mostRecent=1 (1) mostRecentSnapshotted=1 (1)
+Desc 2, mostRecent=2 (1) mostRecentSnapshotted=2 (1)
+Desc 3, mostRecent=3 (1) mostRecentSnapshotted=3 (1)
+Desc 4, mostRecent=4 (1) mostRecentSnapshotted=4 (1)
+Desc 5, mostRecent=28 (3) mostRecentSnapshotted=5 (1)
+Desc 6, mostRecent=27 (3) mostRecentSnapshotted=6 (1)
+Desc 7, mostRecent=26 (3) mostRecentSnapshotted=7 (1)
+Desc 8, mostRecent=25 (3) mostRecentSnapshotted=8 (1)
+Desc 9, mostRecent=24 (3) mostRecentSnapshotted=9 (1)
+Desc 10, mostRecent=23 (3) mostRecentSnapshotted=10 (1)
+Desc 11, mostRecent=22 (3) mostRecentSnapshotted=11 (1)
+Desc 12, mostRecent=17 (3) mostRecentSnapshotted=12 (2)
+Desc 13, mostRecent=18 (3) mostRecentSnapshotted=13 (2)
+Desc 14, mostRecent=19 (3) mostRecentSnapshotted=14 (2)
+Desc 15, mostRecent=20 (3) mostRecentSnapshotted=15 (2)
+Desc 16, mostRecent=21 (3) mostRecentSnapshotted=16 (2)
+Desc 17, mostRecent=17 (3) mostRecentSnapshotted=12 (2)
+Desc 18, mostRecent=18 (3) mostRecentSnapshotted=13 (2)
+Desc 19, mostRecent=19 (3) mostRecentSnapshotted=14 (2)
+Desc 20, mostRecent=20 (3) mostRecentSnapshotted=15 (2)
+Desc 21, mostRecent=21 (3) mostRecentSnapshotted=16 (2)
+Desc 22, mostRecent=22 (3) mostRecentSnapshotted=11 (1)
+Desc 23, mostRecent=23 (3) mostRecentSnapshotted=10 (1)
+Desc 24, mostRecent=24 (3) mostRecentSnapshotted=9 (1)
+Desc 25, mostRecent=25 (3) mostRecentSnapshotted=8 (1)
+Desc 26, mostRecent=26 (3) mostRecentSnapshotted=7 (1)
+Desc 27, mostRecent=27 (3) mostRecentSnapshotted=6 (1)
+Desc 28, mostRecent=28 (3) mostRecentSnapshotted=5 (1)
+bd_ropart: Cleanup done. Of 512 descs, relocated 29 and discarded 0 valid ones.
+bd_ropart: No free phys sectors left. Running cleanup, hope that helps...
+bd_ropart: Starting cleanup of desc 512 to 1024. Also keeping snapshot id 2 sectors.
+Write ptr (541) is in block to be cleaned. Advancing to start of next block (0).
+Desc 512, mostRecent=512 (1) mostRecentSnapshotted=512 (1)
+Desc 513, mostRecent=513 (1) mostRecentSnapshotted=513 (1)
+Desc 514, mostRecent=514 (1) mostRecentSnapshotted=514 (1)
+Desc 515, mostRecent=515 (1) mostRecentSnapshotted=515 (1)
+Desc 516, mostRecent=516 (1) mostRecentSnapshotted=516 (1)
+Desc 517, mostRecent=540 (3) mostRecentSnapshotted=517 (1)
+Desc 518, mostRecent=539 (3) mostRecentSnapshotted=518 (1)
+Desc 519, mostRecent=538 (3) mostRecentSnapshotted=519 (1)
+Desc 520, mostRecent=537 (3) mostRecentSnapshotted=520 (1)
+Desc 521, mostRecent=536 (3) mostRecentSnapshotted=521 (1)
+Desc 522, mostRecent=535 (3) mostRecentSnapshotted=522 (1)
+Desc 523, mostRecent=534 (3) mostRecentSnapshotted=523 (1)
+Desc 524, mostRecent=529 (3) mostRecentSnapshotted=524 (2)
+Desc 525, mostRecent=530 (3) mostRecentSnapshotted=525 (2)
+Desc 526, mostRecent=531 (3) mostRecentSnapshotted=526 (2)
+Desc 527, mostRecent=532 (3) mostRecentSnapshotted=527 (2)
+Desc 528, mostRecent=533 (3) mostRecentSnapshotted=528 (2)
+Desc 529, mostRecent=529 (3) mostRecentSnapshotted=524 (2)
+Desc 530, mostRecent=530 (3) mostRecentSnapshotted=525 (2)
+Desc 531, mostRecent=531 (3) mostRecentSnapshotted=526 (2)
+Desc 532, mostRecent=532 (3) mostRecentSnapshotted=527 (2)
+Desc 533, mostRecent=533 (3) mostRecentSnapshotted=528 (2)
+Desc 534, mostRecent=534 (3) mostRecentSnapshotted=523 (1)
+Desc 535, mostRecent=535 (3) mostRecentSnapshotted=522 (1)
+Desc 536, mostRecent=536 (3) mostRecentSnapshotted=521 (1)
+Desc 537, mostRecent=537 (3) mostRecentSnapshotted=520 (1)
+Desc 538, mostRecent=538 (3) mostRecentSnapshotted=519 (1)
+Desc 539, mostRecent=539 (3) mostRecentSnapshotted=518 (1)
+Desc 540, mostRecent=540 (3) mostRecentSnapshotted=517 (1)
+bd_ropart: Cleanup done. Of 512 descs, relocated 29 and discarded 0 valid ones.
+bd_ropart: Couldn't find any free block to write to! Dropping snapshot and retrying.
+bd_ropart: No free phys sectors left. Running cleanup, hope that helps...
+bd_ropart: Starting cleanup of desc 0 to 512. No active snapshot.
+Write ptr (29) is in block to be cleaned. Advancing to start of next block (512).
+Desc 0, mostRecent=0 (1) mostRecentSnapshotted=-1 (-1)
+Desc 1, mostRecent=1 (1) mostRecentSnapshotted=-1 (-1)
+Desc 2, mostRecent=2 (1) mostRecentSnapshotted=-1 (-1)
+Desc 3, mostRecent=3 (1) mostRecentSnapshotted=-1 (-1)
+Desc 4, mostRecent=4 (1) mostRecentSnapshotted=-1 (-1)
+Desc 5, mostRecent=28 (3) mostRecentSnapshotted=-1 (-1)
+Desc 6, mostRecent=27 (3) mostRecentSnapshotted=-1 (-1)
+Desc 7, mostRecent=26 (3) mostRecentSnapshotted=-1 (-1)
+Desc 8, mostRecent=25 (3) mostRecentSnapshotted=-1 (-1)
+Desc 9, mostRecent=24 (3) mostRecentSnapshotted=-1 (-1)
+Desc 10, mostRecent=23 (3) mostRecentSnapshotted=-1 (-1)
+Desc 11, mostRecent=22 (3) mostRecentSnapshotted=-1 (-1)
+Desc 12, mostRecent=17 (3) mostRecentSnapshotted=-1 (-1)
+Desc 13, mostRecent=18 (3) mostRecentSnapshotted=-1 (-1)
+Desc 14, mostRecent=19 (3) mostRecentSnapshotted=-1 (-1)
+Desc 15, mostRecent=20 (3) mostRecentSnapshotted=-1 (-1)
+Desc 16, mostR
+
+
+Starting test phase 2
+bd_ropart: Managing partition of 31 blocks (124K). Bdesc is 2 blocks, reserved len is 12 blocks (48 K), fs size is 17 blocks (68K).
+bd_ropart: 1024 descriptors, of which 533 in use.
+*** Check if snapshot is dead after reinit
+Checking sector 200, seed 3
+Lower-level error reading sect 200
+Checking sector 201, seed 3
+Lower-level error reading sect 201
+Checking sector 202, seed 3
+Lower-level error reading sect 202
+Checking sector 203, seed 3
+Lower-level error reading sect 203
+Checking sector 204, seed 3
+Lower-level error reading sect 204
+Checking sector 205, seed 3
+Lower-level error reading sect 205
+Checking sector 206, seed 3
+Lower-level error reading sect 206
+Checking sector 207, seed 3
+Lower-level error reading sect 207
+Checking sector 208, seed 3
+Lower-level error reading sect 208
+Checking sector 209, seed 3
+Lower-level error reading sect 209
+Checking sector 210, seed 3
+Lower-level error reading sect 210
+Checking sector 211, seed 3
+Lower-level error reading sect 211
+Checking sector 212, seed 3
+Lower-level error reading sect 212
+Checking sector 213, seed 3
+Lower-level error reading sect 213
+Checking sector 214, seed 3
+Lower-level error reading sect 214
+Checking sector 215, seed 3
+Lower-level error reading sect 215
+Checking sector 216, seed 3
+Lower-level error reading sect 216
+*** Fill last sector
+Filling sector 16, seed 216, chid 3
+bd_ropart: NotifyComplete for id 3. Last marker we have is 0.
+bd_ropart: Less than one block (491) of descs left. Doing cleanup...
+bd_ropart: Starting cleanup of desc 0 to 512. Also keeping snapshot id 3 sectors.
+bd_ropart: Cleanup done. Of 512 descs, relocated 0 and discarded 0 valid ones.
+bd_ropart: 1003 descs left.
+bd_ropart: Writing data for virt sect 16 to phys sect 6.
+*** Check if snapshot is ok now.
+Checking sector 0, seed 200
+bd_ropart: Reading data for virt sect 0 from phys sect 23.
+Checking sector 1, seed 201
+bd_ropart: Reading data for virt sect 1 from phys sect 24.
+Checking sector 2, seed 202
+bd_ropart: Reading data for virt sect 2 from phys sect 25.
+Checking sector 3, seed 203
+bd_ropart: Reading data for virt sect 3 from phys sect 26.
+Checking sector 4, seed 204
+bd_ropart: Reading data for virt sect 4 from phys sect 27.
+Checking sector 5, seed 205
+bd_ropart: Reading data for virt sect 5 from phys sect 28.
+Checking sector 6, seed 206
+bd_ropart: Reading data for virt sect 6 from phys sect 0.
+Checking sector 7, seed 207
+bd_ropart: Reading data for virt sect 7 from phys sect 13.
+Checking sector 8, seed 208
+bd_ropart: Reading data for virt sect 8 from phys sect 14.
+Checking sector 9, seed 209
+bd_ropart: Reading data for virt sect 9 from phys sect 15.
+Checking sector 10, seed 210
+bd_ropart: Reading data for virt sect 10 from phys sect 16.
+Checking sector 11, seed 211
+bd_ropart: Reading data for virt sect 11 from phys sect 17.
+Checking sector 12, seed 212
+bd_ropart: Reading data for virt sect 12 from phys sect 18.
+Checking sector 13, seed 213
+bd_ropart: Reading data for virt sect 13 from phys sect 19.
+Checking sector 14, seed 214
+bd_ropart: Reading data for virt sect 14 from phys sect 20.
+Checking sector 15, seed 215
+bd_ropart: Reading data for virt sect 15 from phys sect 21.
+Checking sector 16, seed 216
+bd_ropart: Reading data for virt sect 16 from phys sect 6.
+*** Brute-force testing.
+Filling sector 0, seed 31, chid 100
+bd_ropart: Writing data for virt sect 0 to phys sect 7.
+Filling sector 1, seed 201, chid 100
+bd_ropart: Writing data for virt sect 1 to phys sect 8.
+Filling sector 2, seed 19, chid 100
+bd_ropart: Writing data for virt sect 2 to phys sect 9.
+Filling sector 3, seed 86, chid 100
+bd_ropart: Writing data for virt sect 3 to phys sect 10.
+Filling sector 4, seed 157, chid 100
+bd_ropart: Writing data for virt sect 4 to phys sect 11.
+Filling sector 5, seed 210, chid 100
+bd_ropart: Writing data for virt sect 5 to phys sect 12.
+Filling sector 6, seed 223, chid 100
+bd_ropart: Writing data for virt sect 6 to phys sect 22.
+Filling sector 7, seed 44, chid 100
+bd_ropart: No free phys sectors left. Running cleanup, hope that helps...
+bd_ropart: Starting cleanup of desc 512 to 1024. Also keeping snapshot id 3 sectors.
+Write ptr (541) is in block to be cleaned. Advancing to start of next block (0).
+Desc 512, mostRecent=533 (3) mostRecentSnapshotted=533 (3)
+Desc 513, mostRecent=532 (3) mostRecentSnapshotted=532 (3)
+Desc 514, mostRecent=531 (3) mostRecentSnapshotted=531 (3)
+Desc 515, mostRecent=530 (3) mostRecentSnapshotted=530 (3)
+Desc 516, mostRecent=529 (3) mostRecentSnapshotted=529 (3)
+Desc 517, mostRecent=534 (100) mostRecentSnapshotted=517 (3)
+Desc 518, mostRecent=535 (100) mostRecentSnapshotted=518 (3)
+Desc 519, mostRecent=536 (100) mostRecentSnapshotted=519 (3)
+Desc 520, mostRecent=537 (100) mostRecentSnapshotted=520 (3)
+Desc 521, mostRecent=538 (100) mostRecentSnapshotted=521 (3)
+Desc 522, mostRecent=539 (100) mostRecentSnapshotted=522 (3)
+Desc 523, mostRecent=540 (100) mostRecentSnapshotted=523 (3)
+Desc 524, mostRecent=524 (3) mostRecentSnapshotted=524 (3)
+Desc 525, mostRecent=525 (3) mostRecentSnapshotted=525 (3)
+Desc 526, mostRecent=526 (3) mostRecentSnapshotted=526 (3)
+Desc 527, mostRecent=527 (3) mostRecentSnapshotted=527 (3)
+Desc 528, mostRecent=528 (3) mostRecentSnapshotted=528 (3)
+Desc 529, mostRecent=529 (3) mostRecentSnapshotted=529 (3)
+Desc 530, mostRecent=530 (3) mostRecentSnapshotted=530 (3)
+Desc 531, mostRecent=531 (3) mostRecentSnapshotted=531 (3)
+Desc 532, mostRecent=532 (3) mostRecentSnapshotted=532 (3)
+Desc 533, mostRecent=533 (3) mostRecentSnapshotted=533 (3)
+Desc 534, mostRecent=534 (100) mostRecentSnapshotted=517 (3)
+Desc 535, mostRecent=535 (100) mostRecentSnapshotted=518 (3)
+Desc 536, mostRecent=536 (100) mostRecentSnapshotted=519 (3)
+Desc 537, mostRecent=537 (100) mostRecentSnapshotted=520 (3)
+Desc 538, mostRecent=538 (100) mostRecentSnapshotted=521 (3)
+Desc 539, mostRecent=539 (100) mostRecentSnapshotted=522 (3)
+Desc 540, mostRecent=540 (100) mostRecentSnapshotted=523 (3)
+bd_ropart: Cleanup done. Of 512 descs, relocated 24 and discarded 5 valid ones.
+bd_ropart: Writing data for virt sect 7 to phys sect 1.
+Filling sector 8, seed 192, chid 100
+bd_ropart: Writing data for virt sect 8 to phys sect 2.
+Filling sector 9, seed 155, chid 100
+bd_ropart: Writing data for virt sect 9 to phys sect 3.
+Filling sector 10, seed 33, chid 100
+bd_ropart: Writing data for virt sect 10 to phys sect 4.
+Filling sector 11, seed 224, chid 100
+bd_ropart: Writing data for virt sect 11 to phys sect 5.
+Filling sector 12, seed 116, chid 100
+bd_ropart: No free phys sectors left. Running cleanup, hope that helps...
+bd_ropart: Starting cleanup of desc 0 to 512. Also keeping snapshot id 3 sectors.
+Write ptr (29) is in block to be cleaned. Advancing to start of next block (512).
+Desc 0, mostRecent=17 (100) mostRecentSnapshotted=0 (3)
+Desc 1, mostRecent=18 (100) mostRecentSnapshotted=1 (3)
+Desc 2, mostRecent=19 (100) mostRecentSnapshotted=2 (3)
+Desc 3, mostRecent=20 (100) mostRecentSnapshotted=3 (3)
+Desc 4, mostRecent=21 (100) mostRecentSnapshotted=4 (3)
+Desc 5, mostRecent=22 (100) mostRecentSnapshotted=5 (3)
+Desc 6, mostRecent=23 (100) mostRecentSnapshotted=6 (3)
+Desc 7, mostRecent=24 (100) mostRecentSnapshotted=7 (3)
+Desc 8, mostRecent=25 (100) mostRecentSnapshotted=8 (3)
+Desc 9, mostRecent=26 (100) mostRecentSnapshotted=9 (3)
+Desc 10, mostRecent=27 (100) mostRecentSnapshotted=10 (3)
+Desc 11, mostRecent=28 (100) mostRecentSnapshotted=11 (3)
+Desc 12, mostRecent=12 (3) mostRecentSnapshotted=12 (3)
+Desc 13, mostRecent=13 (3) mostRecentSnapshotted=13 (3)
+Desc 14, mostRecent=14 (3) mostRecentSnapshotted=14 (3)
+Desc 15, mostRecent=15 (3) mostRecentSnapshotted=15 (3)
+Desc 16, mostRecent=16 (3) mostRecentSnapshotted=16 (3)
+Desc 17, mostRecent=17 (100) mostRecentSnapshotted=0 (3)
+Desc 18, mostRecent=18 (100) mostRecentSnapshotted=1 (3)
+Desc 19, mostRecent=19 (100) mostRecentSnapshotted=2 (3)
+Desc 20, mostRecent=20 (100) mostRecentSnapshotted=3 (3)
+Desc 21, mostRecent=21 (100) mostRecentSnapshotted=4 (3)
+Desc 22, mostRecent=22 (100) mostRecentSnapshotted=5 (3)
+Desc 23, mostRecent=23 (100) mostRecentSnapshotted=6 (3)
+Desc 24, mostRecent=24 (100) mostRecentSnapshotted=7 (3)
+Desc 25, mostRecent=25 (100) mostRecentSnapshotted=8 (3)
+Desc 26, mostRecent=26 (100) mostRecentSnapshotted=9 (3)
+Desc 27, mostRecent=27 (100) mostRecentSnapshotted=10 (3)
+Desc 28, mostRecent=28 (100) mostRecentSnapshotted=11 (3)
+bd_ropart: Cleanup done. Of 512 descs, relocated 29 and discarded 0 valid ones.
+bd_ropart: No free phys sectors left. Running cleanup, hope that helps...
+bd_ropart: Starting cleanup of desc 512 to 1024. Also keeping snapshot id 3 sectors.
+Write ptr (541) is in block to be cleaned. Advancing to start of next block (0).
+Desc 512, mostRecent=529 (100) mostRecentSnapshotted=512 (3)
+Desc 513, mostRecent=530 (100) mostRecentSnapshotted=513 (3)
+Desc 514, mostRecent=531 (100) mostRecentSnapshotted=514 (3)
+Desc 515, mostRecent=532 (100) mostRecentSnapshotted=515 (3)
+Desc 516, mostRecent=533 (100) mostRecentSnapshotted=516 (3)
+Desc 517, mostRecent=534 (100) mostRecentSnapshotted=517 (3)
+Desc 518, mostRecent=535 (100) mostRecentSnapshotted=518 (3)
+Desc 519, mostRecent=536 (100) mostRecentSnapshotted=519 (3)
+Desc 520, mostRecent=537 (100) mostRecentSnapshotted=520 (3)
+Desc 521, mostRecent=538 (100) mostRecentSnapshotted=521 (3)
+Desc 522, mostRecent=539 (100) mostRecentSnapshotted=522 (3)
+Desc 523, mostRecent=540 (100) mostRecentSnapshotted=523 (3)
+Desc 524, mostRecent=524 (3) mostRecentSnapshotted=524 (3)
+Desc 525, mostRecent=525 (3) mostRecentSnapshotted=525 (3)
+Desc 526, mostRecent=526 (3) mostRecentSnapshotted=526 (3)
+Desc 527, mostRecent=527 (3) mostRecentSnapshotted=527 (3)
+Desc 528, mostRecent=528 (3) mostRecentSnapshotted=528 (3)
+Desc 529, mostRecent=529 (100) mostRecentSnapshotted=512 (3)
+Desc 530, mostRecent=530 (100) mostRecentSnapshotted=513 (3)
+Desc 531, mostRecent=531 (100) mostRecentSnapshotted=514 (3)
+Desc 532, mostRecent=532 (100) mostRecentSnapshotted=515 (3)
+Desc 533, mostRecent=533 (100) mostRecentSnapshotted=516 (3)
+Desc 534, mostRecent=534 (100) mostRecentSnapshotted=517 (3)
+Desc 535, mostRecent=535 (100) mostRecentSnapshotted=518 (3)
+Desc 536, mostRecent=536 (100) mostRecentSnapshotted=519 (3)
+Desc 537, mostRecent=537 (100) mostRecentSnapshotted=520 (3)
+Desc 538, mostRecent=538 (100) mostRecentSnapshotted=521 (3)
+Desc 539, mostRecent=539 (100) mostRecentSnapshotted=522 (3)
+Desc 540, mostRecent=540 (100) mostRecentSnapshotted=523 (3)
+bd_ropart: Cleanup done. Of 512 descs, relocated 29 and discarded 0 valid ones.
+bd_ropart: No free phys sectors left. Running cleanup, hope that helps...
+bd_ropart: Starting cleanup of desc 0 to 512. Also keeping snapshot id 3 sectors.
+Write ptr (29) is in block to be cleaned. Advancing to start of next block (512).
+Desc 0, mostRecent=17 (100) mostRecentSnapshotted=0 (3)
+Desc 1, mostRecent=18 (100) mostRecentSnapshotted=1 (3)
+Desc 2, mostRecent=19 (100) mostRecentSnapshotted=2 (3)
+Desc 3, mostRecent=20 (100) mostRecentSnapshotted=3 (3)
+Desc 4, mostRecent=21 (100) mostRecentSnapshotted=4 (3)
+Desc 5, mostRecent=22 (100) mostRecentSnapshotted=5 (3)
+Desc 6, mostRecent=23 (100) mostRecentSnapshotted=6 (3)
+Desc 7, mostRecent=24 (100) mostRecentSnapshotted=7 (3)
+Desc 8, mostRecent=25 (100) mostRecentSnapshotted=8 (3)
+Desc 9, mostRecent=26 (100) mostRecentSnapshotted=9 (3)
+Desc 10, mostRecent=27 (100) mostRecentSnapshotted=10 (3)
+Desc 11, mostRecent=28 (100) mostRecentSnapshotted=11 (3)
+Desc 12, mostRecent=12 (3) mostRecentSnapshotted=12 (3)
+Desc 13, mostRecent=13 (3) mostRecentSnapshotted=13 (3)
+Desc 14, mostRecent=14 (3) mostRecentSnapshotted=14 (3)
+Desc 15, mostRecent=15 (3) mostRecentSnapshotted=15 (3)
+Desc 16, mostRecent=16 (3) mostRecentSnapshotted=16 (3)
+Desc 17, mostRecent=17 (100) mostRecentSnapshotted=0 (3)
+Desc 18, mostRecent=18 (100) mostRecentSnapshotted=1 (3)
+Desc 19, mostRecent=19 (100) mostRecentSnapshotted=2 (3)
+Desc 20, mostRecent=20 (100) mostRecentSnapshotted=3 (3)
+Desc 21, mostRecent=21 (100) mostRecentSnapshotted=4 (3)
+Desc 22, mostRecent=22 (100) mostRecentSnapshotted=5 (3)
+Desc 23, mostRecent=23 (100) mostRecentSnapshotted=6 (3)
+Desc 24, mostRecent=24 (100) mostRecentSnapshotted=7 (3)
+Desc 25, mostRecent=25 (100) mostRecentSnapshotted=8 (3)
+Desc 26, mostRecent=26 (100) mostRecentSnapshotted=9 (3)
+Desc 27, mostRecent=27 (100) mostRecentSnapshotted=10 (3)
+Desc 28, mostRecent=28 (100) mostRecentSnapshotted=11 (3)
+bd_ropart: Cleanup done. Of 512 descs, relocated 29 and discarded 0 valid ones.
+bd_ropart: Couldn't find any free block to write to! Dropping snapshot and retrying.
+bd_ropart: No free phys sectors left. Running cleanup, hope that helps...
+bd_ropart: Starting cleanup of desc 512 to 1024. No active snapshot.
+Write ptr (541) is in block to be cleaned. Advancing to start of next block (0).
+Desc 512, mostRecent=529 (100) mostRecentSnapshotted=-1 (-1)
+Desc 513, mostRecent=530 (100) mostRecentSnapshotted=-1 (-1)
+Desc 514, mostRecent=531 (100) mostRecentSnapshotted=-1 (-1)
+Desc 515, mostRecent=532 (100) mostRecentSnapshotted=-1 (-1)
+Desc 516, mostRecent=533 (100) mostRecentSnapshotted=-1 (-1)
+Desc 517, mostRecent=534 (100) mostRecentSnapshotted=-1 (-1)
+Desc 518, mostRecent=535 (100) mostRecentSnapshotted=-1 (-1)
+Desc 519, mostRecent=536 (100) mostRecentSnapshotted=-1 (-1)
+Desc 520, mostRecent=537 (100) mostRecentSnapshotted=-1 (-1)
+Desc 521, mostRecent=538 (100) mostRecentSnapshotted=-1 (-1)
+Desc 522, mostRecent=539 (100) mostRecentSnapshotted=-1 (-1)
+Desc 523, mostRecent=540 (100) mostRecentSnapshotted=-1 (-1)
+Desc 524, mostRecent=524 (3) mostRecentSnapshotted=-1 (-1)
+Desc 525, mostRecent=525 (3) mostRecentSnapshotted=-1 (-1)
+Desc 526, mostRecent=526 (3) mostRecentSnapshotted=-1 (-1)
+Desc 527, mostRecent=527 (3) mostRecentSnapshotted=-1 (-1)
+Desc 528, mostRecent=528 (3) mostRecentSnapshotted=-1 (-1)
+Desc 529, mostRecent=529 (100) mostRecentSnapshotted=-1 (-1)
+Desc 530, mostRecent=530 (100) mostRecentSnapshotted=-1 (-1)
+Desc 531, mostRecent=531 (100) mostRecentSnapshotted=-1 (-1)
+Desc 532, mostRecent=532 (100) mostRecentSnapshotted=-1 (-1)
+Desc 533, mostRecent=533 (100) mostRecentSnapshotted=-1 (-1)
+Desc 534, mostRecent=534 (100) mostRecentSnapshotted=-1 (-1)
+Desc 535, mostRecent=535 (100) mostRecentSnapshotted=-1 (-1)
+Desc 536, mostRecent=536 (100) mostRecentSnapshotted=-1 (-1)
+Desc 537, mostRecent=537 (100) mostRecentSnapshotted=-1 (-1)
+Desc 538, mostRecent=538 (100) mostRecentSnapshotted=-1 (-1)
+Desc 539, mostRecent=539 (100) mostRecentSnapshotted=-1 (-1)
+Desc 540, mostRecent=540 (100) mostRecentSnapshotted=-1 (-1)
+bd_ropart: Cleanup done. Of 512 descs, relocated 17 and discarded 12 valid ones.
+bd_ropart: Writing data for virt sect 12 to phys sect 13.
+Filling sector 13, seed 208, chid 100
+bd_ropart: Writing data for virt sect 13 to phys sect 14.
+Filling sector 14, seed 178, chid 100
+bd_ropart: Writing data for virt sect 14 to phys sect 15.
+Filling sector 15, seed 48, chid 100
+bd_ropart: Writing data for virt sect 15 to phys sect 16.
+Filling sector 16, seed 238, chid 100
+bd_ropart: NotifyComplete for id 100. Last marker we have is 0.
+bd_ropart: Writing data for virt sect 16 to phys sect 17.
+Checking sector 0, seed 31
+bd_ropart: Reading data for virt sect 0 from phys sect 7.
+Checking sector 1, seed 201
+bd_ropart: Reading data for virt sect 1 from phys sect 8.
+Checking sector 2, seed 19
+bd_ropart: Reading data for virt sect 2 from phys sect 9.
+Checking sector 3, seed 86
+bd_ropart: Reading data for virt sect 3 from phys sect 10.
+Checking sector 4, seed 157
+bd_ropart: Reading data for virt sect 4 from phys sect 11.
+Checking sector 5, seed 210
+bd_ropart: Reading data for virt sect 5 from phys sect 12.
+Checking sector 6, seed 223
+bd_ropart: Reading data for virt sect 6 from phys sect 22.
+Checking sector 7, seed 44
+bd_ropart: Reading data for virt sect 7 from phys sect 1.
+Checking sector 8, seed 192
+bd_ropart: Reading data for virt sect 8 from phys sect 2.
+Checking sector 9, seed 155
+bd_ropart: Reading data for virt sect 9 from phys sect 3.
+Checking sector 10, seed 33
+bd_ropart: Reading data for virt sect 10 from phys sect 4.
+Checking sector 11, seed 224
+bd_ropart: Reading data for virt sect 11 from phys sect 5.
+Checking sector 12, seed 116
+bd_ropart: Reading data for virt sect 12 from phys sect 13.
+Checking sector 13, seed 208
+bd_ropart: Reading data for virt sect 13 from phys sect 14.
+Checking sector 14, seed 178
+bd_ropart: Reading data for virt sect 14 from phys sect 15.
+Checking sector 15, seed 48
+bd_ropart: Reading data for virt sect 15 from phys sect 16.
+Checking sector 16, seed 238
+bd_ropart: Reading data for virt sect 16 from phys sect 17.
+Filling sector 0, seed 64, chid 101
+bd_ropart: Writing data for virt sect 0 to phys sect 23.
+Filling sector 1, seed 237, chid 101
+bd_ropart: Writing data for virt sect 1 to phys sect 24.
+Filling sector 2, seed 232, chid 101
+bd_ropart: Writing data for virt sect 2 to phys sect 25.
+Filling sector 3, seed 55, chid 101
+bd_ropart: Writing data for virt sect 3 to phys sect 26.
+Filling sector 4, seed 187, chid 101
+bd_ropart: Writing data for virt sect 4 to phys sect 27.
+Filling sector 5, seed 153, chid 101
+bd_ropart: Writing data for virt sect 5 to phys sect 28.
+Filling sector 7, seed 145, chid 101
+bd_ropart: Writing data for virt sect 7 to phys sect 0.
+Filling sector 11, seed 9, chid 101
+bd_ropart: No free phys sectors left. Running cleanup, hope that helps...
+bd_ropart: Starting cleanup of desc 0 to 512. Also keeping snapshot id 100 sectors.
+Write ptr (29) is in block to be cleaned. Advancing to start of next block (512).
+Desc 0, mostRecent=17 (100) mostRecentSnapshotted=17 (100)
+Desc 1, mostRecent=18 (100) mostRecentSnapshotted=18 (100)
+Desc 2, mostRecent=19 (100) mostRecentSnapshotted=19 (100)
+Desc 3, mostRecent=20 (100) mostRecentSnapshotted=20 (100)
+Desc 4, mostRecent=21 (100) mostRecentSnapshotted=21 (100)
+Desc 5, mostRecent=22 (101) mostRecentSnapshotted=5 (100)
+Desc 6, mostRecent=23 (101) mostRecentSnapshotted=6 (100)
+Desc 7, mostRecent=24 (101) mostRecentSnapshotted=7 (100)
+Desc 8, mostRecent=25 (101) mostRecentSnapshotted=8 (100)
+Desc 9, mostRecent=26 (101) mostRecentSnapshotted=9 (100)
+Desc 10, mostRecent=27 (101) mostRecentSnapshotted=10 (100)
+Desc 11, mostRecent=11 (100) mostRecentSnapshotted=11 (100)
+Desc 12, mostRecent=28 (101) mostRecentSnapshotted=12 (100)
+Desc 13, mostRecent=13 (100) mostRecentSnapshotted=13 (100)
+Desc 14, mostRecent=14 (100) mostRecentSnapshotted=14 (100)
+Desc 15, mostRecent=15 (100) mostRecentSnapshotted=15 (100)
+Desc 16, mostRecent=16 (100) mostRecentSnapshotted=16 (100)
+Desc 17, mostRecent=17 (100) mostRecentSnapshotted=17 (100)
+Desc 18, mostRecent=18 (100) mostRecentSnapshotted=18 (100)
+Desc 19, mostRecent=19 (100) mostRecentSnapshotted=19 (100)
+Desc 20, mostRecent=20 (100) mostRecentSnapshotted=20 (100)
+Desc 21, mostRecent=21 (100) mostRecentSnapshotted=21 (100)
+Desc 22, mostRecent=22 (101) mostRecentSnapshotted=5 (100)
+Desc 23, mostRecent=23 (101) mostRecentSnapshotted=6 (100)
+Desc 24, mostRecent=24 (101) mostRecentSnapshotted=7 (100)
+Desc 25, mostRecent=25 (101) mostRecentSnapshotted=8 (100)
+Desc 26, mostRecent=26 (101) mostRecentSnapshotted=9 (100)
+Desc 27, mostRecent=27 (101) mostRecentSnapshotted=10 (100)
+Desc 28, mostRecent=28 (101) mostRecentSnapshotted=12 (100)
+bd_ropart: Cleanup done. Of 512 descs, relocated 24 and discarded 5 valid ones.
+bd_ropart: Writing data for virt sect 11 to phys sect 6.
+Filling sector 12, seed 95, chid 101
+bd_ropart: Writing data for virt sect 12 to phys sect 18.
+bd_ropart: NotifyComplete for id 101. Last marker we have is 100.
+Checking sector 0, seed 64
+bd_ropart: Reading data for virt sect 0 from phys sect 23.
+Checking sector 1, seed 237
+bd_ropart: Reading data for virt sect 1 from phys sect 24.
+Checking sector 2, seed 232
+bd_ropart: Reading data for virt sect 2 from phys sect 25.
+Checking sector 3, seed 55
+bd_ropart: Reading data for virt sect 3 from phys sect 26.
+Checking sector 4, seed 187
+bd_ropart: Reading data for virt sect 4 from phys sect 27.
+Checking sector 5, seed 153
+bd_ropart: Reading data for virt sect 5 from phys sect 28.
+Checking sector 6, seed 223
+bd_ropart: Reading data for virt sect 6 from phys sect 22.
+Checking sector 7, seed 145
+bd_ropart: Reading data for virt sect 7 from phys sect 0.
+Checking sector 8, seed 192
+bd_ropart: Reading data for virt sect 8 from phys sect 2.
+Checking sector 9, seed 155
+bd_ropart: Reading data for virt sect 9 from phys sect 3.
+Checking sector 10, seed 33
+bd_ropart: Reading data for virt sect 10 from phys sect 4.
+Checking sector 11, seed 9
+bd_ropart: Reading data for virt sect 11 from phys sect 6.
+Checking sector 12, seed 95
+bd_ropart: Reading data for virt sect 12 from phys sect 18.
+Checking sector 13, seed 208
+bd_ropart: Reading data for virt sect 13 from phys sect 14.
+Checking sector 14, seed 178
+bd_ropart: Reading data for virt sect 14 from phys sect 15.
+Checking sector 15, seed 48
+bd_ropart: Reading data for virt sect 15 from phys sect 16.
+Checking sector 16, seed 238
+bd_ropart: Reading data for virt sect 16 from phys sect 17.
+Filling sector 0, seed 64, chid 102
+bd_ropart: Writing data for virt sect 0 to phys sect 19.
+Filling sector 1, seed 237, chid 102
+bd_ropart: Writing data for virt sect 1 to phys sect 20.
+Filling sector 2, seed 232, chid 102
+bd_ropart: Writing data for virt sect 2 to phys sect 21.
+Filling sector 3, seed 55, chid 102
+bd_ropart: No free phys sectors left. Running cleanup, hope that helps...
+bd_ropart: Starting cleanup of desc 512 to 1024. Also keeping snapshot id 101 sectors.
+Write ptr (541) is in block to be cleaned. Advancing to start of next block (0).
+Desc 512, mostRecent=538 (102) mostRecentSnapshotted=529 (101)
+Desc 513, mostRecent=539 (102) mostRecentSnapshotted=530 (101)
+Desc 514, mostRecent=540 (102) mostRecentSnapshotted=531 (101)
+Desc 515, mostRecent=532 (101) mostRecentSnapshotted=532 (101)
+Desc 516, mostRecent=533 (101) mostRecentSnapshotted=533 (101)
+Desc 517, mostRecent=534 (101) mostRecentSnapshotted=534 (101)
+Desc 518, mostRecent=518 (100) mostRecentSnapshotted=518 (100)
+Desc 519, mostRecent=535 (101) mostRecentSnapshotted=535 (101)
+Desc 520, mostRecent=520 (100) mostRecentSnapshotted=520 (100)
+Desc 521, mostRecent=521 (100) mostRecentSnapshotted=521 (100)
+Desc 522, mostRecent=522 (100) mostRecentSnapshotted=522 (100)
+Desc 523, mostRecent=536 (101) mostRecentSnapshotted=536 (101)
+Desc 524, mostRecent=537 (101) mostRecentSnapshotted=537 (101)
+Desc 525, mostRecent=525 (100) mostRecentSnapshotted=525 (100)
+Desc 526, mostRecent=526 (100) mostRecentSnapshotted=526 (100)
+Desc 527, mostRecent=527 (100) mostRecentSnapshotted=527 (100)
+Desc 528, mostRecent=528 (100) mostRecentSnapshotted=528 (100)
+Desc 529, mostRecent=538 (102) mostRecentSnapshotted=529 (101)
+Desc 530, mostRecent=539 (102) mostRecentSnapshotted=530 (101)
+Desc 531, mostRecent=540 (102) mostRecentSnapshotted=531 (101)
+Desc 532, mostRecent=532 (101) mostRecentSnapshotted=532 (101)
+Desc 533, mostRecent=533 (101) mostRecentSnapshotted=533 (101)
+Desc 534, mostRecent=534 (101) mostRecentSnapshotted=534 (101)
+Desc 535, mostRecent=535 (101) mostRecentSnapshotted=535 (101)
+Desc 536, mostRecent=536 (101) mostRecentSnapshotted=536 (101)
+Desc 537, mostRecent=537 (101) mostRecentSnapshotted=537 (101)
+Desc 538, mostRecent=538 (102) mostRecentSnapshotted=529 (101)
+Desc 539, mostRecent=539 (102) mostRecentSnapshotted=530 (101)
+Desc 540, mostRecent=540 (102) mostRecentSnapshotted=531 (101)
+bd_ropart: Cleanup done. Of 512 descs, relocated 20 and discarded 9 valid ones.
+bd_ropart: Writing data for virt sect 3 to phys sect 1.
+Filling sector 4, seed 187, chid 102
+bd_ropart: Writing data for virt sect 4 to phys sect 5.
+Filling sector 5, seed 153, chid 102
+bd_ropart: Writing data for virt sect 5 to phys sect 7.
+Filling sector 7, seed 145, chid 102
+bd_ropart: Writing data for virt sect 7 to phys sect 8.
+Filling sector 11, seed 9, chid 102
+bd_ropart: Writing data for virt sect 11 to phys sect 9.
+Filling sector 12, seed 95, chid 102
+bd_ropart: Writing data for virt sect 12 to phys sect 10.
+bd_ropart: NotifyComplete for id 102. Last marker we have is 101.
+Checking sector 0, seed 64
+bd_ropart: Reading data for virt sect 0 from phys sect 19.
+Checking sector 1, seed 237
+bd_ropart: Reading data for virt sect 1 from phys sect 20.
+Checking sector 2, seed 232
+bd_ropart: Reading data for virt sect 2 from phys sect 21.
+Checking sector 3, seed 55
+bd_ropart: Reading data for virt sect 3 from phys sect 1.
+Checking sector 4, seed 187
+bd_ropart: Reading data for virt sect 4 from phys sect 5.
+Checking sector 5, seed 153
+bd_ropart: Reading data for virt sect 5 from phys sect 7.
+Checking sector 6, seed 223
+bd_ropart: Reading data for virt sect 6 from phys sect 22.
+Checking sector 7, seed 145
+bd_ropart: Reading data for virt sect 7 from phys sect 8.
+Checking sector 8, seed 192
+bd_ropart: Reading data for virt sect 8 from phys sect 2.
+Checking sector 9, seed 155
+bd_ropart: Reading data for virt sect 9 from phys sect 3.
+Checking sector 10, seed 33
+bd_ropart: Reading data for virt sect 10 from phys sect 4.
+Checking sector 11, seed 9
+bd_ropart: Reading data for virt sect 11 from phys sect 9.
+Checking sector 12, seed 95
+bd_ropart: Reading data for virt sect 12 from phys sect 10.
+Checking sector 13, seed 208
+bd_ropart: Reading data for virt sect 13 from phys sect 14.
+Checking sector 14, seed 178
+bd_ropart: Reading data for virt sect 14 from phys sect 15.
+Checking sector 15, seed 48
+bd_ropart: Reading data for virt sect 15 from phys sect 16.
+Checking sector 16, seed 238
+bd_ropart: Reading data for virt sect 16 from phys sect 17.
+Filling sector 0, seed 64, chid 103
+bd_ropart: Writing data for virt sect 0 to phys sect 11.
+Filling sector 1, seed 237, chid 103
+bd_ropart: Writing data for virt sect 1 to phys sect 12.
+Filling sector 2, seed 232, chid 103
+bd_ropart: Writing data for virt sect 2 to phys sect 13.
+Filling sector 3, seed 55, chid 103
+bd_ropart: No free phys sectors left. Running cleanup, hope that helps...
+bd_ropart: Starting cleanup of desc 0 to 512. Also keeping snapshot id 102 sectors.
+Write ptr (29) is in block to be cleaned. Advancing to start of next block (512).
+Desc 0, mostRecent=0 (100) mostRecentSnapshotted=0 (100)
+Desc 1, mostRecent=1 (100) mostRecentSnapshotted=1 (100)
+Desc 2, mostRecent=2 (100) mostRecentSnapshotted=2 (100)
+Desc 3, mostRecent=3 (100) mostRecentSnapshotted=3 (100)
+Desc 4, mostRecent=4 (100) mostRecentSnapshotted=4 (100)
+Desc 5, mostRecent=5 (100) mostRecentSnapshotted=5 (100)
+Desc 6, mostRecent=6 (100) mostRecentSnapshotted=6 (100)
+Desc 7, mostRecent=7 (100) mostRecentSnapshotted=7 (100)
+Desc 8, mostRecent=26 (103) mostRecentSnapshotted=17 (102)
+Desc 9, mostRecent=27 (103) mostRecentSnapshotted=18 (102)
+Desc 10, mostRecent=28 (103) mostRecentSnapshotted=19 (102)
+Desc 11, mostRecent=20 (102) mostRecentSnapshotted=20 (102)
+Desc 12, mostRecent=21 (102) mostRecentSnapshotted=21 (102)
+Desc 13, mostRecent=22 (102) mostRecentSnapshotted=22 (102)
+Desc 14, mostRecent=23 (102) mostRecentSnapshotted=23 (102)
+Desc 15, mostRecent=24 (102) mostRecentSnapshotted=24 (102)
+Desc 16, mostRecent=25 (102) mostRecentSnapshotted=25 (102)
+Desc 17, mostRecent=26 (103) mostRecentSnapshotted=17 (102)
+Desc 18, mostRecent=27 (103) mostRecentSnapshotted=18 (102)
+Desc 19, mostRecent=28 (103) mostRecentSnapshotted=19 (102)
+Desc 20, mostRecent=20 (102) mostRecentSnapshotted=20 (102)
+Desc 21, mostRecent=21 (102) mostRecentSnapshotted=21 (102)
+Desc 22, mostRecent=22 (102) mostRecentSnapshotted=22 (102)
+Desc 23, mostRecent=23 (102) mostRecentSnapshotted=23 (102)
+Desc 24, mostRecent=24 (102) mostRecentSnapshotted=24 (102)
+Desc 25, mostRecent=25 (102) mostRecentSnapshotted=25 (102)
+Desc 26, mostRecent=26 (103) mostRecentSnapshotted=17 (102)
+Desc 27, mostRecent=27 (103) mostRecentSnapshotted=18 (102)
+Desc 28, mostRecent=28 (103) mostRecentSnapshotted=19 (102)
+bd_ropart: Cleanup done. Of 512 descs, relocated 20 and discarded 9 valid ones.
+bd_ropart: Writing data for virt sect 3 to phys sect 18.
+Filling sector 4, seed 187, chid 103
+bd_ropart: Writing data for virt sect 4 to phys sect 23.
+Filling sector 5, seed 153, chid 103
+bd_ropart: Writing data for virt sect 5 to phys sect 24.
+Filling sector 7, seed 145, chid 103
+bd_ropart: Writing data for virt sect 7 to phys sect 25.
+Filling sector 11, seed 9, chid 103
+bd_ropart: Writing data for virt sect 11 to phys sect 26.
+Filling sector 12, seed 95, chid 103
+bd_ropart: Writing data for virt sect 12 to phys sect 27.
+bd_ropart: NotifyComplete for id 103. Last marker we have is 102.
+Checking sector 0, seed 64
+bd_ropart: Reading data for virt sect 0 from phys sect 11.
+Checking sector 1, seed 237
+bd_ropart: Reading data for virt sect 1 from phys sect 12.
+Checking sector 2, seed 232
+bd_ropart: Reading data for virt sect 2 from phys sect 13.
+Checking sector 3, seed 55
+bd_ropart: Reading data for virt sect 3 from phys sect 18.
+Checking sector 4, seed 187
+bd_ropart: Reading data for virt sect 4 from phys sect 23.
+Checking sector 5, seed 153
+bd_ropart: Reading data for virt sect 5 from phys sect 24.
+Checking sector 6, seed 223
+bd_ropart: Reading data for virt sect 6 from phys sect 22.
+Checking sector 7, seed 145
+bd_ropart: Reading data for virt sect 7 from phys sect 25.
+Checking sector 8, seed 192
+bd_ropart: Reading data for virt sect 8 from phys sect 2.
+Checking sector 9, seed 155
+bd_ropart: Reading data for virt sect 9 from phys sect 3.
+Checking sector 10, seed 33
+bd_ropart: Reading data for virt sect 10 from phys sect 4.
+Checking sector 11, seed 9
+bd_ropart: Reading data for virt sect 11 from phys sect 26.
+Checking sector 12, seed 95
+bd_ropart: Reading data for virt sect 12 from phys sect 27.
+Checking sector 13, seed 208
+bd_ropart: Reading data for virt sect 13 from phys sect 14.
+Checking sector 14, seed 178
+bd_ropart: Reading data for virt sect 14 from phys sect 15.
+Checking sector 15, seed 48
+bd_ropart: Reading data for virt sect 15 from phys sect 16.
+Checking sector 16, seed 238
+bd_ropart: Reading data for virt sect 16 from phys sect 17.
+Filling sector 0, seed 64, chid 104
+bd_ropart: Writing data for virt sect 0 to phys sect 28.
+Filling sector 1, seed 237, chid 104
+bd_ropart: Writing data for virt sect 1 to phys sect 0.
+Filling sector 2, seed 232, chid 104
+bd_ropart: Writing data for virt sect 2 to phys sect 6.
+Filling sector 3, seed 55, chid 104
+bd_ropart: No free phys sectors left. Running cleanup, hope that helps...
+bd_ropart: Starting cleanup of desc 512 to 1024. Also keeping snapshot id 103 sectors.
+Write ptr (541) is in block to be cleaned. Advancing to start of next block (0).
+Desc 512, mostRecent=512 (100) mostRecentSnapshotted=512 (100)
+Desc 513, mostRecent=513 (100) mostRecentSnapshotted=513 (100)
+Desc 514, mostRecent=514 (100) mostRecentSnapshotted=514 (100)
+Desc 515, mostRecent=515 (100) mostRecentSnapshotted=515 (100)
+Desc 516, mostRecent=516 (100) mostRecentSnapshotted=516 (100)
+Desc 517, mostRecent=517 (100) mostRecentSnapshotted=517 (100)
+Desc 518, mostRecent=518 (100) mostRecentSnapshotted=518 (100)
+Desc 519, mostRecent=519 (100) mostRecentSnapshotted=519 (100)
+Desc 520, mostRecent=538 (104) mostRecentSnapshotted=529 (103)
+Desc 521, mostRecent=539 (104) mostRecentSnapshotted=530 (103)
+Desc 522, mostRecent=540 (104) mostRecentSnapshotted=531 (103)
+Desc 523, mostRecent=532 (103) mostRecentSnapshotted=532 (103)
+Desc 524, mostRecent=533 (103) mostRecentSnapshotted=533 (103)
+Desc 525, mostRecent=534 (103) mostRecentSnapshotted=534 (103)
+Desc 526, mostRecent=535 (103) mostRecentSnapshotted=535 (103)
+Desc 527, mostRecent=536 (103) mostRecentSnapshotted=536 (103)
+Desc 528, mostRecent=537 (103) mostRecentSnapshotted=537 (103)
+Desc 529, mostRecent=538 (104) mostRecentSnapshotted=529 (103)
+Desc 530, mostRecent=539 (104) mostRecentSnapshotted=530 (103)
+Desc 531, mostRecent=540 (104) mostRecentSnapshotted=531 (103)
+Desc 532, mostRecent=532 (103) mostRecentSnapshotted=532 (103)
+Desc 533, mostRecent=533 (103) mostRecentSnapshotted=533 (103)
+Desc 534, mostRecent=534 (103) mostRecentSnapshotted=534 (103)
+Desc 535, mostRecent=535 (103) mostRecentSnapshotted=535 (103)
+Desc 536, mostRecent=536 (103) mostRecentSnapshotted=536 (103)
+Desc 537, mostRecent=537 (103) mostRecentSnapshotted=537 (103)
+Desc 538, mostRecent=538 (104) mostRecentSnapshotted=529 (103)
+Desc 539, mostRecent=539 (104) mostRecentSnapshotted=530 (103)
+Desc 540, mostRecent=540 (104) mostRecentSnapshotted=531 (103)
+bd_ropart: Cleanup done. Of 512 descs, relocated 20 and discarded 9 valid ones.
+bd_ropart: Writing data for virt sect 3 to phys sect 7.
+Filling sector 4, seed 187, chid 104
+bd_ropart: Writing data for virt sect 4 to phys sect 8.
+Flushing idcache to storage.
+Filling sector 5, seed 153, chid 104
+bd_ropart: Writing data for virt sect 5 to phys sect 9.
+Filling sector 7, seed 145, chid 104
+bd_ropart: Writing data for virt sect 7 to phys sect 10.
+Filling sector 11, seed 9, chid 104
+bd_ropart: Writing data for virt sect 11 to phys sect 19.
+Filling sector 12, seed 95, chid 104
+bd_ropart: Writing data for virt sect 12 to phys sect 20.
+bd_ropart: NotifyComplete for id 104. Last marker we have is 103.
+Checking sector 0, seed 64
+bd_ropart: Reading data for virt sect 0 from phys sect 28.
+Checking sector 1, seed 237
+bd_ropart: Reading data for virt sect 1 from phys sect 0.
+Checking sector 2, seed 232
+bd_ropart: Reading data for virt sect 2 from phys sect 6.
+Checking sector 3, seed 55
+bd_ropart: Reading data for virt sect 3 from phys sect 7.
+Checking sector 4, seed 187
+bd_ropart: Reading data for virt sect 4 from phys sect 8.
+Checking sector 5, seed 153
+bd_ropart: Reading data for virt sect 5 from phys sect 9.
+Checking sector 6, seed 223
+bd_ropart: Reading data for virt sect 6 from phys sect 22.
+Checking sector 7, seed 145
+bd_ropart: Reading data for virt sect 7 from phys sect 10.
+Checking sector 8, seed 192
+bd_ropart: Reading data for virt sect 8 from phys sect 2.
+Checking sector 9, seed 155
+bd_ropart: Reading data for virt sect 9 from phys sect 3.
+Checking sector 10, seed 33
+bd_ropart: Reading data for virt sect 10 from phys sect 4.
+Checking sector 11, seed 9
+bd_ropart: Reading data for virt sect 11 from phys sect 19.
+Checking sector 12, seed 95
+bd_ropart: Reading data for virt sect 12 from phys sect 20.
+Checking sector 13, seed 208
+bd_ropart: Reading data for virt sect 13 from phys sect 14.
+Checking sector 14, seed 178
+bd_ropart: Reading data for virt sect 14 from phys sect 15.
+Checking sector 15, seed 48
+bd_ropart: Reading data for virt sect 15 from phys sect 16.
+Checking sector 16, seed 238
+bd_ropart: Reading data for virt sect 16 from phys sect 17.
+Filling sector 0, seed 64, chid 105
+bd_ropart: Writing data for virt sect 0 to phys sect 21.
+Filling sector 1, seed 237, chid 105
+bd_ropart: Writing data for virt sect 1 to phys sect 1.
+Filling sector 2, seed 232, chid 105
+bd_ropart: Writing data for virt sect 2 to phys sect 5.
+Filling sector 3, seed 55, chid 105
+bd_ropart: No free phys sectors left. Running cleanup, hope that helps...
+bd_ropart: Starting cleanup of desc 0 to 512. Also keeping snapshot id 104 sectors.
+Write ptr (37) is in block to be cleaned. Advancing to start of next block (512).
+Desc 0, mostRecent=22 (103) mostRecentSnapshotted=22 (103)
+Desc 1, mostRecent=23 (103) mostRecentSnapshotted=23 (103)
+Desc 2, mostRecent=24 (103) mostRecentSnapshotted=24 (103)
+Desc 3, mostRecent=25 (103) mostRecentSnapshotted=25 (103)
+Desc 4, mostRecent=26 (103) mostRecentSnapshotted=26 (103)
+Desc 5, mostRecent=27 (103) mostRecentSnapshotted=27 (103)
+Desc 6, mostRecent=28 (103) mostRecentSnapshotted=28 (103)
+Desc 7, mostRecent=29 (103) mostRecentSnapshotted=29 (103)
+Desc 8, mostRecent=34 (105) mostRecentSnapshotted=17 (104)
+Desc 9, mostRecent=35 (105) mostRecentSnapshotted=18 (104)
+Desc 10, mostRecent=36 (105) mostRecentSnapshotted=19 (104)
+Desc 11, mostRecent=20 (104) mostRecentSnapshotted=20 (104)
+Desc 12, mostRecent=21 (104) mostRecentSnapshotted=21 (104)
+Desc 13, mostRecent=30 (104) mostRecentSnapshotted=30 (104)
+Desc 14, mostRecent=31 (104) mostRecentSnapshotted=31 (104)
+Desc 15, mostRecent=32 (104) mostRecentSnapshotted=32 (104)
+Desc 16, mostRecent=33 (104) mostRecentSnapshotted=33 (104)
+Desc 17, mostRecent=34 (105) mostRecentSnapshotted=17 (104)
+Desc 18, mostRecent=35 (105) mostRecentSnapshotted=18 (104)
+Desc 19, mostRecent=36 (105) mostRecentSnapshotted=19 (104)
+Desc 20, mostRecent=20 (104) mostRecentSnapshotted=20 (104)
+Desc 21, mostRecent=21 (104) mostRecentSnapshotted=21 (104)
+Desc 22, mostRecent=22 (103) mostRecentSnapshotted=22 (103)
+Desc 23, mostRecent=23 (103) mostRecentSnapshotted=23 (103)
+Desc 24, mostRecent=24 (103) mostRecentSnapshotted=24 (103)
+Desc 25, mostRecent=25 (103) mostRecentSnapshotted=25 (103)
+Desc 26, mostRecent=26 (103) mostRecentSnapshotted=26 (103)
+Desc 27, mostRecent=27 (103) mostRecentSnapshotted=27 (103)
+Desc 28, mostRecent=28 (103) mostRecentSnapshotted=28 (103)
+Desc 29, mostRecent=29 (103) mostRecentSnapshotted=29 (103)
+Desc 30, mostRecent=30 (104) mostRecentSnapshotted=30 (104)
+Desc 31, mostRecent=31 (104) mostRecentSnapshotted=31 (104)
+Desc 32, mostRecent=32 (104) mostRecentSnapshotted=32 (104)
+Desc 33, mostRecent=33 (104) mostRecentSnapshotted=33 (104)
+Desc 34, mostRecent=34 (105) mostRecentSnapshotted=17 (104)
+Desc 35, mostRecent=35 (105) mostRecentSnapshotted=18 (104)
+Desc 36, mostRecent=36 (105) mostRecentSnapshotted=19 (104)
+bd_ropart: Cleanup done. Of 512 descs, relocated 20 and discarded 17 valid ones.
+bd_ropart: Writing data for virt sect 3 to phys sect 11.
+Filling sector 4, seed 187, chid 105
+bd_ropart: Writing data for virt sect 4 to phys sect 12.
+Filling sector 5, seed 153, chid 105
+bd_ropart: Writing data for virt sect 5 to phys sect 13.
+Filling sector 7, seed 145, chid 105
+bd_ropart: Writing data for virt sect 7 to phys sect 14.
+Filling sector 11, seed 9, chid 105
+bd_ropart: Writing data for virt sect 11 to phys sect 15.
+Filling sector 12, seed 95, chid 105
+bd_ropart: Writing data for virt sect 12 to phys sect 16.
+bd_ropart: NotifyComplete for id 105. Last marker we have is 104.
+Checking sector 0, seed 64
+bd_ropart: Reading data for virt sect 0 from phys sect 21.
+Checking sector 1, seed 237
+bd_ropart: Reading data for virt sect 1 from phys sect 1.
+Checking sector 2, seed 232
+bd_ropart: Reading data for virt sect 2 from phys sect 5.
+Checking sector 3, seed 55
+bd_ropart: Reading data for virt sect 3 from phys sect 11.
+Checking sector 4, seed 187
+bd_ropart: Reading data for virt sect 4 from phys sect 12.
+Checking sector 5, seed 153
+bd_ropart: Reading data for virt sect 5 from phys sect 13.
+Checking sector 6, seed 223
+bd_ropart: Reading data for virt sect 6 from phys sect 22.
+Checking sector 7, seed 145
+bd_ropart: Reading data for virt sect 7 from phys sect 14.
+Checking sector 8, seed 192
+bd_ropart: Reading data for virt sect 8 from phys sect 2.
+Checking sector 9, seed 155
+bd_ropart: Reading data for virt sect 9 from phys sect 3.
+Checking sector 10, seed 33
+bd_ropart: Reading data for virt sect 10 from phys sect 4.
+Checking sector 11, seed 9
+bd_ropart: Reading data for virt sect 11 from phys sect 15.
+Checking sector 12, seed 95
+bd_ropart: Reading data for virt sect 12 from phys sect 16.
+Checking sector 13, seed 208
+bd_ropart: Reading data for virt sect 13 from phys sect 14.
+Data compare error: sector 13 byte 0 expected d0 got 91
