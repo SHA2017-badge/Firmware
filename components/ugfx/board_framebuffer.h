@@ -36,8 +36,8 @@ uint8_t target_lut;
 		framebuffer = malloc(BADGE_EINK_WIDTH * BADGE_EINK_HEIGHT);
 		target_buffer = malloc(BADGE_EINK_WIDTH * BADGE_EINK_HEIGHT / 8);
 
-    ets_printf("Initializing eink ugfx driver!\n");
-		ets_printf("sizeof(COLOR_TYPE): %d", sizeof(COLOR_TYPE));
+//	        ets_printf("Initializing eink ugfx driver!\n");
+//		ets_printf("sizeof(COLOR_TYPE): %d", sizeof(COLOR_TYPE));
 
 		g->g.Width = BADGE_EINK_WIDTH;
 		g->g.Height = BADGE_EINK_HEIGHT;
@@ -51,8 +51,8 @@ uint8_t target_lut;
 	#if GDISP_HARDWARE_FLUSH
 		static void board_flush(GDisplay *g) {
 			(void) g;
-			ets_printf("Flushing framebuffer!\n");
-			ets_printf("First byte: %d\n", framebuffer[0]);
+//			ets_printf("Flushing framebuffer!\n");
+//			ets_printf("First byte: %d\n", framebuffer[0]);
 			for (int i = 0; i < BADGE_EINK_WIDTH * BADGE_EINK_HEIGHT / 8; i++) {
 				target_buffer[i] =
 					framebuffer[i * 8 + 7] << 7 |
@@ -68,7 +68,7 @@ uint8_t target_lut;
 				badge_eink_display(target_buffer, 0);
 			else
 				badge_eink_display(target_buffer, DISPLAY_FLAG_LUT(target_lut - 1));
-			ets_printf("Flushed framebuffer!\n");
+//			ets_printf("Flushed framebuffer!\n");
 		}
 	#endif
 
