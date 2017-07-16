@@ -1,4 +1,4 @@
-#include "sdkconfig.h"
+#include <sdkconfig.h>
 
 #include <driver/gpio.h>
 
@@ -23,15 +23,19 @@ badge_gpiobutton_handler(void *arg)
 	badge_gpiobutton_old_state[gpio_num] = new_state;
 }
 
-void
+esp_err_t
 badge_gpiobutton_add(int gpio_num, uint32_t button_id)
 {
-	badge_base_init();
+	esp_err_t res = badge_base_init();
+	if (res != ESP_OK)
+		return res;
 
 	badge_gpiobutton_conv[gpio_num] = button_id;
 	badge_gpiobutton_old_state[gpio_num] = 1; // released
 
-	gpio_isr_handler_add(gpio_num, badge_gpiobutton_handler, (void*) gpio_num);
+	res = gpio_isr_handler_add(gpio_num, badge_gpiobutton_handler, (void*) gpio_num);
+	if (res != ESP_OK)
+		return res;
 
 	// configure the gpio pin for input
 	gpio_config_t io_conf = {
@@ -41,5 +45,9 @@ badge_gpiobutton_add(int gpio_num, uint32_t button_id)
 		.pull_down_en = 0,
 		.pull_up_en   = 1,
 	};
-	gpio_config(&io_conf);
+	res = gpio_config(&io_conf);
+	if (res != ESP_OK)
+		return res;
+
+	return res;
 }

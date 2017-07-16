@@ -4,9 +4,12 @@
 
 #include <stdbool.h>
 #include <stdint.h>
+#include <esp_err.h>
 
-/** initialize badge input */
-extern void badge_input_init(void);
+/** initialize badge input
+ * @return ESP_OK on success; any other value indicates an error
+ */
+extern esp_err_t badge_input_init(void);
 
 /** button is released */
 #define EVENT_BUTTON_RELEASED false

@@ -3,32 +3,34 @@
 #define BADGE_LEDS_H
 
 #include <stdint.h>
+#include <esp_err.h>
 
 /**
  * Initialize the leds driver. (configure SPI bus and GPIO pins)
+ * @return ESP_OK on success; any other value indicates an error
  */
-extern void badge_leds_init(void);
+extern esp_err_t badge_leds_init(void);
 
 /**
  * Enable power to the leds bar.
- * @return 0 on succes; -1 on error.
+ * @return ESP_OK on success; any other value indicates an error
  */
-extern int badge_leds_enable(void);
+extern esp_err_t badge_leds_enable(void);
 
 /**
  * Disable power to the leds bar.
- * @return 0 on succes; -1 on error.
+ * @return ESP_OK on success; any other value indicates an error
  */
-extern int badge_leds_disable(void);
+extern esp_err_t badge_leds_disable(void);
 
 /**
  * Configure the 6 on-board leds with the given rgbw data.
  * @param rgbw array with red, green, blue and white data for every
  *   led. First index is the left led.
- * @return 0 on succes; -1 on error.
+ * @return ESP_OK on success; any other value indicates an error
  * @deprecated use badge_leds_send_data() instead.
  */
-extern int badge_leds_set_state(uint8_t *rgbw) __attribute__((deprecated));
+extern esp_err_t badge_leds_set_state(uint8_t *rgbw) __attribute__((deprecated));
 
 /**
  * Send color-data to the leds bus.
@@ -36,8 +38,8 @@ extern int badge_leds_set_state(uint8_t *rgbw) __attribute__((deprecated));
  * @param len the data-length.
  * @note The first 6 leds on the bus are probably SK6812RGBW leds.
  *   SK6812RGBW expects 4 bytes per led: green, red, blue and white.
- * @return 0 on succes; -1 on error.
+ * @return ESP_OK on success; any other value indicates an error
  */
-extern int badge_leds_send_data(uint8_t *data, int len);
+extern esp_err_t badge_leds_send_data(uint8_t *data, int len);
 
 #endif // BADGE_LEDS_H

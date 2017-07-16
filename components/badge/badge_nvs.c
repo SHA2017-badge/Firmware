@@ -1,17 +1,23 @@
+#include <sdkconfig.h>
+
 #include <stdio.h>
 #include <string.h>
-#include "freertos/FreeRTOS.h"
-#include "freertos/task.h"
-#include "esp_system.h"
-#include "esp_partition.h"
-#include "nvs_flash.h"
-#include "nvs.h"
 
-void badge_nvs_init(void)
+#include <freertos/FreeRTOS.h>
+#include <freertos/task.h>
+#include <esp_system.h>
+#include <esp_partition.h>
+#include <nvs_flash.h>
+#include <nvs.h>
+
+#include "badge_nvs.h"
+
+esp_err_t
+badge_nvs_init(void)
 {
   static bool badge_nvs_init_done = false;
   if (badge_nvs_init_done)
-    return;
+    return ESP_OK;
 
   esp_err_t err = nvs_flash_init();
   if (err == ESP_ERR_NVS_NO_FREE_PAGES) {
@@ -25,6 +31,7 @@ void badge_nvs_init(void)
   }
   ESP_ERROR_CHECK( err );
   badge_nvs_init_done = true;
+  return ESP_OK;
 }
 
 esp_err_t badge_nvs_set_u8(const char* namespace, const char* key, uint8_t value)

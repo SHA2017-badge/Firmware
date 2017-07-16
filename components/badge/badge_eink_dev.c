@@ -3,16 +3,16 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#include <driver/gpio.h>
 #include <rom/ets_sys.h>
 #include <rom/gpio.h>
+#include <freertos/FreeRTOS.h>
+#include <freertos/semphr.h>
 #include <soc/gpio_reg.h>
 #include <soc/gpio_sig_map.h>
 #include <soc/gpio_struct.h>
 #include <soc/spi_reg.h>
-
-#include <freertos/FreeRTOS.h>
-#include <freertos/semphr.h>
+#include <esp_err.h>
+#include <driver/gpio.h>
 
 #include "badge_pins.h"
 #include "badge_base.h"
@@ -34,12 +34,21 @@
 
 #ifdef PIN_NUM_EPD_RESET
 
-void
+esp_err_t
 badge_eink_dev_reset(void) {
-	gpio_set_level(PIN_NUM_EPD_RESET, LOW);
+	esp_err_t res = gpio_set_level(PIN_NUM_EPD_RESET, LOW);
+	if (res != ESP_OK)
+		return res;
+
 	ets_delay_us(200000);
-	gpio_set_level(PIN_NUM_EPD_RESET, HIGH);
+
+	res = gpio_set_level(PIN_NUM_EPD_RESET, HIGH);
+	if (res != ESP_OK)
+		return res;
+
 	ets_delay_us(200000);
+
+	return ESP_OK;
 }
 
 bool
@@ -116,23 +125,33 @@ badge_eink_dev_write_command_end(void)
 	gpio_set_level(PIN_NUM_EPD_DATA, LOW);
 }
 
-void
+esp_err_t
 badge_eink_dev_init(void)
 {
 	static bool badge_eink_dev_init_done = false;
 
 	if (badge_eink_dev_init_done)
-		return;
+		return ESP_OK;
 
-	badge_base_init();
+	esp_err_t res = badge_base_init();
+	if (res != ESP_OK)
+		return res;
 
 #ifdef PIN_NUM_LED
 	gpio_pad_select_gpio(PIN_NUM_LED);
-	gpio_set_direction(PIN_NUM_LED, GPIO_MODE_OUTPUT);
+	res = gpio_set_direction(PIN_NUM_LED, GPIO_MODE_OUTPUT);
+	if (res != ESP_OK)
+		return res;
 #endif // PIN_NUM_LED
 
 	badge_eink_dev_intr_trigger = xSemaphoreCreateBinary();
-	gpio_isr_handler_add(PIN_NUM_EPD_BUSY, badge_eink_dev_intr_handler, NULL);
+	if (badge_eink_dev_intr_trigger == NULL)
+		return ESP_ERR_NO_MEM;
+
+	res = gpio_isr_handler_add(PIN_NUM_EPD_BUSY, badge_eink_dev_intr_handler, NULL);
+	if (res != ESP_OK)
+		return res;
+
 	gpio_config_t io_conf = {
 		.intr_type    = GPIO_INTR_ANYEDGE,
 		.mode         = GPIO_MODE_INPUT,
@@ -140,12 +159,26 @@ badge_eink_dev_init(void)
 		.pull_down_en = 0,
 		.pull_up_en   = 1,
 	};
-	gpio_config(&io_conf);
+	res = gpio_config(&io_conf);
+	if (res != ESP_OK)
+		return res;
 
-	gpio_set_direction(PIN_NUM_EPD_CS, GPIO_MODE_OUTPUT);
-	gpio_set_direction(PIN_NUM_EPD_DATA, GPIO_MODE_OUTPUT);
-	gpio_set_direction(PIN_NUM_EPD_RESET, GPIO_MODE_OUTPUT);
-	gpio_set_direction(PIN_NUM_EPD_BUSY, GPIO_MODE_INPUT);
+	res = gpio_set_direction(PIN_NUM_EPD_CS, GPIO_MODE_OUTPUT);
+	if (res != ESP_OK)
+		return res;
+
+	res = gpio_set_direction(PIN_NUM_EPD_DATA, GPIO_MODE_OUTPUT);
+	if (res != ESP_OK)
+		return res;
+
+	res = gpio_set_direction(PIN_NUM_EPD_RESET, GPIO_MODE_OUTPUT);
+	if (res != ESP_OK)
+		return res;
+
+	res = gpio_set_direction(PIN_NUM_EPD_BUSY, GPIO_MODE_INPUT);
+	if (res != ESP_OK)
+		return res;
+
 	gpio_matrix_out(PIN_NUM_EPD_MOSI, VSPID_OUT_IDX, 0, 0);
 	gpio_matrix_out(PIN_NUM_EPD_CLK, VSPICLK_OUT_IDX, 0, 0);
 	gpio_matrix_out(PIN_NUM_EPD_CS, VSPICS0_OUT_IDX, 0, 0);
@@ -184,6 +217,8 @@ badge_eink_dev_init(void)
 	}
 
 	badge_eink_dev_init_done = true;
+
+	return ESP_OK;
 }
 
 void
@@ -231,9 +266,10 @@ badge_eink_dev_write_command_end(void)
 {
 }
 
-void
+esp_err_t
 badge_eink_dev_init(void)
 {
+	return ESP_OK;
 }
 
 void
