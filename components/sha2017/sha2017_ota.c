@@ -111,15 +111,15 @@ static void sha2017_ota_initialise_wifi(void) {
   esp_err_t err;
 
   size_t len = sizeof(wifi_config.sta.ssid);
-  err = badge_nvs_get_str("badge", "wifi.ssid", wifi_config.sta.ssid, &len);
+  err = badge_nvs_get_str("badge", "wifi.ssid", (char *) wifi_config.sta.ssid, &len);
   if (err != ESP_OK || len == 0) {
-	strncpy(wifi_config.sta.ssid, CONFIG_WIFI_SSID, sizeof(wifi_config.sta.ssid));
+	strncpy((char *) wifi_config.sta.ssid, CONFIG_WIFI_SSID, sizeof(wifi_config.sta.ssid));
   }
 
   len = sizeof(wifi_config.sta.password);
-  err = badge_nvs_get_str("badge", "wifi.password", wifi_config.sta.password, &len);
+  err = badge_nvs_get_str("badge", "wifi.password", (char *) wifi_config.sta.password, &len);
   if (err != ESP_OK || len == 0) {
-	strncpy(wifi_config.sta.password, CONFIG_WIFI_PASSWORD, sizeof(wifi_config.sta.password));
+	strncpy((char *) wifi_config.sta.password, CONFIG_WIFI_PASSWORD, sizeof(wifi_config.sta.password));
   }
 
   ESP_LOGI(TAG, "Setting WiFi configuration SSID %s...", wifi_config.sta.ssid);
