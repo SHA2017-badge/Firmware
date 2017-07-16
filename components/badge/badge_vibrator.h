@@ -3,11 +3,13 @@
 #define BADGE_VIBRATOR_H
 
 #include <stdint.h>
+#include <esp_err.h>
 
 /**
  * Initialize vibrator driver. (GPIO ports)
+ * @return ESP_OK on success; any other value indicates an error
  */
-extern void badge_vibrator_init(void);
+extern esp_err_t badge_vibrator_init(void);
 
 /**
  * Send bit-pattern to the vibrator.

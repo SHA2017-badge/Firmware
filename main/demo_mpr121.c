@@ -50,7 +50,7 @@ demoMpr121(void)
 				flags |= FONT_INVERT;
 
 			draw_font(screen_buf, 2, 16 + 10*i, 36, names[i], (FONT_FULL_WIDTH | FONT_INVERT) ^ flags);
-			if (res != -1) {
+			if (res == ESP_OK) {
 				int x, y;
 				int d = (info.data[i] >> 2) & 255;
 				for (y=18+10*i; y<20+10*i; y++)

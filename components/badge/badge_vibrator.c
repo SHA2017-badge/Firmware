@@ -1,15 +1,14 @@
+#include <sdkconfig.h>
+
 #include <stdbool.h>
 #include <stdint.h>
-
 #include <stdio.h>
 #include <string.h>
 
-#include "sdkconfig.h"
-
-#include "rom/ets_sys.h"
-#include "driver/spi_master.h"
-#include "freertos/FreeRTOS.h"
-#include "freertos/task.h"
+#include <rom/ets_sys.h>
+#include <freertos/FreeRTOS.h>
+#include <freertos/task.h>
+#include <driver/spi_master.h>
 
 #include "badge_pins.h"
 #include "badge_i2c.h"
@@ -54,13 +53,13 @@ badge_vibrator_activate(uint32_t pattern)
 	badge_vibrator_off();
 }
 
-void
+esp_err_t
 badge_vibrator_init(void)
 {
 	static bool badge_vibrator_init_done = false;
 
 	if (badge_vibrator_init_done)
-		return;
+		return ESP_OK;
 
 	// configure vibrator pin
 #ifdef PORTEXP_PIN_NUM_VIBRATOR
@@ -72,6 +71,8 @@ badge_vibrator_init(void)
 #endif
 
 	badge_vibrator_init_done = true;
+
+	return ESP_OK;
 }
 
 #endif // defined(PORTEXP_PIN_NUM_VIBRATOR) || defined(MPR121_PIN_NUM_VIBRATOR)

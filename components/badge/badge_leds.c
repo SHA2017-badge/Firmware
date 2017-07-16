@@ -1,35 +1,34 @@
+#include <sdkconfig.h>
+
 #include <stdbool.h>
 #include <stdint.h>
-
 #include <stdio.h>
 #include <string.h>
 
-#include "sdkconfig.h"
-
-#include "rom/ets_sys.h"
-#include "driver/spi_master.h"
-#include "driver/gpio.h"
-#include "freertos/FreeRTOS.h"
-#include "freertos/task.h"
+#include <rom/ets_sys.h>
+#include <freertos/FreeRTOS.h>
+#include <freertos/task.h>
+#include <esp_err.h>
+#include <driver/spi_master.h>
+#include <driver/gpio.h>
 
 #include "badge_pins.h"
-#include "badge_i2c.h"
 #include "badge_power.h"
 
 #ifdef PIN_NUM_LEDS
 
 spi_device_handle_t badge_leds_spi = NULL;
 
-int
+esp_err_t
 badge_leds_enable(void)
 {
 	// return if we are already enabled and initialized
 	if (badge_leds_spi != NULL)
-		return 0;
+		return ESP_OK;
 
-	int res = badge_power_leds_enable();
-	if (res == -1)
-		return -1;
+	esp_err_t res = badge_power_leds_enable();
+	if (res != ESP_OK)
+		return res;
 
 	// (re)initialize leds SPI
 	spi_bus_config_t buscfg = {
@@ -39,8 +38,9 @@ badge_leds_enable(void)
 		.quadwp_io_num = -1,  // -1 = unused
 		.quadhd_io_num = -1,  // -1 = unused
 	};
-	esp_err_t ret = spi_bus_initialize(HSPI_HOST, &buscfg, 1);
-	assert( ret == ESP_OK );
+	res = spi_bus_initialize(HSPI_HOST, &buscfg, 1);
+	if (res != ESP_OK)
+		return res;
 
 	spi_device_interface_config_t devcfg = {
 		.clock_speed_hz = 3200000, // 3.2 Mhz
@@ -48,26 +48,30 @@ badge_leds_enable(void)
 		.spics_io_num   = -1,
 		.queue_size     = 1,
 	};
-	ret = spi_bus_add_device(HSPI_HOST, &devcfg, &badge_leds_spi);
-	assert( ret == ESP_OK );
+	res = spi_bus_add_device(HSPI_HOST, &devcfg, &badge_leds_spi);
+	if (res != ESP_OK)
+		return res;
 
-	return 0;
+	return ESP_OK;
 }
 
-int
+esp_err_t
 badge_leds_disable(void)
 {
 	// return if we are not enabled
 	if (badge_leds_spi == NULL)
-		return 0;
+		return ESP_OK;
 
-	esp_err_t ret = spi_bus_remove_device(badge_leds_spi);
-	assert( ret == ESP_OK );
+	esp_err_t res = spi_bus_remove_device(badge_leds_spi);
+	if (res != ESP_OK)
+		return res;
+
 	badge_leds_spi = NULL;
 
 //	FIXME: freeing the HSPI seems to (de)configure the VSPI as well..
-//	ret = spi_bus_free(HSPI_HOST);
-//	assert( ret == ESP_OK );
+//	res = spi_bus_free(HSPI_HOST);
+//	if (res != ESP_OK)
+//		return res;
 
 	// configure PIN_NUM_LEDS as high-impedance
 	gpio_config_t io_conf = {
@@ -77,22 +81,28 @@ badge_leds_disable(void)
 		.pull_down_en = 0,
 		.pull_up_en   = 0,
 	};
-	gpio_config(&io_conf);
+	res = gpio_config(&io_conf);
+	if (res != ESP_OK)
+		return res;
 
-	return badge_power_leds_disable();
+	res = badge_power_leds_disable();
+	if (res != ESP_OK)
+		return res;
+
+	return ESP_OK;
 }
 
 uint8_t *badge_leds_buf = NULL;
 int badge_leds_buf_len = 0;
 
-int
+esp_err_t
 badge_leds_send_data(uint8_t *data, int len)
 {
 	static const uint8_t conv[4] = { 0x11, 0x13, 0x31, 0x33 };
 
-	int res = badge_leds_enable();
-	if (res == -1)
-		return -1;
+	esp_err_t res = badge_leds_enable();
+	if (res != 0)
+		return res;
 
 	if (badge_leds_buf_len < len * 4 + 3)
 	{
@@ -101,7 +111,7 @@ badge_leds_send_data(uint8_t *data, int len)
 		badge_leds_buf_len = 0;
 		badge_leds_buf = malloc(len * 4 + 3);
 		if (badge_leds_buf == NULL)
-			return -1; // out of memory
+			return ESP_ERR_NO_MEM;
 	}
 
 	// 3 * 24 us 'reset'
@@ -140,11 +150,14 @@ badge_leds_send_data(uint8_t *data, int len)
 	t.length = pos*8;
 	t.tx_buffer = badge_leds_buf;
 
-	esp_err_t ret = spi_device_transmit(badge_leds_spi, &t);
-	return (ret == ESP_OK) ? 0 : -1;
+	res = spi_device_transmit(badge_leds_spi, &t);
+	if (res != ESP_OK)
+		return res;
+
+	return ESP_OK;
 }
 
-int
+esp_err_t
 badge_leds_set_state(uint8_t *rgbw)
 {
 	uint8_t buf[6*4];
@@ -174,13 +187,13 @@ badge_leds_set_state(uint8_t *rgbw)
 	return badge_leds_send_data(buf, sizeof(buf));
 }
 
-void
+esp_err_t
 badge_leds_init(void)
 {
 	static bool badge_leds_init_done = false;
 
 	if (badge_leds_init_done)
-		return;
+		return ESP_OK;
 
 	// depending on badge_power
 	badge_power_init();
@@ -193,9 +206,13 @@ badge_leds_init(void)
 		.pull_down_en = 0,
 		.pull_up_en   = 0,
 	};
-	gpio_config(&io_conf);
+	esp_err_t res = gpio_config(&io_conf);
+	if (res != ESP_OK)
+		return res;
 
 	badge_leds_init_done = true;
+
+	return ESP_OK;
 }
 
 #endif // PIN_NUM_LEDS
