@@ -53,7 +53,7 @@ static struct sockaddr_in serveraddr;
 
 static int connectBppServer(const char *servername, int port) {
 	int sockfd;
-	int serverlen=0;
+//	int serverlen=0;
 	struct hostent *server;
 
 	/* socket: create the socket */
@@ -81,8 +81,8 @@ static int connectBppServer(const char *servername, int port) {
 
 static void pokeServer(int fd) {
 	char buff[1]="C";
-	int n=sendto(fd, buff, 1, 0, &serveraddr, sizeof(serveraddr));
-	if (n < 0) printf("ERROR in sendto");
+	int n=sendto(fd, buff, 1, 0, (struct sockaddr *)&serveraddr, sizeof(serveraddr));
+	if (n < 0) printf("ERROR in sendto\n");
 }
 
 #define BUF_MAX 1500

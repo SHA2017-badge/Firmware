@@ -79,9 +79,9 @@ void bpp_init(void)
 	ESP_ERROR_CHECK( esp_wifi_init(&cfg) );
 	ESP_ERROR_CHECK( esp_wifi_set_storage(WIFI_STORAGE_RAM) );
 
-	printf("************************************\n");
-	printf("* "COMPILE_DATE"    \n");
-	printf("************************************\n");
+//	printf("************************************\n");
+//	printf("* "COMPILE_DATE"    \n");
+//	printf("************************************\n");
 
 	//Initialize bpp components
 	powerDownMgrInit(doDeepSleep, NULL);
