@@ -65,6 +65,7 @@ extern void badge_eink_update(const struct badge_eink_update *upd_conf);
 #define DISPLAY_FLAG_LUT_SIZE   4
 #define DISPLAY_FLAG_LUT(x) ((1+(x)) << DISPLAY_FLAG_LUT_BIT)
 
+extern void badge_eink_display_one_layer(const uint8_t *img, int flags);
 /*
  * display image on badge
  *
