@@ -27,7 +27,6 @@ what we can. This turns the FS unmountable for the duration of the update.
 
 #define BD_PARANOID 0
 
-
 //Change indicator. Special: if virt/physSector is 0xfff, it indicates the changeId as indicated is entirely available in memory.
 //(That is: if you take the most recent sectors that have the indicated changeId and below, you have the full state of the filesystem at that
 //point in time. virtSector can normally never be 0xfff; because of spare sectors it's always less than the maximum of 0xfff for the
@@ -277,6 +276,9 @@ static void doCleanup(BlockdevifHandle *h) {
 	for (int i=h->descStart; i<searchEnd; i++) {
 		if (descValid(&h->descs[i]) && !descEmpty(&h->descs[i])) {
 			if (h->descs[i].virtSector!=LASTCOMPLETE_SECT_IND) {
+				//ToDo: using lastDescForVsect twice per sector eats up a lot of time, up to triggering
+				//the task wdt. ToDo: optimize. Idea on how to: allocate a bitmap of 512 and parse the
+				//keep-ability of the entire sector that way.
 				int mostRecent=lastDescForVsect(h, h->descs[i].virtSector);
 				int mostRecentSnapshotted;
 				if (h->lastCompleteId) {

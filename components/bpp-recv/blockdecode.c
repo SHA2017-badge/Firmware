@@ -70,7 +70,7 @@ static void blockdecodeRecv(int subtype, uint8_t *data, int len, void *arg) {
 		uint32_t idOld=ntohl(p->changeIdOrig);
 		uint32_t idNew=ntohl(p->changeIdNew);
 		uint16_t noBits=ntohs(p->noBits);
-		powerHold((int)arg);
+		powerHold((int)arg, 30*1000);
 		d->currentChangeID=idNew;
 		printf("Bitmap for %d->%d.\n", ntohl(p->changeIdOrig), idNew);
 		if ((len-sizeof(BDPacketBitmap)) > d->noBlocks/8) return; //Shouldn't happen
@@ -201,7 +201,7 @@ BlockDecodeHandle *blockdecodeInit(int type, int size, BlockdevIf *bdIf, void *b
 	d->currentChangeID=idcacheGetLastChangeId(d->idcache);
 
 
-//	powerHold((int)d);
+	powerHold((int)d, 30*1000);
 
 	hldemuxAddType(type, blockdecodeRecv, d);
 

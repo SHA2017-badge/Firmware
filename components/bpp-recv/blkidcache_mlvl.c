@@ -51,7 +51,7 @@ void idcacheFlushToStorage(BlkIdCacheHandle *h) {
 	int flushed=0;
 	for (int bl=0; bl<h->size; bl++) {
 		if (!bmaIsSet(h->chidFlushed, bl)) {
-			printf("Bl %d flushable\n", bl);
+//			printf("Bl %d flushable\n", bl);
 			for (int lvl=0; lvl<LEVELS; lvl++) {
 				if (bmaIsSet(h->bmp[lvl], bl)) {
 					h->bdif->setChangeID(h->blkdev, bl, h->id[lvl]);

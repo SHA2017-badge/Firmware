@@ -19,6 +19,6 @@ static void hkpacketsRecv(int subtype, uint8_t *data, int len, void *arg) {
 
 void hkpacketsInit() {
 	hldemuxAddType(HLPACKET_TYPE_HK, hkpacketsRecv, NULL);
-	powerHold((int)hkpacketsInit);
+	powerHold((int)hkpacketsInit, 30*1000);
 }
 
