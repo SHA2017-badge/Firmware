@@ -417,6 +417,11 @@ first_run(void)
 	err = nvs_set_u16(my_handle, "mpr121.base.7", baseline[7]);
 	ESP_ERROR_CHECK( err );
 
+	err = nvs_set_str(my_handle, "wifi.ssid", CONFIG_WIFI_SSID);
+	ESP_ERROR_CHECK( err );
+	err = nvs_set_str(my_handle, "wifi.password", CONFIG_WIFI_PASSWORD);
+	ESP_ERROR_CHECK( err );
+
 	err = nvs_commit(my_handle);
 	ESP_ERROR_CHECK( err );
 
