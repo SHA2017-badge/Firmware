@@ -3,14 +3,18 @@
 #define BADGE_EINK_H
 
 #include <stdint.h>
+#include <esp_err.h>
 
 /** the width of the eink display */
 #define BADGE_EINK_WIDTH  296
+
 /** the height of the eink display */
 #define BADGE_EINK_HEIGHT 128
 
-/** Initialize the eink display */
-extern void badge_eink_init(void);
+/** Initialize the eink display
+ * @return ESP_OK on success; any other value indicates an error
+ */
+extern esp_err_t badge_eink_init(void);
 
 /** badge_eink_update 'lut' settings */
 enum badge_eink_lut

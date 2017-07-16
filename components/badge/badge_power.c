@@ -1,13 +1,13 @@
-#include "sdkconfig.h"
+#include <sdkconfig.h>
 
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <string.h>
 
+#include <rom/ets_sys.h>
 #include <driver/adc.h>
 #include <driver/gpio.h>
-#include <rom/ets_sys.h>
 
 #include "badge_pins.h"
 #include "badge_portexp.h"
@@ -57,35 +57,35 @@ badge_battery_charge_status(void)
 // shared power
 static int badge_power_leds_sdcard = 0; // bit 0 = leds, bit 1 = sd-card
 
-static int
+static esp_err_t
 badge_power_sdcard_leds_enable(void)
 {
 #ifdef CONFIG_SHA_BADGE_POWER_DEBUG
 	ets_printf("badge_power: enabling power to sdcard and leds.\n");
 #endif // CONFIG_SHA_BADGE_POWER_DEBUG
 
-	int ret;
+	esp_err_t ret;
 #ifdef PORTEXP_PIN_NUM_LEDS
 	ret = badge_portexp_set_output_state(PORTEXP_PIN_NUM_LEDS, 1);
 #elif defined(MPR121_PIN_NUM_LEDS)
 	ret = badge_mpr121_set_gpio_level(MPR121_PIN_NUM_LEDS, 1);
 #else
-	ret = -1;
+	ret = ESP_OK;
 #endif
 
 #ifdef CONFIG_SHA_BADGE_POWER_DEBUG
-	if (ret == -1)
+	if (ret != ESP_OK)
 		ets_printf("badge_power: failed to enable power.\n");
 #endif // CONFIG_SHA_BADGE_POWER_DEBUG
 
 	return ret;
 }
 
-static int
+static esp_err_t
 badge_power_sdcard_leds_disable(void)
 {
 #ifdef PIN_NUM_SD_CLK
-	// configure PIN_NUM_LEDS as high-impedance
+	// configure led and sdcard pins as "high-impedance"
 	gpio_config_t io_conf = {
 		.intr_type    = GPIO_INTR_DISABLE,
 		.mode         = GPIO_MODE_INPUT,
@@ -105,7 +105,9 @@ badge_power_sdcard_leds_disable(void)
 		.pull_down_en = 0,
 		.pull_up_en   = 0,
 	};
-	gpio_config(&io_conf);
+	esp_err_t res = gpio_config(&io_conf);
+	if (res != ESP_OK)
+		return res;
 #endif // PIN_NUM_SD_CLK
 
 #ifdef CONFIG_SHA_BADGE_POWER_DEBUG
@@ -118,143 +120,182 @@ badge_power_sdcard_leds_disable(void)
 #elif defined(MPR121_PIN_NUM_LEDS)
 	ret = badge_mpr121_set_gpio_level(MPR121_PIN_NUM_LEDS, 0);
 #else
-	ret = -1;
+	ret = ESP_OK;
 #endif
 
 #ifdef CONFIG_SHA_BADGE_POWER_DEBUG
-	if (ret == -1)
+	if (ret != ESP_OK)
 		ets_printf("badge_power: failed to disable power.\n");
 #endif // CONFIG_SHA_BADGE_POWER_DEBUG
 
 	return ret;
 }
 
-int
+esp_err_t
 badge_power_leds_enable(void)
 {
 	if (badge_power_leds_sdcard & 1)
-		return 0;
+		return ESP_OK;
 
 	if (badge_power_leds_sdcard)
 	{
 		badge_power_leds_sdcard |= 1;
-		return 0;
+		return ESP_OK;
 	}
 
-	int ret = badge_power_sdcard_leds_enable();
+	esp_err_t ret = badge_power_sdcard_leds_enable();
 
-	if (ret == 0)
+	if (ret == ESP_OK)
 		badge_power_leds_sdcard = 1;
 
 	return ret;
 }
 
-int
+esp_err_t
 badge_power_leds_disable(void)
 {
 	if ((badge_power_leds_sdcard & 1) == 0)
-		return 0;
+		return ESP_OK;
 
 	if (badge_power_leds_sdcard != 1)
 	{
 		badge_power_leds_sdcard &= ~1;
-		return 0;
+		return ESP_OK;
 	}
 
-	int ret = badge_power_sdcard_leds_disable();
+	esp_err_t ret = badge_power_sdcard_leds_disable();
 
-	if (ret == 0)
+	if (ret == ESP_OK)
 		badge_power_leds_sdcard = 0;
 
 	return ret;
 }
 
-int
+esp_err_t
 badge_power_sdcard_enable(void)
 {
+	if (badge_power_leds_sdcard & 2)
+		return ESP_OK;
+
 	if (badge_power_leds_sdcard)
 	{
 		badge_power_leds_sdcard |= 2;
-		return 0;
+		return ESP_OK;
 	}
 
-	int ret = badge_power_sdcard_leds_enable();
+	esp_err_t ret = badge_power_sdcard_leds_enable();
 
-	if (ret == 0)
+	if (ret == ESP_OK)
 		badge_power_leds_sdcard = 2;
 
 	return ret;
 }
 
-int
+esp_err_t
 badge_power_sdcard_disable(void)
 {
 	if ((badge_power_leds_sdcard & 2) == 0)
-		return 0;
+		return ESP_OK;
 
 	if (badge_power_leds_sdcard != 2)
 	{
 		badge_power_leds_sdcard &= ~2;
-		return 0;
+		return ESP_OK;
 	}
 
-	int ret = badge_power_sdcard_leds_disable();
+	esp_err_t ret = badge_power_sdcard_leds_disable();
 
-	if (ret == 0)
+	if (ret == ESP_OK)
 		badge_power_leds_sdcard = 0;
 
 	return ret;
 }
 
-void
+esp_err_t
 badge_power_init(void)
 {
 	static bool badge_power_init_done = false;
 
 	if (badge_power_init_done)
-		return;
+		return ESP_OK;
 
+	esp_err_t res;
 #ifdef CONFIG_SHA_BADGE_POWER_DEBUG
 	ets_printf("badge_power: initializing.\n");
 #endif // CONFIG_SHA_BADGE_POWER_DEBUG
 
 	// configure adc width
 #if defined(ADC1_CHAN_VBAT_SENSE) || defined(ADC1_CHAN_VUSB_SENSE)
-	adc1_config_width(ADC_WIDTH_12Bit);
+	res = adc1_config_width(ADC_WIDTH_12Bit);
+	assert( res == ESP_OK );
 #endif // defined(ADC1_CHAN_VBAT_SENSE) || defined(ADC1_CHAN_VUSB_SENSE)
 
 	// configure vbat-sense
 #ifdef ADC1_CHAN_VBAT_SENSE
 	// When VDD_A is 3.3V:
 	// 6dB attenuation (ADC_ATTEN_6db) gives full-scale voltage 2.2V
-	adc1_config_channel_atten(ADC1_CHAN_VBAT_SENSE, ADC_ATTEN_6db);
+	res = adc1_config_channel_atten(ADC1_CHAN_VBAT_SENSE, ADC_ATTEN_6db);
+	assert( res == ESP_OK );
 #endif // ADC1_CHAN_VBAT_SENSE
 
 	// configure vusb-sense
 #ifdef ADC1_CHAN_VUSB_SENSE
 	// When VDD_A is 3.3V:
 	// 6dB attenuation (ADC_ATTEN_6db) gives full-scale voltage 2.2V
-	adc1_config_channel_atten(ADC1_CHAN_VUSB_SENSE, ADC_ATTEN_6db);
+	res = adc1_config_channel_atten(ADC1_CHAN_VUSB_SENSE, ADC_ATTEN_6db);
+	assert( res == ESP_OK );
 #endif // ADC1_CHAN_VUSB_SENSE
+
+#if defined(PORTEXP_PIN_NUM_CHRGSTAT) || defined(PORTEXP_PIN_NUM_LEDS)
+	res = badge_portexp_init();
+	if (res != ESP_OK)
+		return res;
+#endif
+
+#if defined(MPR121_PIN_NUM_CHRGSTAT) || defined(MPR121_PIN_NUM_LEDS)
+	res = badge_mpr121_init();
+	if (res != ESP_OK)
+		return res;
+#endif
 
 	// configure charge-stat pin
 #ifdef PORTEXP_PIN_NUM_CHRGSTAT
-	badge_portexp_set_io_direction(PORTEXP_PIN_NUM_CHRGSTAT, 0);
-	badge_portexp_set_input_default_state(PORTEXP_PIN_NUM_CHRGSTAT, 0);
-	badge_portexp_set_pull_enable(PORTEXP_PIN_NUM_CHRGSTAT, 0);
-	badge_portexp_set_interrupt_enable(PORTEXP_PIN_NUM_CHRGSTAT, 0);
+	res = badge_portexp_set_io_direction(PORTEXP_PIN_NUM_CHRGSTAT, 0);
+	if (res != ESP_OK)
+		return res;
+	res = badge_portexp_set_input_default_state(PORTEXP_PIN_NUM_CHRGSTAT, 0);
+	if (res != ESP_OK)
+		return res;
+	res = badge_portexp_set_pull_enable(PORTEXP_PIN_NUM_CHRGSTAT, 0);
+	if (res != ESP_OK)
+		return res;
+	res = badge_portexp_set_interrupt_enable(PORTEXP_PIN_NUM_CHRGSTAT, 0);
+	if (res != ESP_OK)
+		return res;
 #elif defined(MPR121_PIN_NUM_CHRGSTAT)
-	badge_mpr121_configure_gpio(MPR121_PIN_NUM_CHRGSTAT, MPR121_INPUT);
+	res = badge_mpr121_configure_gpio(MPR121_PIN_NUM_CHRGSTAT, MPR121_INPUT);
+	if (res != ESP_OK)
+		return res;
 #endif
 
 	// configure power to the leds and sd-card
 #ifdef PORTEXP_PIN_NUM_LEDS
-	badge_portexp_set_output_state(PORTEXP_PIN_NUM_LEDS, 0);
-	badge_portexp_set_output_high_z(PORTEXP_PIN_NUM_LEDS, 0);
-	badge_portexp_set_io_direction(PORTEXP_PIN_NUM_LEDS, 1);
+	res = badge_portexp_set_output_state(PORTEXP_PIN_NUM_LEDS, 0);
+	if (res != ESP_OK)
+		return res;
+	res = badge_portexp_set_output_high_z(PORTEXP_PIN_NUM_LEDS, 0);
+	if (res != ESP_OK)
+		return res;
+	res = badge_portexp_set_io_direction(PORTEXP_PIN_NUM_LEDS, 1);
+	if (res != ESP_OK)
+		return res;
 #elif defined(MPR121_PIN_NUM_LEDS)
-	badge_mpr121_configure_gpio(MPR121_PIN_NUM_LEDS, MPR121_OUTPUT);
+	res = badge_mpr121_configure_gpio(MPR121_PIN_NUM_LEDS, MPR121_OUTPUT);
+	if (res != ESP_OK)
+		return res;
 #endif
 
 	badge_power_init_done = true;
+
+	return ESP_OK;
 }

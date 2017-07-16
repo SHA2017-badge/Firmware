@@ -105,23 +105,22 @@ static void sha2017_ota_initialise_wifi(void) {
   wifi_init_config_t cfg = WIFI_INIT_CONFIG_DEFAULT();
   ESP_ERROR_CHECK(esp_wifi_init(&cfg));
   ESP_ERROR_CHECK(esp_wifi_set_storage(WIFI_STORAGE_RAM));
-  char ssid[32];
-  char password[64];
-
-  esp_err_t err;
-  size_t len;
-  err = badge_nvs_get_str("badge", "wifi.ssid", ssid, &len);
-  if (err != ESP_OK || len == 0) {
-    badge_nvs_set_str("badge", "wifi.ssid", CONFIG_WIFI_SSID);
-  }
-  err = badge_nvs_get_str("badge", "wifi.password", password, &len);
-  if (err != ESP_OK || len == 0) {
-    badge_nvs_set_str("badge", "wifi.password", CONFIG_WIFI_PASSWORD);
-  }
 
   wifi_config_t wifi_config = { };
-  strcpy((char *)wifi_config.sta.ssid, ssid);
-  strcpy((char *)wifi_config.sta.password, password);
+
+  esp_err_t err;
+
+  size_t len = sizeof(wifi_config.sta.ssid);
+  err = badge_nvs_get_str("badge", "wifi.ssid", (char *) wifi_config.sta.ssid, &len);
+  if (err != ESP_OK || len == 0) {
+	strncpy((char *) wifi_config.sta.ssid, CONFIG_WIFI_SSID, sizeof(wifi_config.sta.ssid));
+  }
+
+  len = sizeof(wifi_config.sta.password);
+  err = badge_nvs_get_str("badge", "wifi.password", (char *) wifi_config.sta.password, &len);
+  if (err != ESP_OK || len == 0) {
+	strncpy((char *) wifi_config.sta.password, CONFIG_WIFI_PASSWORD, sizeof(wifi_config.sta.password));
+  }
 
   ESP_LOGI(TAG, "Setting WiFi configuration SSID %s...", wifi_config.sta.ssid);
   ESP_ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_STA));
@@ -212,16 +211,9 @@ static void sha2017_ota_task(void *pvParameter) {
 
   ESP_LOGI(TAG, "Starting OTA update ...");
 
-  const esp_partition_t *configured = esp_ota_get_boot_partition();
   const esp_partition_t *running = esp_ota_get_running_partition();
-
-  assert(configured == running); /* fresh from reset, should be running from
-                                    configured boot partition */
-                                 /* NOTE: is this always true? what if the bootloader detects that the selected
-                                  *       OTA partition is corrupted and decides to boot the old OTA partition.
-                                  */
   ESP_LOGI(TAG, "Running partition type %d subtype %d (offset 0x%08x)",
-           configured->type, configured->subtype, configured->address);
+           running->type, running->subtype, running->address);
 
   target_lut = 3;
 

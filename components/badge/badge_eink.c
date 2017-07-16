@@ -1,4 +1,4 @@
-#include "sdkconfig.h"
+#include <sdkconfig.h>
 
 #include <stdbool.h>
 #include <stdint.h>
@@ -324,16 +324,18 @@ badge_eink_wakeup(void)
 	badge_eink_dev_write_command_p1(0x10, 0x00);
 }
 
-void
+esp_err_t
 badge_eink_init(void)
 {
 	static bool badge_eink_init_done = false;
 
 	if (badge_eink_init_done)
-		return;
+		return ESP_OK;
 
 	// initialize spi interface to display
-	badge_eink_dev_init();
+	esp_err_t res = badge_eink_dev_init();
+	if (res != ESP_OK)
+		return res;
 
 #ifdef CONFIG_SHA_BADGE_EINK_GDEH029A1
 	/* initialize GDEH029A1 */
@@ -398,4 +400,6 @@ badge_eink_init(void)
 #endif // CONFIG_SHA_BADGE_EINK_DEPG0290B1
 
 	badge_eink_init_done = true;
+
+	return ESP_OK;
 }

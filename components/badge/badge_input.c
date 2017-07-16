@@ -8,17 +8,21 @@ xQueueHandle badge_input_queue = NULL;
 void (*badge_input_notify)(void);
 uint32_t badge_input_button_state = 0;
 
-void
+esp_err_t
 badge_input_init(void)
 {
 	static bool badge_input_init_done = false;
 
 	if (badge_input_init_done)
-		return;
+		return ESP_OK;
 
 	badge_input_queue = xQueueCreate(10, sizeof(uint32_t));
+	if (badge_input_queue == NULL)
+		return ESP_ERR_NO_MEM;
 
 	badge_input_init_done = true;
+
+	return ESP_OK;
 }
 
 void
@@ -44,9 +48,19 @@ badge_input_add_event(uint32_t button_id, bool pressed, bool in_isr)
 	{
 		badge_input_button_state |= 1 << button_id;
 		if (in_isr)
-			xQueueSendFromISR(badge_input_queue, &button_id, NULL);
+		{
+			if (xQueueSendFromISR(badge_input_queue, &button_id, NULL) != pdTRUE)
+			{
+				ets_printf("badge_input: input queue full.\n");
+			}
+		}
 		else
-			xQueueSend(badge_input_queue, &button_id, 0);
+		{
+			if (xQueueSend(badge_input_queue, &button_id, 0) != pdTRUE)
+			{
+				ets_printf("badge_input: input queue full.\n");
+			}
+		}
 	}
 	else
 	{
