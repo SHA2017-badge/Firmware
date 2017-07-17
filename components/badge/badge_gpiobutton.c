@@ -1,10 +1,13 @@
 #include <sdkconfig.h>
 
+#include <esp_log.h>
 #include <driver/gpio.h>
 
 #include "badge_base.h"
 #include "badge_input.h"
 #include "badge_gpiobutton.h"
+
+static const char *TAG = "badge_gpiobutton";
 
 uint32_t badge_gpiobutton_conv[40] = { 0 };
 int badge_gpiobutton_old_state[40] = { 0 };
@@ -29,6 +32,8 @@ badge_gpiobutton_add(int gpio_num, uint32_t button_id)
 	esp_err_t res = badge_base_init();
 	if (res != ESP_OK)
 		return res;
+
+	ESP_LOGD(TAG, "add button called");
 
 	badge_gpiobutton_conv[gpio_num] = button_id;
 	badge_gpiobutton_old_state[gpio_num] = 1; // released

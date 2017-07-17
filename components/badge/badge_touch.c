@@ -6,6 +6,7 @@
 #include <string.h>
 
 #include <rom/ets_sys.h>
+#include <esp_log.h>
 
 #include <badge_pins.h>
 #include <badge_i2c.h>
@@ -13,6 +14,8 @@
 #include <badge_touch.h>
 
 #ifdef I2C_TOUCHPAD_ADDR
+
+static const char *TAG = "badge_touch";
 
 badge_touch_event_t badge_touch_handler = NULL;
 
@@ -64,6 +67,8 @@ badge_touch_init(void)
 
 	if (badge_touch_init_done)
 		return ESP_OK;
+
+	ESP_LOGD(TAG, "init called");
 
 	esp_err_t res;
 	res = badge_portexp_init();

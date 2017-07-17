@@ -4,8 +4,11 @@
 #include <string.h>
 
 #include <rom/ets_sys.h>
+#include <esp_log.h>
 
 #include "badge_eink_lut.h"
+
+static const char *TAG = "badge_eink_lut";
 
 // full, includes inverting
 const struct badge_eink_lut_entry badge_eink_lut_full[] = {

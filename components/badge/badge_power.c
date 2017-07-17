@@ -6,6 +6,7 @@
 #include <string.h>
 
 #include <rom/ets_sys.h>
+#include <esp_log.h>
 #include <driver/adc.h>
 #include <driver/gpio.h>
 
@@ -13,6 +14,8 @@
 #include "badge_portexp.h"
 #include "badge_mpr121.h"
 #include "badge_power.h"
+
+static const char *TAG = "badge_power";
 
 int
 badge_battery_volt_sense(void)
@@ -218,6 +221,8 @@ badge_power_init(void)
 
 	if (badge_power_init_done)
 		return ESP_OK;
+
+	ESP_LOGD(TAG, "init called");
 
 	esp_err_t res;
 #ifdef CONFIG_SHA_BADGE_POWER_DEBUG

@@ -6,6 +6,7 @@
 #include <string.h>
 
 #include <rom/ets_sys.h>
+#include <esp_log.h>
 #include <driver/i2c.h>
 
 #include "badge_pins.h"
@@ -26,6 +27,8 @@
 #define ACK_VAL        0x0     /*!< I2C ack value */
 #define NACK_VAL       0x1     /*!< I2C nack value */
 
+static const char *TAG = "badge_i2c";
+
 // mutex for accessing the I2C bus
 static xSemaphoreHandle badge_i2c_mux = NULL;
 
@@ -36,6 +39,8 @@ badge_i2c_init(void)
 
 	if (badge_i2c_init_done)
 		return ESP_OK;
+
+	ESP_LOGD(TAG, "init called");
 
 	// create mutex for I2C bus
 	badge_i2c_mux = xSemaphoreCreateMutex();

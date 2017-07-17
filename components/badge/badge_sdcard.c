@@ -5,10 +5,14 @@
 #include <stdio.h>
 #include <string.h>
 
+#include <esp_log.h>
+
 #include "badge_pins.h"
 #include "badge_portexp.h"
 #include "badge_mpr121.h"
 #include "badge_sdcard.h"
+
+static const char *TAG = "badge_sdcard";
 
 #if defined(PORTEXP_PIN_NUM_SD_CD) || defined(MPR121_PIN_NUM_SD_CD)
 bool
@@ -30,6 +34,8 @@ badge_sdcard_init(void)
 
 	if (badge_sdcard_init_done)
 		return ESP_OK;
+
+	ESP_LOGD(TAG, "init called");
 
 	// configure charge-stat pin
 #ifdef PORTEXP_PIN_NUM_SD_CD

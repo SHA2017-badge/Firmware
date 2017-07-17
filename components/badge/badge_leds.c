@@ -9,6 +9,7 @@
 #include <freertos/FreeRTOS.h>
 #include <freertos/task.h>
 #include <esp_err.h>
+#include <esp_log.h>
 #include <driver/spi_master.h>
 #include <driver/gpio.h>
 
@@ -16,6 +17,8 @@
 #include "badge_power.h"
 
 #ifdef PIN_NUM_LEDS
+
+static const char *TAG = "badge_leds";
 
 spi_device_handle_t badge_leds_spi = NULL;
 
@@ -194,6 +197,8 @@ badge_leds_init(void)
 
 	if (badge_leds_init_done)
 		return ESP_OK;
+
+	ESP_LOGD(TAG, "init called");
 
 	// depending on badge_power
 	esp_err_t res = badge_power_init();
