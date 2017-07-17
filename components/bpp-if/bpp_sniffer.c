@@ -492,7 +492,7 @@ void bppWifiSnifferStart() {
 	ESP_ERROR_CHECK(esp_wifi_set_promiscuous_filter(&filt));
 	ESP_ERROR_CHECK(esp_wifi_set_channel(1,WIFI_SECOND_CHAN_NONE));
 	
-	xTaskCreatePinnedToCore(parseTask, "bppparse", 8192, NULL, 3, NULL, 1);
-	xTaskCreatePinnedToCore(wifiMonTask, "bppwifimon", 8192, NULL, 3, NULL, 1);
+	xTaskCreatePinnedToCore(parseTask, "bppparse", 8192, NULL, 3, NULL, 0);
+	xTaskCreatePinnedToCore(wifiMonTask, "bppwifimon", 8192, NULL, 3, NULL, 0);
 }
 
