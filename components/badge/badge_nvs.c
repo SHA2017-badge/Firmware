@@ -7,10 +7,13 @@
 #include <freertos/task.h>
 #include <esp_system.h>
 #include <esp_partition.h>
+#include <esp_log.h>
 #include <nvs_flash.h>
 #include <nvs.h>
 
 #include "badge_nvs.h"
+
+static const char *TAG = "badge_nvs";
 
 esp_err_t
 badge_nvs_init(void)
@@ -18,6 +21,8 @@ badge_nvs_init(void)
   static bool badge_nvs_init_done = false;
   if (badge_nvs_init_done)
     return ESP_OK;
+
+  ESP_LOGD(TAG, "init called");
 
   esp_err_t err = nvs_flash_init();
   if (err == ESP_ERR_NVS_NO_FREE_PAGES) {
@@ -31,6 +36,7 @@ badge_nvs_init(void)
   }
   ESP_ERROR_CHECK( err );
   badge_nvs_init_done = true;
+  ESP_LOGD(TAG, "init done");
   return ESP_OK;
 }
 

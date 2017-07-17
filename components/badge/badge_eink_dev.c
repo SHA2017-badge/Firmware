@@ -12,6 +12,7 @@
 #include <soc/gpio_struct.h>
 #include <soc/spi_reg.h>
 #include <esp_err.h>
+#include <esp_log.h>
 #include <driver/gpio.h>
 
 #include "badge_pins.h"
@@ -33,6 +34,8 @@
 #endif
 
 #ifdef PIN_NUM_EPD_RESET
+
+static const char *TAG = "badge_eink_dev";
 
 esp_err_t
 badge_eink_dev_reset(void) {
@@ -133,6 +136,8 @@ badge_eink_dev_init(void)
 	if (badge_eink_dev_init_done)
 		return ESP_OK;
 
+	ESP_LOGD(TAG, "init called");
+
 	esp_err_t res = badge_base_init();
 	if (res != ESP_OK)
 		return res;
@@ -217,6 +222,8 @@ badge_eink_dev_init(void)
 	}
 
 	badge_eink_dev_init_done = true;
+
+	ESP_LOGD(TAG, "init done");
 
 	return ESP_OK;
 }

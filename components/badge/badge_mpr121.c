@@ -9,6 +9,7 @@
 #include <freertos/FreeRTOS.h>
 #include <freertos/semphr.h>
 #include <freertos/task.h>
+#include <esp_log.h>
 #include <driver/gpio.h>
 
 #include "badge_pins.h"
@@ -36,6 +37,8 @@
 #define MPR121_DEBOUNCE     0x5B
 #define MPR121_CONFIG1      0x5C
 #define MPR121_CONFIG2      0x5D
+
+static const char *TAG = "badge_mpr121";
 
 // mutex for accessing badge_mpr121_state, badge_mpr121_handlers, etc..
 xSemaphoreHandle badge_mpr121_mux = NULL;
@@ -212,6 +215,8 @@ badge_mpr121_configure(const uint32_t *baseline, bool strict)
 	};
 	esp_err_t res;
 
+	ESP_LOGD(TAG, "configure called");
+
 	int i;
 	for (i=0; i<sizeof(conf); i += 2)
 	{
@@ -267,6 +272,8 @@ badge_mpr121_configure(const uint32_t *baseline, bool strict)
 			return res;
 	}
 
+	ESP_LOGD(TAG, "configure done");
+
 	return ESP_OK;
 }
 
@@ -277,6 +284,8 @@ badge_mpr121_init(void)
 
 	if (badge_mpr121_init_done)
 		return ESP_OK;
+
+	ESP_LOGD(TAG, "init called");
 
 	esp_err_t res = badge_base_init();
 	if (res != ESP_OK)
@@ -314,6 +323,8 @@ badge_mpr121_init(void)
 	badge_mpr121_intr_handler(NULL);
 
 	badge_mpr121_init_done = true;
+
+	ESP_LOGD(TAG, "init done");
 
 	return ESP_OK;
 }

@@ -1,8 +1,11 @@
 #include <sdkconfig.h>
 
 #include <esp_event.h>
+#include <esp_log.h>
 
 #include "badge_input.h"
+
+static const char *TAG = "badge_input";
 
 xQueueHandle badge_input_queue = NULL;
 void (*badge_input_notify)(void);
@@ -16,11 +19,15 @@ badge_input_init(void)
 	if (badge_input_init_done)
 		return ESP_OK;
 
+	ESP_LOGD(TAG, "init called");
+
 	badge_input_queue = xQueueCreate(10, sizeof(uint32_t));
 	if (badge_input_queue == NULL)
 		return ESP_ERR_NO_MEM;
 
 	badge_input_init_done = true;
+
+	ESP_LOGD(TAG, "init done");
 
 	return ESP_OK;
 }

@@ -9,6 +9,7 @@
 #include <freertos/FreeRTOS.h>
 #include <freertos/semphr.h>
 #include <freertos/task.h>
+#include <esp_log.h>
 #include <driver/gpio.h>
 
 #include "badge_pins.h"
@@ -17,6 +18,8 @@
 #include "badge_portexp.h"
 
 #ifdef I2C_PORTEXP_ADDR
+
+static const char *TAG = "badge_portexp";
 
 // use bit 8 to mark unknown current state due to failed write.
 struct badge_portexp_state_t {
@@ -139,6 +142,8 @@ badge_portexp_init(void)
 	if (badge_portexp_init_done)
 		return ESP_OK;
 
+	ESP_LOGD(TAG, "init called");
+
 	esp_err_t res = badge_base_init();
 	if (res != ESP_OK)
 		return res;
@@ -204,6 +209,8 @@ badge_portexp_init(void)
 	badge_portexp_intr_handler(NULL);
 
 	badge_portexp_init_done = true;
+
+	ESP_LOGD(TAG, "init done");
 
 	return ESP_OK;
 }

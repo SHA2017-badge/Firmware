@@ -8,6 +8,7 @@
 #include <rom/ets_sys.h>
 #include <freertos/FreeRTOS.h>
 #include <freertos/task.h>
+#include <esp_log.h>
 #include <driver/spi_master.h>
 
 #include "badge_pins.h"
@@ -15,6 +16,8 @@
 #include "badge_portexp.h"
 #include "badge_mpr121.h"
 #include "badge_vibrator.h"
+
+static const char *TAG = "badge_vibrator";
 
 #if defined(PORTEXP_PIN_NUM_VIBRATOR) || defined(MPR121_PIN_NUM_VIBRATOR)
 
@@ -62,6 +65,8 @@ badge_vibrator_init(void)
 	if (badge_vibrator_init_done)
 		return ESP_OK;
 
+	ESP_LOGD(TAG, "init called");
+
 	// configure vibrator pin
 #ifdef PORTEXP_PIN_NUM_VIBRATOR
 	res = badge_portexp_init();
@@ -86,6 +91,8 @@ badge_vibrator_init(void)
 #endif
 
 	badge_vibrator_init_done = true;
+
+	ESP_LOGD(TAG, "init done");
 
 	return ESP_OK;
 }

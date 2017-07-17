@@ -4,10 +4,14 @@
 #include <stdint.h>
 #include <string.h>
 
+#include <esp_log.h>
+
 #include "badge_pins.h"
 #include "badge_eink_dev.h"
 #include "badge_eink_lut.h"
 #include "badge_eink.h"
+
+static const char *TAG = "badge_eink";
 
 static const uint8_t xlat_curve[256] = {
     0x00,0x01,0x01,0x02,0x02,0x03,0x03,0x03,0x04,0x04,0x05,0x05,
@@ -332,6 +336,8 @@ badge_eink_init(void)
 	if (badge_eink_init_done)
 		return ESP_OK;
 
+	ESP_LOGD(TAG, "init called");
+
 	// initialize spi interface to display
 	esp_err_t res = badge_eink_dev_init();
 	if (res != ESP_OK)
@@ -400,6 +406,8 @@ badge_eink_init(void)
 #endif // CONFIG_SHA_BADGE_EINK_DEPG0290B1
 
 	badge_eink_init_done = true;
+
+	ESP_LOGD(TAG, "init done");
 
 	return ESP_OK;
 }
