@@ -1,0 +1,9 @@
+#
+# Component Makefile
+#
+
+COMPONENT_ADD_INCLUDEDIRS := .
+COMPONENT_SRCDIRS := .
+COMPONENT_PRIV_INCLUDEDIRS := .
+
+CFLAGS :=  $(filter-out -O1 -O2 -Og,$(CFLAGS)) -O3
