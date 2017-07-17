@@ -190,7 +190,7 @@ badge_eink_display_one_layer(const uint8_t *img, int flags)
 		(flags >> DISPLAY_FLAG_LUT_BIT) & ((1 << DISPLAY_FLAG_LUT_SIZE)-1);
 
 	uint8_t *buf = badge_eink_tmpbuf;
-	badge_eink_create_bitplane(img, buf, 0, flags);
+	badge_eink_create_bitplane(img, buf, 0x80, flags);
 
 	if ((flags & DISPLAY_FLAG_NO_UPDATE) != 0)
 	{
