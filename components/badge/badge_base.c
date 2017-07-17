@@ -36,5 +36,7 @@ badge_base_init(void)
 
 	badge_base_init_done = true;
 
+	ESP_LOGD(TAG, "init done");
+
 	return ESP_OK;
 }

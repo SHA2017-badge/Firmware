@@ -210,6 +210,8 @@ badge_portexp_init(void)
 
 	badge_portexp_init_done = true;
 
+	ESP_LOGD(TAG, "init done");
+
 	return ESP_OK;
 }
 

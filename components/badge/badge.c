@@ -270,7 +270,7 @@ badge_init(void)
 		ESP_LOGE(TAG, "badge_eink_init failed: %d", err);
 	}
 
-	ESP_LOGD(TAG, "init done");
-
 	badge_init_done = true;
+
+	ESP_LOGD(TAG, "init done");
 }

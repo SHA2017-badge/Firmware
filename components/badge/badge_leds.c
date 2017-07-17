@@ -219,6 +219,8 @@ badge_leds_init(void)
 
 	badge_leds_init_done = true;
 
+	ESP_LOGD(TAG, "init done");
+
 	return ESP_OK;
 }
 

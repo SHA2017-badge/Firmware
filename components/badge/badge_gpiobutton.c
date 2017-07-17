@@ -54,5 +54,7 @@ badge_gpiobutton_add(int gpio_num, uint32_t button_id)
 	if (res != ESP_OK)
 		return res;
 
+	ESP_LOGD(TAG, "add button done");
+
 	return res;
 }

@@ -65,5 +65,7 @@ badge_sdcard_init(void)
 
 	badge_sdcard_init_done = true;
 
+	ESP_LOGD(TAG, "init done");
+
 	return ESP_OK;
 }

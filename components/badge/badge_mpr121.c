@@ -272,6 +272,8 @@ badge_mpr121_configure(const uint32_t *baseline, bool strict)
 			return res;
 	}
 
+	ESP_LOGD(TAG, "configure done");
+
 	return ESP_OK;
 }
 
@@ -321,6 +323,8 @@ badge_mpr121_init(void)
 	badge_mpr121_intr_handler(NULL);
 
 	badge_mpr121_init_done = true;
+
+	ESP_LOGD(TAG, "init done");
 
 	return ESP_OK;
 }

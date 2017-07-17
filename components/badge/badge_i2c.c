@@ -68,6 +68,8 @@ badge_i2c_init(void)
 
 	badge_i2c_init_done = true;
 
+	ESP_LOGD(TAG, "init done");
+
 	return ESP_OK;
 }
 

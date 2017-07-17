@@ -223,6 +223,8 @@ badge_eink_dev_init(void)
 
 	badge_eink_dev_init_done = true;
 
+	ESP_LOGD(TAG, "init done");
+
 	return ESP_OK;
 }
 
