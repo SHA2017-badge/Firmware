@@ -295,6 +295,8 @@ static void sha2017_ota_task(void *pvParameter) {
 
   mbedtls_net_init(&server_fd);
 
+  show_percentage("Handshaking server", 0, false);
+
   ESP_LOGI(TAG, "Connecting to %s:%s...", BADGE_OTA_WEB_SERVER,
            BADGE_OTA_WEB_PORT);
 
@@ -344,7 +346,7 @@ static void sha2017_ota_task(void *pvParameter) {
     }
   }
 
-  show_percentage("Handshaking server", 0, false);
+  show_percentage("Starting OTA update", 0, false);
 
   update_partition = esp_ota_get_next_update_partition(NULL);
   ESP_LOGI(TAG, "Writing to partition subtype %d at offset 0x%x",
