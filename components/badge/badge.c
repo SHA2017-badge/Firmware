@@ -87,39 +87,97 @@ badge_init(void)
 	if (badge_init_done)
 		return;
 
+	ESP_LOGD(TAG, "init called");
+
 	// register isr service
-	badge_base_init();
+	esp_err_t err = badge_base_init();
+	if (err != ESP_OK)
+	{
+		ESP_LOGE(TAG, "badge_base_init failed: %d", err);
+	}
 
 	// initialise nvs config store
-	badge_nvs_init();
+	err = badge_nvs_init();
+	if (err != ESP_OK)
+	{
+		ESP_LOGE(TAG, "badge_nvs_init failed: %d", err);
+	}
 
 	// configure input queue
-	badge_input_init();
+	err = badge_input_init();
+	if (err != ESP_OK)
+	{
+		ESP_LOGE(TAG, "badge_input_init failed: %d", err);
+	}
 
 	// configure buttons directly connected to gpio pins
 #ifdef PIN_NUM_BUTTON_A
-	badge_gpiobutton_add(PIN_NUM_BUTTON_A    , BADGE_BUTTON_A);
-	badge_gpiobutton_add(PIN_NUM_BUTTON_B    , BADGE_BUTTON_B);
-	badge_gpiobutton_add(PIN_NUM_BUTTON_START, BADGE_BUTTON_START); // 'mid'
-	badge_gpiobutton_add(PIN_NUM_BUTTON_UP   , BADGE_BUTTON_UP);
-	badge_gpiobutton_add(PIN_NUM_BUTTON_DOWN , BADGE_BUTTON_DOWN);
-	badge_gpiobutton_add(PIN_NUM_BUTTON_LEFT , BADGE_BUTTON_LEFT);
-	badge_gpiobutton_add(PIN_NUM_BUTTON_RIGHT, BADGE_BUTTON_RIGHT);
+	err = badge_gpiobutton_add(PIN_NUM_BUTTON_A    , BADGE_BUTTON_A);
+	if (err != ESP_OK)
+	{
+		ESP_LOGE(TAG, "badge_gpiobutton_add failed: %d", err);
+	}
+	err = badge_gpiobutton_add(PIN_NUM_BUTTON_B    , BADGE_BUTTON_B);
+	if (err != ESP_OK)
+	{
+		ESP_LOGE(TAG, "badge_gpiobutton_add failed: %d", err);
+	}
+	err = badge_gpiobutton_add(PIN_NUM_BUTTON_START, BADGE_BUTTON_START); // 'mid'
+	if (err != ESP_OK)
+	{
+		ESP_LOGE(TAG, "badge_gpiobutton_add failed: %d", err);
+	}
+	err = badge_gpiobutton_add(PIN_NUM_BUTTON_UP   , BADGE_BUTTON_UP);
+	if (err != ESP_OK)
+	{
+		ESP_LOGE(TAG, "badge_gpiobutton_add failed: %d", err);
+	}
+	err = badge_gpiobutton_add(PIN_NUM_BUTTON_DOWN , BADGE_BUTTON_DOWN);
+	if (err != ESP_OK)
+	{
+		ESP_LOGE(TAG, "badge_gpiobutton_add failed: %d", err);
+	}
+	err = badge_gpiobutton_add(PIN_NUM_BUTTON_LEFT , BADGE_BUTTON_LEFT);
+	if (err != ESP_OK)
+	{
+		ESP_LOGE(TAG, "badge_gpiobutton_add failed: %d", err);
+	}
+	err = badge_gpiobutton_add(PIN_NUM_BUTTON_RIGHT, BADGE_BUTTON_RIGHT);
+	if (err != ESP_OK)
+	{
+		ESP_LOGE(TAG, "badge_gpiobutton_add failed: %d", err);
+	}
 #elif defined( PIN_NUM_BUTTON_FLASH )
-	badge_gpiobutton_add(PIN_NUM_BUTTON_FLASH, BADGE_BUTTON_FLASH);
+	err = badge_gpiobutton_add(PIN_NUM_BUTTON_FLASH, BADGE_BUTTON_FLASH);
+	if (err != ESP_OK)
+	{
+		ESP_LOGE(TAG, "badge_gpiobutton_add failed: %d", err);
+	}
 #endif // ! PIN_NUM_BUTTON_A
 
 	// configure the i2c bus to the port-expander and touch-controller or to the mpr121
 #ifdef PIN_NUM_I2C_CLK
-	badge_i2c_init();
+	err = badge_i2c_init();
+	if (err != ESP_OK)
+	{
+		ESP_LOGE(TAG, "badge_i2c_init failed: %d", err);
+	}
 #endif // PIN_NUM_I2C_CLK
 
 #ifdef I2C_PORTEXP_ADDR
-	badge_portexp_init();
+	err = badge_portexp_init();
+	if (err != ESP_OK)
+	{
+		ESP_LOGE(TAG, "badge_portexp_init failed: %d", err);
+	}
 #endif // I2C_PORTEXP_ADDR
 
 #ifdef I2C_TOUCHPAD_ADDR
-	badge_touch_init();
+	err = badge_touch_init();
+	if (err != ESP_OK)
+	{
+		ESP_LOGE(TAG, "badge_touch_init failed: %d", err);
+	}
 	badge_touch_set_event_handler(touch_event_handler);
 #endif // I2C_TOUCHPAD_ADDR
 
@@ -143,10 +201,27 @@ badge_init(void)
 		if (err != ESP_OK)
 			mpr121_strict = false;
 	}
-	badge_mpr121_init();
-	badge_mpr121_configure(mpr121_baseline, mpr121_strict);
+	err = badge_mpr121_init();
+	if (err != ESP_OK)
+	{
+		ESP_LOGE(TAG, "badge_mpr121_init failed: %d", err);
+	}
+	err = badge_mpr121_configure(mpr121_baseline, mpr121_strict);
+	if (err != ESP_OK)
+	{
+		ESP_LOGE(TAG, "badge_mpr121_configure failed: %d", err);
+	}
 #else
-	badge_mpr121_configure(NULL, false);
+	err = badge_mpr121_init();
+	if (err != ESP_OK)
+	{
+		ESP_LOGE(TAG, "badge_mpr121_init failed: %d", err);
+	}
+	err = badge_mpr121_configure(NULL, false);
+	if (err != ESP_OK)
+	{
+		ESP_LOGE(TAG, "badge_mpr121_configure failed: %d", err);
+	}
 #endif // CONFIG_SHA_BADGE_MPR121_HARDCODE_BASELINE
 	badge_mpr121_set_interrupt_handler(MPR121_PIN_NUM_A     , mpr121_event_handler, (void*) (BADGE_BUTTON_A));
 	badge_mpr121_set_interrupt_handler(MPR121_PIN_NUM_B     , mpr121_event_handler, (void*) (BADGE_BUTTON_B));
@@ -159,21 +234,43 @@ badge_init(void)
 #endif // I2C_MPR121_ADDR
 
 	// configure the voltage measuring for charging-info feedback
-	badge_power_init();
+	err = badge_power_init();
+	if (err != ESP_OK)
+	{
+		ESP_LOGE(TAG, "badge_power_init failed: %d", err);
+	}
 
 	// configure the led-strip on top of the badge
 #ifdef PIN_NUM_LEDS
-	badge_leds_init();
+	err = badge_leds_init();
+	if (err != ESP_OK)
+	{
+		ESP_LOGE(TAG, "badge_leds_init failed: %d", err);
+	}
 #endif // PIN_NUM_LEDS
 
 #if defined(PORTEXP_PIN_NUM_VIBRATOR) || defined(MPR121_PIN_NUM_VIBRATOR)
-	badge_vibrator_init();
+	err = badge_vibrator_init();
+	if (err != ESP_OK)
+	{
+		ESP_LOGE(TAG, "badge_vibrator_init failed: %d", err);
+	}
 #endif // defined(PORTEXP_PIN_NUM_VIBRATOR) || defined(MPR121_PIN_NUM_VIBRATOR)
 
-	badge_sdcard_init();
+	err = badge_sdcard_init();
+	if (err != ESP_OK)
+	{
+		ESP_LOGE(TAG, "badge_sdcard_init failed: %d", err);
+	}
 
 	// configure eink display
-	badge_eink_init();
+	err = badge_eink_init();
+	if (err != ESP_OK)
+	{
+		ESP_LOGE(TAG, "badge_eink_init failed: %d", err);
+	}
+
+	ESP_LOGD(TAG, "init done");
 
 	badge_init_done = true;
 }
