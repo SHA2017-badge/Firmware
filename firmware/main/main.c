@@ -106,8 +106,10 @@ disp_line(const char *line, int flags)
 			next_line++;
 			draw_font(image_buf, 0, 8*next_line, 296, "_", FONT_FULL_WIDTH|FONT_INVERT);
 		}
-		badge_eink_display(image_buf, DISPLAY_FLAG_LUT(1));
+		badge_eink_display(image_buf, DISPLAY_FLAG_LUT(2));
+#ifdef CONFIG_DEBUG_ADD_DELAYS
 		vTaskDelay(1000 / portTICK_PERIOD_MS);
+#endif // CONFIG_DEBUG_ADD_DELAYS
 
 		if (len == 0 || line[len] == 0)
 			return;
@@ -141,8 +143,10 @@ update_mpr121_bars( const struct badge_mpr121_touch_info *ti, const uint32_t *ba
 		image_buf[pos           + (xd >> 3)] &= ~( 1 << (xd&7) );
 		image_buf[pos + (296/8) + (xd >> 3)] &= ~( 1 << (xd&7) );
 	}
-	badge_eink_display(image_buf, DISPLAY_FLAG_LUT(1));
+	badge_eink_display(image_buf, DISPLAY_FLAG_LUT(2));
+#ifdef CONFIG_DEBUG_ADD_DELAYS
 	vTaskDelay(100 / portTICK_PERIOD_MS);
+#endif // CONFIG_DEBUG_ADD_DELAYS
 }
 
 void
@@ -361,6 +365,10 @@ first_run(void)
 			sprintf(line, "ssid '%s'\n", ap_records[i].ssid);
 			disp_line(line, 0);
 		}
+		if (num_ap == 0) {
+			disp_line("no ssids found.",0);
+			res = -1;
+		}
 	}
 	free(ap_records);
 	if (res != ESP_OK) {
@@ -371,7 +379,9 @@ first_run(void)
 	disp_line("wifi test ok.",0);
 
 	disp_line("Testing done.",0);
+#ifdef CONFIG_DEBUG_ADD_DELAYS
 	vTaskDelay(10000 / portTICK_PERIOD_MS);
+#endif // CONFIG_DEBUG_ADD_DELAYS
 
 
 	// store initial nvs data
@@ -406,6 +416,11 @@ first_run(void)
 	err = nvs_set_u16(my_handle, "mpr121.base.6", baseline[6]);
 	ESP_ERROR_CHECK( err );
 	err = nvs_set_u16(my_handle, "mpr121.base.7", baseline[7]);
+	ESP_ERROR_CHECK( err );
+
+	err = nvs_set_str(my_handle, "wifi.ssid", CONFIG_WIFI_SSID);
+	ESP_ERROR_CHECK( err );
+	err = nvs_set_str(my_handle, "wifi.password", CONFIG_WIFI_PASSWORD);
 	ESP_ERROR_CHECK( err );
 
 	err = nvs_commit(my_handle);
