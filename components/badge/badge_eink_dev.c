@@ -243,8 +243,9 @@ badge_eink_dev_write_byte(uint8_t data)
 #else
 
 // add dummy functions
-void
+esp_err_t
 badge_eink_dev_reset(void) {
+	return ESP_OK;
 }
 
 bool
