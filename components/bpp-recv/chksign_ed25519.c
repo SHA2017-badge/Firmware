@@ -21,7 +21,7 @@ void chksignInit(RecvCb *cb) {
 }
 
 int chksignRecv(uint8_t *packet, size_t len) {
-	if (len<sizeof(SignedPacket)) return;
+	if (len<sizeof(SignedPacket)) return 0;
 	SignedPacket *p=(SignedPacket*)packet;
 	int plLen=len-sizeof(SignedPacket);
 
