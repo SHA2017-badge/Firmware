@@ -11,6 +11,7 @@
 #include <badge_eink.h>
 #include <badge_pins.h>
 #include <badge_button.h>
+#include <badge_first_run.h>
 #include <sha2017_ota.h>
 
 #include "imgv2_sha.h"
@@ -174,7 +175,7 @@ display_picture(int picture_id, int selected_lut)
 
 void
 app_main(void) {
-
+	badge_check_first_run();
 	badge_init();
 
   int picture_id = 0;
