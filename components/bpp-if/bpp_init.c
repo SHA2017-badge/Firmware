@@ -62,9 +62,11 @@ void flashDone(uint32_t changeId, void *arg) {
 void doDeepSleep(int delayMs, void *arg) {
 	delayMs-=8000; //to compensate for startup delay
 	if (delayMs<5000) return; //not worth sleeping
-	printf("Sleeping for %d ms...\n", delayMs);
+	// printf("Sleeping for %d ms...\n", delayMs);
 	blockdecodeShutDown(otablockdecoder);
-	esp_deep_sleep_enable_timer_wakeup(delayMs*1000);
+	// esp_deep_sleep_enable_timer_wakeup(delayMs*1000);
+  printf("Rebooting...\n");
+  esp_deep_sleep_enable_timer_wakeup(1);
 	esp_deep_sleep_start();
 }
 
@@ -88,7 +90,7 @@ void bpp_init(void)
 	chksignInit(defecRecv);
 	defecInit(serdecRecv, 1400);
 	serdecInit(hldemuxRecv);
-	
+
 	//Grab last OTA firmware change ID so we don't redundantly update the OTA region
 	nvs_handle nvsh=NULL;
 	nvs_open("bpp", NVS_READWRITE, &nvsh);
@@ -103,7 +105,7 @@ void bpp_init(void)
 		fprintf(stderr, "No OTA partition found, this is required for BPP\n");
 		exit(-1);
 	}
-	
+
 	BlockdevIfFlatFlashDesc bdesc_ota={
 		.major=otapart->type,
 		.minor=otapart->subtype,
