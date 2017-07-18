@@ -227,13 +227,13 @@ badge_first_run(void)
 
 	for (i=0; i<8; i++) {
 		bool check = false;
-		if (baseline[i] * 100 < baseline_def[i] * 95) {
-			// more than 5% off
+		if (baseline[i] * 100 < baseline_def[i] * 85) {
+			// more than 15% lower
 			sprintf(line, "odd readings for button %s. (low)", touch_name[i]);
 			disp_line(line,FONT_MONOSPACE);
 			check = true;
 		} else if (baseline[i] * 95 > baseline_def[i] * 100) {
-			// more than 5% off
+			// more than 5% higher
 			sprintf(line, "odd readings for button %s. (high)", touch_name[i]);
 			disp_line(line,FONT_MONOSPACE);
 			check = true;
