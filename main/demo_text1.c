@@ -3,12 +3,10 @@
 #include <string.h>
 
 #include <badge_eink.h>
+#include <badge_eink_fb.h>
 #include <badge_input.h>
 
 #include <font.h>
-
-// re-use screen_buf from main.c
-extern uint8_t screen_buf[296*16];
 
 void
 demoText1(void) {
@@ -17,10 +15,10 @@ demoText1(void) {
 		int y;
 		for (y=0; y<BADGE_EINK_HEIGHT; y++)
 		{
-			memset(&screen_buf[y * (BADGE_EINK_WIDTH/8)], (y&1) ? 0x55 : 0xaa, (BADGE_EINK_WIDTH/8));
+			memset(&badge_eink_fb[y * (BADGE_EINK_WIDTH/8)], (y&1) ? 0x55 : 0xaa, (BADGE_EINK_WIDTH/8));
 		}
 
-		badge_eink_display(screen_buf, DISPLAY_FLAG_LUT(0));
+		badge_eink_display(badge_eink_fb, DISPLAY_FLAG_LUT(0));
 	}
 
 	/* draw text with 8px font */
@@ -35,13 +33,13 @@ demoText1(void) {
 	int row = 8;
 	while (line_1[pos]) {
 		int num =
-			draw_font(screen_buf, 16, row, BADGE_EINK_WIDTH-32, &line_1[pos], FONT_INVERT | FONT_FULL_WIDTH);
+			draw_font(badge_eink_fb, 16, row, BADGE_EINK_WIDTH-32, &line_1[pos], FONT_INVERT | FONT_FULL_WIDTH);
 		if (num == 0)
 			break;
 		pos += num;
 		row += 8;
 	}
-	draw_font(screen_buf, 16, row, BADGE_EINK_WIDTH-32, "", FONT_INVERT | FONT_FULL_WIDTH);
+	draw_font(badge_eink_fb, 16, row, BADGE_EINK_WIDTH-32, "", FONT_INVERT | FONT_FULL_WIDTH);
 
 	row += 8;
 
@@ -53,7 +51,7 @@ demoText1(void) {
 	pos = 0;
 	while (line_2[pos]) {
 		int num =
-			draw_font(screen_buf, 16, row, BADGE_EINK_WIDTH-32, &line_2[pos], FONT_INVERT | FONT_FULL_WIDTH);
+			draw_font(badge_eink_fb, 16, row, BADGE_EINK_WIDTH-32, &line_2[pos], FONT_INVERT | FONT_FULL_WIDTH);
 		if (num == 0)
 			break;
 		pos += num;
@@ -61,10 +59,10 @@ demoText1(void) {
 	}
 
 	// try monospace
-	draw_font(screen_buf, 0, 120, BADGE_EINK_WIDTH, " Just a status line. Wifi status: not connected",
+	draw_font(badge_eink_fb, 0, 120, BADGE_EINK_WIDTH, " Just a status line. Wifi status: not connected",
 			FONT_FULL_WIDTH | FONT_MONOSPACE);
 
-	badge_eink_display(screen_buf, DISPLAY_FLAG_LUT(0));
+	badge_eink_display(badge_eink_fb, DISPLAY_FLAG_LUT(0));
 
 	// wait for random keypress
 	badge_input_get_event(-1);

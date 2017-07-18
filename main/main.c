@@ -9,6 +9,7 @@
 #include <badge.h>
 #include <badge_input.h>
 #include <badge_eink.h>
+#include <badge_eink_fb.h>
 #include <badge_pins.h>
 #include <badge_button.h>
 #include <sha2017_ota.h>
@@ -78,7 +79,6 @@ const struct menu_item demoMenu[] = {
     {NULL, NULL},
 };
 
-uint8_t screen_buf[296*16];
 void
 displayMenu(const char *menu_title, const struct menu_item *itemlist) {
 	int num_items = 0;
@@ -92,18 +92,18 @@ displayMenu(const char *menu_title, const struct menu_item *itemlist) {
 		/* draw menu */
 		if (need_redraw) {
 			// init buffer
-			draw_font(screen_buf, 0, 0, BADGE_EINK_WIDTH, menu_title,
+			draw_font(badge_eink_fb, 0, 0, BADGE_EINK_WIDTH, menu_title,
 					FONT_16PX | FONT_INVERT | FONT_FULL_WIDTH | FONT_UNDERLINE_2);
 			int i;
 			for (i = 0; i < 7; i++) {
 				int pos = scroll_pos + i;
-				draw_font(screen_buf, 0, 16+16*i, BADGE_EINK_WIDTH,
+				draw_font(badge_eink_fb, 0, 16+16*i, BADGE_EINK_WIDTH,
 						(pos < num_items) ? itemlist[pos].title : "",
 						FONT_16PX | FONT_FULL_WIDTH |
 						((pos == item_pos) ? 0 : FONT_INVERT));
 			}
 
-			badge_eink_display(screen_buf, DISPLAY_FLAG_LUT(BADGE_EINK_LUT_NORMAL) );
+			badge_eink_display(badge_eink_fb, DISPLAY_FLAG_LUT(BADGE_EINK_LUT_NORMAL) );
 			need_redraw = false;
 		}
 
@@ -161,15 +161,15 @@ const uint8_t *pictures[NUM_PICTURES] = {
 void
 display_picture(int picture_id, int selected_lut)
 {
-	memcpy(screen_buf, pictures[picture_id], 296*128/8);
+	memcpy(badge_eink_fb, pictures[picture_id], 296*128/8);
 	char str[30];
 	if (selected_lut == -1)
 		sprintf(str, "[ pic %d, full update ]", picture_id);
 	else
 		sprintf(str, "[ pic %d, lut %d ]", picture_id, selected_lut);
-	draw_font(screen_buf, 8, 4, BADGE_EINK_WIDTH, str, FONT_INVERT);
+	draw_font(badge_eink_fb, 8, 4, BADGE_EINK_WIDTH, str, FONT_INVERT);
 
-	badge_eink_display(screen_buf, DISPLAY_FLAG_LUT(selected_lut));
+	badge_eink_display(badge_eink_fb, DISPLAY_FLAG_LUT(selected_lut));
 }
 
 void

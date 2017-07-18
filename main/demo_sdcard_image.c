@@ -13,20 +13,19 @@
 #include "sdmmc_cmd.h"
 
 #include <badge_eink.h>
+#include <badge_eink_fb.h>
 #include <badge_input.h>
 #include <badge_power.h>
 
 #include <file_reader.h>
 #include <png_reader.h>
 
-static uint8_t image_buf[296*128];
-
 static const char* TAG = "example";
 
 void
 demo_sdcard_image(void)
 {
-	memset(image_buf, 0, sizeof(image_buf));
+	memset(badge_eink_fb, 0, sizeof(badge_eink_fb));
 
 	badge_power_sdcard_enable();
 
@@ -72,7 +71,7 @@ demo_sdcard_image(void)
         return;
     }
 
-	int res = lib_png_load_image(pr, image_buf, 296, 128, 296);
+	int res = lib_png_load_image(pr, badge_eink_fb, BADGE_EINK_WIDTH, BADGE_EINK_HEIGHT, BADGE_EINK_WIDTH);
 	lib_png_destroy(pr);
 	lib_file_destroy(fr);
 	esp_vfs_fat_sdmmc_unmount();
@@ -84,7 +83,7 @@ demo_sdcard_image(void)
 		return;
 	}
 
-	badge_eink_display(image_buf, DISPLAY_FLAG_GREYSCALE);
+	badge_eink_display(badge_eink_fb, DISPLAY_FLAG_GREYSCALE);
 
 	// wait for random keypress
 	badge_input_get_event(-1);

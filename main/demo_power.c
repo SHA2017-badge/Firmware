@@ -5,13 +5,11 @@
 
 #include <badge_pins.h>
 #include <badge_eink.h>
+#include <badge_eink_fb.h>
 #include <badge_power.h>
 #include <badge_input.h>
 
 #include <font.h>
-
-// re-use screen_buf from main.c
-extern uint8_t screen_buf[296*16];
 
 void
 demoPower(void) {
@@ -46,22 +44,22 @@ demoPower(void) {
 			v_bat = new_v_bat;
 			v_usb = new_v_usb;
 
-			memset(screen_buf, 0xff, sizeof(screen_buf));
+			memset(badge_eink_fb, 0xff, sizeof(badge_eink_fb));
 
 			snprintf(text, sizeof(text), "Is charging: %s", bat_cs ? "true" : "false");
-			draw_font(screen_buf, 16,  8, BADGE_EINK_WIDTH-32, text,
+			draw_font(badge_eink_fb, 16,  8, BADGE_EINK_WIDTH-32, text,
 					FONT_MONOSPACE | FONT_INVERT);
 
 			snprintf(text, sizeof(text), "Vusb       : %d.%03d V", v_usb / 1000, v_usb % 1000);
-			draw_font(screen_buf, 16, 16, BADGE_EINK_WIDTH-32, text,
+			draw_font(badge_eink_fb, 16, 16, BADGE_EINK_WIDTH-32, text,
 					FONT_MONOSPACE | FONT_INVERT);
 
 			snprintf(text, sizeof(text), "Vbat       : %d.%03d V", v_bat / 1000, v_bat % 1000);
-			draw_font(screen_buf, 16, 24, BADGE_EINK_WIDTH-32, text,
+			draw_font(badge_eink_fb, 16, 24, BADGE_EINK_WIDTH-32, text,
 					FONT_MONOSPACE | FONT_INVERT);
 
 			/* update display */
-			badge_eink_display(screen_buf, DISPLAY_FLAG_LUT(2));
+			badge_eink_display(badge_eink_fb, DISPLAY_FLAG_LUT(2));
 		}
 
 		// wait 1 second
