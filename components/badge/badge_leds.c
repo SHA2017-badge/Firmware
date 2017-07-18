@@ -43,7 +43,11 @@ badge_leds_enable(void)
 	};
 	res = spi_bus_initialize(HSPI_HOST, &buscfg, 1);
 	if (res != ESP_OK)
-		return res;
+	{
+		//	FIXME: gives error after badge_leds_disable()
+		ESP_LOGW(TAG, "Failed to initialize HSPI bus. Error %d. Known issue.", res);
+		res = ESP_OK;
+	}
 
 	spi_device_interface_config_t devcfg = {
 		.clock_speed_hz = 3200000, // 3.2 Mhz
