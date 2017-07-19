@@ -9,9 +9,15 @@
  *              http://ugfx.org/license.html
  */
 
+#include <sdkconfig.h>
+
+#include <stdint.h>
 #include <stdlib.h>
-#include "badge_eink.h"
-#include "esp_system.h"
+
+#include <esp_system.h>
+
+#include <badge_eink.h>
+#include <badge_eink_fb.h>
 
 // Set this to your frame buffer pixel format.
 #ifndef GDISP_LLD_PIXELFORMAT
@@ -23,39 +29,35 @@
 
 // For now we simply keep the current state of the framebuffer in memory, and
 // encode it and send it to the badge_eink driver on flush
-uint8_t * ugfx_framebuffer;
 uint8_t target_lut;
 
 #ifdef GDISP_DRIVER_VMT
 
 	static void board_init(GDisplay *g, fbInfo *fbi) {
-		badge_eink_init();
-
-		// Careful: this is never freed, so don't initialize the board multiple times!
-		ugfx_framebuffer = malloc(BADGE_EINK_WIDTH * BADGE_EINK_HEIGHT);
-
-//	        ets_printf("Initializing eink ugfx driver!\n");
-//		ets_printf("sizeof(COLOR_TYPE): %d", sizeof(COLOR_TYPE));
+		esp_err_t err = badge_eink_init();
+		assert( err == ESP_OK );
 
 		g->g.Width = BADGE_EINK_WIDTH;
 		g->g.Height = BADGE_EINK_HEIGHT;
 		g->g.Backlight = 100;
 		g->g.Contrast = 50;
 		fbi->linelen = g->g.Width;
-		fbi->pixels = ugfx_framebuffer;
+		fbi->pixels = badge_eink_fb;
 		target_lut = 3;
 	}
 
 	#if GDISP_HARDWARE_FLUSH
 		static void board_flush(GDisplay *g) {
 			(void) g;
-//			ets_printf("Flushing framebuffer!\n");
-//			ets_printf("First byte: %d\n", ugfx_framebuffer[0]);
+
 			if (target_lut == 0)
-				badge_eink_display_one_layer(ugfx_framebuffer, DISPLAY_FLAG_GREYSCALE);
+			{
+				badge_eink_display_one_layer(badge_eink_fb, DISPLAY_FLAG_GREYSCALE);
+			}
 			else
-				badge_eink_display_one_layer(ugfx_framebuffer, DISPLAY_FLAG_LUT(target_lut - 1) | DISPLAY_FLAG_GREYSCALE);
-//			ets_printf("Flushed framebuffer!\n");
+			{
+				badge_eink_display_one_layer(badge_eink_fb, DISPLAY_FLAG_LUT(target_lut - 1) | DISPLAY_FLAG_GREYSCALE);
+			}
 		}
 	#endif
 
