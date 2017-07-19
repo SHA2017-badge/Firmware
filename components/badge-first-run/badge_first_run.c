@@ -171,7 +171,7 @@ badge_first_run(void)
 	assert( err == ESP_OK );
 
 	// start with white screen
-	memset(badge_eink_fb, 0xff, sizeof(badge_eink_fb));
+	memset(badge_eink_fb, 0xff, BADGE_EINK_FB_LEN);
 	badge_eink_display(badge_eink_fb, DISPLAY_FLAG_LUT(0));
 
 	// add line in split-screen
