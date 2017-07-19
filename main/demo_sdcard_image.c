@@ -25,7 +25,10 @@ static const char* TAG = "example";
 void
 demo_sdcard_image(void)
 {
-	memset(badge_eink_fb, 0, sizeof(badge_eink_fb));
+	esp_err_t err = badge_eink_fb_init();
+	assert( err == ESP_OK );
+
+	memset(badge_eink_fb, 0, BADGE_EINK_FB_LEN);
 
 	badge_power_sdcard_enable();
 

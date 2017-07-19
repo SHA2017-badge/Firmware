@@ -33,9 +33,12 @@ demoMpr121(void)
 		"Left",
 	};
 
+	esp_err_t err = badge_eink_fb_init();
+	assert( err == ESP_OK );
+
 	while (1)
 	{
-		memset(badge_eink_fb, 0xff, sizeof(badge_eink_fb));
+		memset(badge_eink_fb, 0xff, BADGE_EINK_FB_LEN);
 		struct badge_mpr121_touch_info info;
 
 		int res = badge_mpr121_get_touch_info(&info);

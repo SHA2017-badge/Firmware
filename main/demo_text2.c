@@ -10,6 +10,9 @@
 
 void
 demoText2(void) {
+	esp_err_t err = badge_eink_fb_init();
+	assert( err == ESP_OK );
+
 	/* draw test pattern */
 	{
 		int y;
