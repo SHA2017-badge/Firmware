@@ -19,6 +19,9 @@ demoPower(void) {
 	int v_bat = -1;
 	int v_usb = -1;
 
+	esp_err_t err = badge_eink_fb_init();
+	assert( err == ESP_OK );
+
 	while (1)
 	{
 #if defined(PORTEXP_PIN_NUM_CHRGSTAT) || defined(MPR121_PIN_NUM_CHRGSTAT)
@@ -44,7 +47,7 @@ demoPower(void) {
 			v_bat = new_v_bat;
 			v_usb = new_v_usb;
 
-			memset(badge_eink_fb, 0xff, sizeof(badge_eink_fb));
+			memset(badge_eink_fb, 0xff, BADGE_EINK_FB_LEN);
 
 			snprintf(text, sizeof(text), "Is charging: %s", bat_cs ? "true" : "false");
 			draw_font(badge_eink_fb, 16,  8, BADGE_EINK_WIDTH-32, text,

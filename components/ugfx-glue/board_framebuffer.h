@@ -37,6 +37,9 @@ uint8_t target_lut;
 		esp_err_t err = badge_eink_init();
 		assert( err == ESP_OK );
 
+		err = badge_eink_fb_init();
+		assert( err == ESP_OK );
+
 		g->g.Width = BADGE_EINK_WIDTH;
 		g->g.Height = BADGE_EINK_HEIGHT;
 		g->g.Backlight = 100;
