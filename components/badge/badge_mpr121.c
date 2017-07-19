@@ -237,11 +237,11 @@ badge_mpr121_configure(const uint32_t *baseline, bool strict)
 
 		if (strict)
 		{
-			res = badge_mpr121_write_reg(MPR121_TOUCHTH_0   + 2*i, 16); // touch
+			res = badge_mpr121_write_reg(MPR121_TOUCHTH_0   + 2*i, 24); // touch
 			if (res != ESP_OK)
 				return res;
 
-			res = badge_mpr121_write_reg(MPR121_RELEASETH_0 + 2*i,  8); // release
+			res = badge_mpr121_write_reg(MPR121_RELEASETH_0 + 2*i, 12); // release
 			if (res != ESP_OK)
 				return res;
 		}
