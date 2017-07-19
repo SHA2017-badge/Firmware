@@ -16,6 +16,7 @@
 #include <badge_input.h>
 #include <badge_mpr121.h>
 #include <badge_eink.h>
+#include <badge_eink_fb.h>
 #include <badge_pins.h>
 #include <badge_button.h>
 #include <badge_power.h>
@@ -29,8 +30,6 @@
 #include "png_hacking.h"
 
 #define TAG "badge_first_run"
-
-uint8_t image_buf[296 * 128];
 
 uint32_t baseline_def[8] = {
 	0x0138,
@@ -72,7 +71,7 @@ display_png(const uint8_t *png, size_t png_size)
         return;
     }
 
-	int res = lib_png_load_image(pr, image_buf, 296, 128, 296);
+	int res = lib_png_load_image(pr, badge_eink_fb, BADGE_EINK_WIDTH, BADGE_EINK_HEIGHT, BADGE_EINK_WIDTH);
 	lib_png_destroy(pr);
 	lib_mem_destroy(mr);
 
@@ -82,7 +81,7 @@ display_png(const uint8_t *png, size_t png_size)
 		return;
 	}
 
-	badge_eink_display(image_buf, DISPLAY_FLAG_GREYSCALE);
+	badge_eink_display(badge_eink_fb, DISPLAY_FLAG_GREYSCALE);
 }
 
 #define NUM_DISP_LINES 12
@@ -98,24 +97,29 @@ disp_line(const char *line, int flags)
 		while (next_line >= NUM_DISP_LINES - height)
 		{ // scroll up
 			next_line--;
-			memmove(image_buf, &image_buf[296], (NUM_DISP_LINES-1)*296);
-			memset(&image_buf[(NUM_DISP_LINES-1)*296], 0xff, 296);
+			memmove(badge_eink_fb, &badge_eink_fb[BADGE_EINK_WIDTH], (NUM_DISP_LINES-1)*BADGE_EINK_WIDTH);
+			memset(&badge_eink_fb[(NUM_DISP_LINES-1)*BADGE_EINK_WIDTH], 0xff, BADGE_EINK_WIDTH);
 		}
-		int len = draw_font(image_buf, 0, 8*next_line, 296, line, (FONT_FULL_WIDTH|FONT_INVERT)^flags);
+		int len = draw_font(badge_eink_fb, 0, 8*next_line, BADGE_EINK_WIDTH, line, (FONT_FULL_WIDTH|FONT_INVERT)^flags);
 		if (height == 2)
 			next_line++;
 		if ((flags & NO_NEWLINE) == 0)
 		{
 			next_line++;
-			draw_font(image_buf, 0, 8*next_line, 296, "_", FONT_FULL_WIDTH|FONT_INVERT);
+			draw_font(badge_eink_fb, 0, 8*next_line, BADGE_EINK_WIDTH, "_", FONT_FULL_WIDTH|FONT_INVERT);
 		}
-		badge_eink_display(image_buf, DISPLAY_FLAG_LUT(2));
 #ifdef CONFIG_DEBUG_ADD_DELAYS
+		badge_eink_display(badge_eink_fb, DISPLAY_FLAG_LUT(2));
 		vTaskDelay(1000 / portTICK_PERIOD_MS);
 #endif // CONFIG_DEBUG_ADD_DELAYS
 
 		if (len == 0 || line[len] == 0)
+		{
+#ifndef CONFIG_DEBUG_ADD_DELAYS
+			badge_eink_display(badge_eink_fb, DISPLAY_FLAG_LUT(2));
+#endif // CONFIG_DEBUG_ADD_DELAYS
 			return;
+		}
 
 		line = &line[len];
 	}
@@ -135,19 +139,19 @@ update_mpr121_bars( const struct badge_mpr121_touch_info *ti, const uint32_t *ba
 		if (xu > 295) xu = 295;
 		if (xd > 295) xd = 295;
 
-		int pos = ( 102 + y*3 ) * (296/8);
-		memset(&image_buf[pos-(296/8)], 0xff, (296/8)*3);
+		int pos = ( 102 + y*3 ) * (BADGE_EINK_WIDTH/8);
+		memset(&badge_eink_fb[pos-(BADGE_EINK_WIDTH/8)], 0xff, (BADGE_EINK_WIDTH/8)*3);
 		while (x >= 0)
 		{
-			image_buf[pos + (x >> 3)] &= ~( 1 << (x&7) );
+			badge_eink_fb[pos + (x >> 3)] &= ~( 1 << (x&7) );
 			x--;
 		}
-		image_buf[pos - (296/8) + (xu >> 3)] &= ~( 1 << (xu&7) );
-		image_buf[pos           + (xu >> 3)] &= ~( 1 << (xu&7) );
-		image_buf[pos           + (xd >> 3)] &= ~( 1 << (xd&7) );
-		image_buf[pos + (296/8) + (xd >> 3)] &= ~( 1 << (xd&7) );
+		badge_eink_fb[pos - (BADGE_EINK_WIDTH/8) + (xu >> 3)] &= ~( 1 << (xu&7) );
+		badge_eink_fb[pos           + (xu >> 3)] &= ~( 1 << (xu&7) );
+		badge_eink_fb[pos           + (xd >> 3)] &= ~( 1 << (xd&7) );
+		badge_eink_fb[pos + (BADGE_EINK_WIDTH/8) + (xd >> 3)] &= ~( 1 << (xd&7) );
 	}
-	badge_eink_display(image_buf, DISPLAY_FLAG_LUT(2));
+	badge_eink_display(badge_eink_fb, DISPLAY_FLAG_LUT(2));
 #ifdef CONFIG_DEBUG_ADD_DELAYS
 	vTaskDelay(100 / portTICK_PERIOD_MS);
 #endif // CONFIG_DEBUG_ADD_DELAYS
@@ -163,16 +167,17 @@ badge_first_run(void)
 	badge_eink_init();
 
 	// start with white screen
-	memset(image_buf, 0xff, sizeof(image_buf));
-	badge_eink_display(image_buf, DISPLAY_FLAG_LUT(0));
+	memset(badge_eink_fb, 0xff, sizeof(badge_eink_fb));
+	badge_eink_display(badge_eink_fb, DISPLAY_FLAG_LUT(0));
 
 	// add line in split-screen
 	if (NUM_DISP_LINES < 16) {
-		memset(&image_buf[NUM_DISP_LINES*296], 0x00, 296/8);
+		memset(&badge_eink_fb[NUM_DISP_LINES*BADGE_EINK_WIDTH], 0x00, BADGE_EINK_WIDTH/8);
 	}
 
-	disp_line("SHA2017-Badge build #18", FONT_16PX);
+	disp_line("SHA2017-Badge", FONT_16PX);
 	disp_line("",0);
+	disp_line("Built on: " __DATE__ ", " __TIME__, 0);
 	disp_line("Initializing and testing badge.",0);
 
 	// do checks
@@ -447,7 +452,8 @@ badge_first_run(void)
 
 	while (1)
 	{
-		// infinite loop - FIXME: replace by deep sleep
+		// infinite deep sleep loop
+		esp_deep_sleep_start();
 	}
 }
 

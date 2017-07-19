@@ -3,6 +3,6 @@
 
 #include <stdint.h>
 
-extern const uint8_t png_hacking[36661];
+extern const uint8_t png_hacking[21344];
 
 #endif // MAIN_PNG_HACKING_H
