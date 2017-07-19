@@ -8,6 +8,7 @@
 #include <esp_wifi.h>
 #include <esp_spi_flash.h>
 #include <esp_partition.h>
+#include <esp_log.h>
 #include <nvs_flash.h>
 #include <nvs.h>
 
@@ -26,6 +27,8 @@
 #include <png_reader.h>
 
 #include "png_hacking.h"
+
+#define TAG "badge_first_run"
 
 uint8_t image_buf[296 * 128];
 
@@ -118,6 +121,7 @@ disp_line(const char *line, int flags)
 	}
 }
 
+#ifdef I2C_MPR121_ADDR
 void
 update_mpr121_bars( const struct badge_mpr121_touch_info *ti, const uint32_t *baseline_top, const uint32_t *baseline_bottom )
 {
@@ -148,9 +152,10 @@ update_mpr121_bars( const struct badge_mpr121_touch_info *ti, const uint32_t *ba
 	vTaskDelay(100 / portTICK_PERIOD_MS);
 #endif // CONFIG_DEBUG_ADD_DELAYS
 }
+#endif // I2C_MPR121_ADDR
 
 void
-first_run(void)
+badge_first_run(void)
 {
 	char line[100];
 
@@ -172,6 +177,7 @@ first_run(void)
 
 	// do checks
 
+#ifdef PIN_NUM_BUTTON_FLASH
 	// flash button
 	int btn_flash = gpio_get_level(PIN_NUM_BUTTON_FLASH);
 	if (btn_flash != 1)
@@ -180,7 +186,9 @@ first_run(void)
 		return;
 	}
 	disp_line("flash button ok.",0);
+#endif // PIN_NUM_BUTTON_FLASH
 
+#ifdef I2C_MPR121_ADDR
 	// mpr121
 	disp_line("initializing MPR121.",0);
 	badge_mpr121_init();
@@ -273,6 +281,7 @@ first_run(void)
 	}
 
 	disp_line("MPR121 ok.",0);
+#endif // I2C_MPR121_ADDR
 
 	// power measurements
 	disp_line("measure power.",0);
@@ -303,6 +312,7 @@ first_run(void)
 
 	disp_line("power measurements ok.",0);
 
+#if defined(PORTEXP_PIN_NUM_SD_CD) || defined(MPR121_PIN_NUM_SD_CD)
 	// sdcard detect (not expecting an sd-card)
 	disp_line("read sdcard-detect line.",0);
 	badge_sdcard_init();
@@ -312,6 +322,7 @@ first_run(void)
 		return;
 	}
 	disp_line("no sdcard detected. (as expected)",0);
+#endif // *_PIN_NUM_SD_CD
 
 	// test wifi
 	disp_line("testing wifi.",0);
@@ -401,6 +412,7 @@ first_run(void)
 	err = nvs_open("badge", NVS_READWRITE, &my_handle);
 	ESP_ERROR_CHECK( err );
 
+#ifdef I2C_MPR121_ADDR
 	err = nvs_set_u16(my_handle, "mpr121.base.0", baseline[0]);
 	ESP_ERROR_CHECK( err );
 	err = nvs_set_u16(my_handle, "mpr121.base.1", baseline[1]);
@@ -417,6 +429,7 @@ first_run(void)
 	ESP_ERROR_CHECK( err );
 	err = nvs_set_u16(my_handle, "mpr121.base.7", baseline[7]);
 	ESP_ERROR_CHECK( err );
+#endif // I2C_MPR121_ADDR
 
 	err = nvs_set_str(my_handle, "wifi.ssid", CONFIG_WIFI_SSID);
 	ESP_ERROR_CHECK( err );
@@ -434,60 +447,55 @@ first_run(void)
 
 	while (1)
 	{
-		// infinite loop
+		// infinite loop - FIXME: replace by deep sleep
 	}
 }
 
 void
-app_main(void)
+badge_check_first_run(void)
 {
+	// search non-volatile storage partition
+	const esp_partition_t * nvs_partition = esp_partition_find_first(
+			ESP_PARTITION_TYPE_DATA, ESP_PARTITION_SUBTYPE_DATA_NVS, NULL);
+	if (nvs_partition == NULL)
 	{
-		// search non-volatile storage partition
-		const esp_partition_t * nvs_partition = esp_partition_find_first(
-				ESP_PARTITION_TYPE_DATA, ESP_PARTITION_SUBTYPE_DATA_NVS, NULL);
-		assert(nvs_partition && "partition table must have an NVS partition");
+		ESP_LOGE(TAG, "NVS partition not found.");
+		return;
+	}
 
-		uint8_t buf[64];
-		ets_printf("nvs partition address: 0x%x\n", nvs_partition->address);
-		int res = spi_flash_read(nvs_partition->address, buf, sizeof(buf));
-		assert(res == ESP_OK);
+	uint8_t buf[64];
+	ESP_LOGD(TAG, "nvs partition address: 0x%x\n", nvs_partition->address);
+	int res = spi_flash_read(nvs_partition->address, buf, sizeof(buf));
+	if (res != ESP_OK)
+	{
+		ESP_LOGE(TAG, "failed to read from NVS partition: %d", res);
+		return;
+	}
 
-		char data[sizeof(buf)*3 + 1];
+	{
+		ESP_LOGV(TAG, "nvs read:");
 		int i;
-		char *ptr = data;
-		for (i=0; i<sizeof(buf); i++)
-			ptr += sprintf(ptr, "%02x ", buf[i]);
-		ptr[-1] = 0;
-		ets_printf("nvs read: %s.\n", data);
-
-		static const uint8_t empty[16] = {0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff};
-		if (memcmp(buf, empty, 16) == 0)
-		{ // nvs partition seems empty. start first_run();
-			first_run();
-
-			// error occurred; erase nvs sector
-			int res = spi_flash_erase_sector(nvs_partition->address / SPI_FLASH_SEC_SIZE);
-			assert(res == ESP_OK);
-
-			while (1)
-			{
-				// infinite loop
-			}
+		for (i=0; i<sizeof(buf); i+=16)
+		{
+			ESP_LOGV(TAG, "  %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x",
+				buf[i+0], buf[i+1], buf[i+2], buf[i+3], buf[i+4], buf[i+5], buf[i+6], buf[i+7],
+				buf[i+8], buf[i+9], buf[i+10], buf[i+11], buf[i+12], buf[i+13], buf[i+14], buf[i+15]
+			);
 		}
 	}
 
-	nvs_flash_init();
+	static const uint8_t empty[16] = {0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff};
+	if (memcmp(buf, empty, 16) == 0)
+	{ // nvs partition seems empty. start first_run();
+		badge_first_run();
 
-	badge_init();
-//	display_png(png_ota_update, sizeof(png_ota_update));
-	sha2017_ota_update();
+		// error occurred; erase nvs sector
+		int res = spi_flash_erase_sector(nvs_partition->address / SPI_FLASH_SEC_SIZE);
+		assert(res == ESP_OK);
 
-	while (1)
-	{
-		// infinite loop
+		while (1)
+		{
+			// infinite loop - FIXME: replace by deep sleep
+		}
 	}
-}
-
-void vPortCleanUpTCB ( void *pxTCB ) {
-	// place clean up code here
 }
