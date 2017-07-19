@@ -164,7 +164,11 @@ badge_first_run(void)
 	char line[100];
 
 	// initialize display
-	badge_eink_init();
+	esp_err_t err = badge_eink_init();
+	assert( err == ESP_OK );
+
+	err = badge_eink_fb_init();
+	assert( err == ESP_OK );
 
 	// start with white screen
 	memset(badge_eink_fb, 0xff, sizeof(badge_eink_fb));
@@ -196,8 +200,10 @@ badge_first_run(void)
 #ifdef I2C_MPR121_ADDR
 	// mpr121
 	disp_line("initializing MPR121.",0);
-	badge_mpr121_init();
-	badge_mpr121_configure(NULL, false);
+	err = badge_mpr121_init();
+	assert( err == ESP_OK );
+	err = badge_mpr121_configure(NULL, false);
+	assert( err == ESP_OK );
 
 	disp_line("reading touch data.",0);
 	int i;
@@ -290,7 +296,8 @@ badge_first_run(void)
 
 	// power measurements
 	disp_line("measure power.",0);
-	badge_power_init();
+	err = badge_power_init();
+	assert( err == ESP_OK );
 	bool bat_chrg = badge_battery_charge_status();
 	if (bat_chrg)
 		disp_line("battery is charging",0);
@@ -320,7 +327,8 @@ badge_first_run(void)
 #if defined(PORTEXP_PIN_NUM_SD_CD) || defined(MPR121_PIN_NUM_SD_CD)
 	// sdcard detect (not expecting an sd-card)
 	disp_line("read sdcard-detect line.",0);
-	badge_sdcard_init();
+	err = badge_sdcard_init();
+	assert( err == ESP_OK );
 	bool sdcard = badge_sdcard_detected();
 	if (sdcard) {
 		disp_line("sdcard detected. (error)",FONT_MONOSPACE);
@@ -401,7 +409,7 @@ badge_first_run(void)
 
 
 	// store initial nvs data
-	esp_err_t err = nvs_flash_init();
+	err = nvs_flash_init();
 	if (err == ESP_ERR_NVS_NO_FREE_PAGES) {
 		// NVS partition was truncated and needs to be erased
 		const esp_partition_t* nvs_partition = esp_partition_find_first(
