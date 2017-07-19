@@ -483,5 +483,5 @@ void sha2017_ota_update() {
   ESP_ERROR_CHECK(err);
 
   sha2017_ota_initialise_wifi();
-  xTaskCreate(&sha2017_ota_task, "sha2017_ota_task", 8192, NULL, 5, NULL);
+  xTaskCreatePinnedToCore(&sha2017_ota_task, "sha2017_ota_task", 8192, NULL, 5, NULL, 0);
 }

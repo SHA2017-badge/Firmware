@@ -4,11 +4,11 @@ transmitted over WiFi anywhere here; this is a purely passive action.
 
 It contains both the logic to 'peel away' all the layers of the network protocol in order to get
 to the UDP payload of a bpp-carrying UDP packet, and will feed that into the first step (sign checking)
-of the bpp protocol stack. It also contains a WiFi monitoring thread. The idea of that is that the 
+of the bpp protocol stack. It also contains a WiFi monitoring thread. The idea of that is that the
 code will initially not know anything about the network or SSIDs or whatever. It will start scanning
 the ether for any channel carrying a bpp-packet that is valid (=is signed with the private key belonging
 to the public key we know). It'll make a note of the BSSID, resolve that to a SSID, and from then
-on try to look for that SSID. If the receive quality deteriorates, it will try to find a different 
+on try to look for that SSID. If the receive quality deteriorates, it will try to find a different
 channel to connect to a possibly different AP.
 
 This code kinda is a mess, because we have the WiFi sniffer callback do work for the monitor thread,
@@ -272,7 +272,7 @@ static void sniffcb(void *buf, wifi_promiscuous_pkt_type_t type) {
 #endif
 
 		if (ntohs(uh->dstPort)!=2017) return;
-		
+
 		//Make this into a RecvedWifiPacket, with payload being the UDP payload. We overwrite the
 		//lower bits with the RecvedWifiPacket header.
 		RecvedWifiPacket *op=(RecvedWifiPacket*)(uh->payload-sizeof(RecvedWifiPacket));
@@ -383,7 +383,7 @@ static void wifiMonTask(void *arg) {
 	int gotZeroPackets=0;
 #if 0
 	//hack: Immediate active UDP mode on fixed SSID for testing
-	vTaskDelay(100); 
+	vTaskDelay(100);
 	esp_wifi_set_promiscuous(0);
 	vTaskDelay(20); //give everything time to shut down
 	xRingbufferSend(packetRingbuf, "q", 1, 0); //tell parser task to clean itself up
@@ -437,7 +437,7 @@ static void wifiMonTask(void *arg) {
 		fecStNw.packetsInTotal-=fecSt.packetsInTotal;
 		fecStNw.packetsInMissed-=fecSt.packetsInMissed;
 		defecGetStatus(&fecSt);
-		
+
 		if (fecStNw.packetsInTotal==0) gotZeroPackets++; else gotZeroPackets=0;
 		if (gotZeroPackets>=2) {
 			//Hmm. Connected to a good AP, but don't get any packets. Maybe AP doesn't have any clients and as such doesn't send bpp stuff.
@@ -491,8 +491,7 @@ void bppWifiSnifferStart() {
 	ESP_ERROR_CHECK(esp_wifi_set_promiscuous(1));
 	ESP_ERROR_CHECK(esp_wifi_set_promiscuous_filter(&filt));
 	ESP_ERROR_CHECK(esp_wifi_set_channel(1,WIFI_SECOND_CHAN_NONE));
-	
-	xTaskCreatePinnedToCore(parseTask, "bppparse", 8192, NULL, 3, NULL, 0);
-	xTaskCreatePinnedToCore(wifiMonTask, "bppwifimon", 8192, NULL, 3, NULL, 0);
-}
 
+	xTaskCreatePinnedToCore(parseTask, "bppparse", 8192, NULL, 3, NULL, 1);
+	xTaskCreatePinnedToCore(wifiMonTask, "bppwifimon", 8192, NULL, 3, NULL, 1);
+}

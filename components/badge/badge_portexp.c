@@ -192,7 +192,7 @@ badge_portexp_init(void)
 	};
 	memcpy(&badge_portexp_state, &init_state, sizeof(init_state));
 
-	xTaskCreate(&badge_portexp_intr_task, "port-expander interrupt task", 4096, NULL, 10, NULL);
+	xTaskCreatePinnedToCore(&badge_portexp_intr_task, "port-expander interrupt task", 4096, NULL, 10, NULL, 0);
 
 	// it seems that we need to read some registers to start interrupt handling.. (?)
 	badge_portexp_read_reg(0x01);

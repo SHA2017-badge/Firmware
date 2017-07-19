@@ -318,7 +318,7 @@ badge_mpr121_init(void)
 	if (res != ESP_OK)
 		return res;
 
-	xTaskCreate(&badge_mpr121_intr_task, "MPR121 interrupt task", 4096, NULL, 10, NULL);
+	xTaskCreatePinnedToCore(&badge_mpr121_intr_task, "MPR121 interrupt task", 4096, NULL, 10, NULL, 0);
 
 	badge_mpr121_intr_handler(NULL);
 
