@@ -121,7 +121,7 @@ int main(int argc, char** argv) {
 	printf("Initialized ropart blockdev listener; size=%d\n", bpsize);
 #endif
 
-	checkBlockDevAgainst(&blockdevIfRoPart, ropartblockdecoder, "/home/jeroen/esp8266/esp32/badge/bpp/blocksend/tst/fatimage.img");
+//	checkBlockDevAgainst(&blockdevIfRoPart, ropartblockdecoder, "/home/jeroen/esp8266/esp32/badge/bpp/blocksend/tst/fatimage.img");
 
 	subtitleInit();
 	hkpacketsInit();
