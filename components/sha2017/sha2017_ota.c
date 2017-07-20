@@ -49,8 +49,8 @@
  #define BADGE_OTA_WEB_PATH "/firmware-" CONFIG_ESPTOOLPY_FLASHSIZE ".bin"
 #endif
 
-#define BUFFSIZE 1024
-#define TEXT_BUFFSIZE 1024
+#define BUFFSIZE 256
+#define TEXT_BUFFSIZE 256
 
 static const char *TAG = "ota";
 /* an ota data write buffer ready to write to the flash */
@@ -483,5 +483,5 @@ void sha2017_ota_update() {
   ESP_ERROR_CHECK(err);
 
   sha2017_ota_initialise_wifi();
-  xTaskCreate(&sha2017_ota_task, "sha2017_ota_task", 8192, NULL, 5, NULL);
+  xTaskCreatePinnedToCore(&sha2017_ota_task, "sha2017_ota_task", 8192, NULL, 3, NULL, 0);
 }
