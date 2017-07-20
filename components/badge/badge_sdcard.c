@@ -32,7 +32,7 @@ badge_sdcard_init(void)
 	static bool badge_sdcard_init_done = false;
 	esp_err_t res;
 
-//	if (badge_sdcard_init_done)
+	if (badge_sdcard_init_done)
 		return ESP_OK;
 
 	ESP_LOGD(TAG, "init called");
