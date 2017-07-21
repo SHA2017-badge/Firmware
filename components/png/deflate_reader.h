@@ -47,6 +47,7 @@ struct lib_deflate_reader {
 };
 
 extern struct lib_deflate_reader * lib_deflate_new(lib_reader_read_t read, void *read_p);
+extern void lib_deflate_init(struct lib_deflate_reader *dr, lib_reader_read_t read, void *read_p);
 extern ssize_t lib_deflate_read(struct lib_deflate_reader *dr, uint8_t *buf, size_t buf_len);
 extern void lib_deflate_destroy(struct lib_deflate_reader *dr);
 

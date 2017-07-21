@@ -173,6 +173,14 @@ badge_init_locfd(void)
 		return ESP_FAIL;
 	}
 
+	// allocate memory for all deflates
+	struct lib_deflate_reader *dr = (struct lib_deflate_reader *) malloc(sizeof(struct lib_deflate_reader));
+	if (dr == NULL)
+	{
+		ESP_LOGE(TAG, "failed to init deflate object.");
+		return ESP_ERR_NO_MEM;
+	}
+
 	struct lib_flash_reader *fr = lib_flash_new(part_ota1, 4096);
 	if (fr == NULL)
 	{
@@ -266,12 +274,7 @@ badge_init_locfd(void)
 
 				if (local_file_header.compr_method == 8)
 				{ // deflated
-					struct lib_deflate_reader *dr = lib_deflate_new(reader, reader_obj);
-					if (dr == NULL)
-					{
-						ESP_LOGE(TAG, "failed to initialize deflate-reader.");
-						return ESP_FAIL;
-					}
+					lib_deflate_init(dr, reader, reader_obj);
 
 					reader = (lib_reader_read_t) &lib_deflate_read;
 					reader_obj = dr;
@@ -330,7 +333,6 @@ badge_init_locfd(void)
 						ESP_LOGE(TAG, "(%d) failed to read from flash.", __LINE__);
 						return ESP_FAIL;
 					}
-					lib_deflate_destroy(reader_obj);
 				}
 			}
 		}
