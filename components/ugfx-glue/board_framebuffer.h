@@ -53,7 +53,11 @@ uint8_t target_lut;
 		static void board_flush(GDisplay *g) {
 			(void) g;
 
-			if (target_lut == 0)
+			if (target_lut >= 0xf0)
+			{
+				badge_eink_display(badge_eink_fb, DISPLAY_FLAG_GREYSCALE);
+			}
+			else if (target_lut == 0 || target_lut > BADGE_EINK_LUT_MAX+1)
 			{
 				badge_eink_display_one_layer(badge_eink_fb, DISPLAY_FLAG_GREYSCALE);
 			}
