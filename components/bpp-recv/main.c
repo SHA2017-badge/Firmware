@@ -21,6 +21,7 @@
 #include "bd_flatflash.h"
 #include "bd_ropart.h"
 #include "hkpackets.h"
+#include "hexdump.h"
 
 
 

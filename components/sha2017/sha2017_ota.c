@@ -49,8 +49,8 @@
  #define BADGE_OTA_WEB_PATH "/firmware-" CONFIG_ESPTOOLPY_FLASHSIZE ".bin"
 #endif
 
-#define BUFFSIZE 256
-#define TEXT_BUFFSIZE 256
+#define BUFFSIZE 1024
+#define TEXT_BUFFSIZE 1024
 
 static const char *TAG = "ota";
 /* an ota data write buffer ready to write to the flash */
