@@ -63,7 +63,7 @@ display_png(const char *filename)
 	struct lib_file_reader *fr = lib_file_new(filename, 1024);
 	if (fr == NULL)
 	{
-		fprintf(stderr, "out of memory.\n");
+		fprintf(stderr, "file not found (or out of memory).\n");
 		return;
 	}
 
@@ -353,6 +353,8 @@ badge_init_locfd(void)
 		}
 		first_chunk = false;
 	}
+
+	free(dr);
 
 	// clear first page to avoid double unpacking
 	int res = spi_flash_erase_sector((part_ota1->address + 4096) / SPI_FLASH_SEC_SIZE);
