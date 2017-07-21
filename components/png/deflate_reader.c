@@ -157,6 +157,14 @@ lib_deflate_get_huffman(struct lib_deflate_reader *dr, const uint16_t *tbl)
 	return value;
 }
 
+void
+lib_deflate_init(struct lib_deflate_reader *dr, lib_reader_read_t read, void *read_p)
+{
+	memset(dr, 0, sizeof(struct lib_deflate_reader));
+	dr->read = read;
+	dr->read_p = read_p;
+}
+
 struct lib_deflate_reader *
 lib_deflate_new(lib_reader_read_t read, void *read_p)
 {
@@ -164,9 +172,7 @@ lib_deflate_new(lib_reader_read_t read, void *read_p)
 	if (unlikely(dr == NULL))
 		return NULL;
 
-	memset(dr, 0, sizeof(struct lib_deflate_reader));
-	dr->read = read;
-	dr->read_p = read_p;
+	lib_deflate_init(dr, read, read_p);
 
 	return dr;
 }
