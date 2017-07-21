@@ -46,20 +46,24 @@ uint8_t target_lut;
 		g->g.Contrast = 50;
 		fbi->linelen = g->g.Width;
 		fbi->pixels = badge_eink_fb;
-		target_lut = 3;
+		target_lut = 2;
 	}
 
 	#if GDISP_HARDWARE_FLUSH
 		static void board_flush(GDisplay *g) {
 			(void) g;
 
-			if (target_lut == 0)
+			if (target_lut >= 0xf0)
+			{
+				badge_eink_display(badge_eink_fb, DISPLAY_FLAG_GREYSCALE);
+			}
+			else if (target_lut < 0 || target_lut > BADGE_EINK_LUT_MAX)
 			{
 				badge_eink_display_one_layer(badge_eink_fb, DISPLAY_FLAG_GREYSCALE);
 			}
 			else
 			{
-				badge_eink_display_one_layer(badge_eink_fb, DISPLAY_FLAG_LUT(target_lut - 1) | DISPLAY_FLAG_GREYSCALE);
+				badge_eink_display_one_layer(badge_eink_fb, DISPLAY_FLAG_LUT(target_lut) | DISPLAY_FLAG_GREYSCALE);
 			}
 		}
 	#endif
