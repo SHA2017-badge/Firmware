@@ -56,8 +56,9 @@ Flashing MicroPython
 ----------------------------------
 
 ```
-cp micropython/esp32/build/application.bin auto-flasher/firmware/sha2017-badge.bin
-./auto-flaser/auto_flash.pl /dev/ttyUSB0
+cd auto-flasher
+cp ../micropython/esp32/build/application.bin firmware/sha2017-badge.bin
+./auto_flash.pl /dev/ttyUSB0
 ```
 
 Interacting via serial
