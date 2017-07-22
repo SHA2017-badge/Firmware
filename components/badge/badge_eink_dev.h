@@ -74,4 +74,22 @@ static inline void badge_eink_dev_write_command_stream(uint8_t command, const ui
 	badge_eink_dev_write_command_end();
 }
 
+static inline void badge_eink_dev_write_byte_u32(uint32_t data)
+{
+	badge_eink_dev_write_byte(data >> 24);
+	badge_eink_dev_write_byte(data >> 16);
+	badge_eink_dev_write_byte(data >> 8);
+	badge_eink_dev_write_byte(data);
+}
+
+static inline void badge_eink_dev_write_command_stream_u32(uint8_t command, const uint32_t *data,
+                                         unsigned int datalen)
+{
+	badge_eink_dev_write_command_init(command);
+	while (datalen-- > 0) {
+		badge_eink_dev_write_byte_u32(*(data++));
+	}
+	badge_eink_dev_write_command_end();
+}
+
 #endif // BADGE_EINK_DEV_H
