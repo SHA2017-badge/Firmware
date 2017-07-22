@@ -1,4 +1,20 @@
-menu "SHA2017 First Run"
+menu "SHA2017 Badge First Run"
+
+config DEBUG_ADD_DELAYS
+    bool "debug -- add delays"
+    default n
+    help
+        Add delays to make all output readable.
+
+config BASVS_BROKEN_BADGE
+    bool "debug -- basvs broken badge"
+    default n
+    help
+        One of my badges has a non-functioning SELECT button.
+        Am using this config-option to avoid building final images
+        with workarounds for it.
+
+        You probably don't want this, unless you're using my badge.
 
 config ALLOW_BATTERY_FIRST_BOOT
     bool "Allow battery present during first boot sequence"
