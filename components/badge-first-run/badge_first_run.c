@@ -515,8 +515,8 @@ badge_first_run(void)
 	sprintf(line, "Vbat = %u.%03u V", pwr_vbat/1000, pwr_vbat % 1000);
 	disp_line(line, 0);
 	if (pwr_vbat > 100) {
-		disp_line("WARNING: Did not expect any power on Vbat.",FONT_MONOSPACE);
-		vTaskDelay(2000 / portTICK_PERIOD_MS);
+		disp_line("Error: Did not expect any power on Vbat.",FONT_MONOSPACE);
+		return;
 	}
 
 	disp_line("Vusb = ...",NO_NEWLINE);
