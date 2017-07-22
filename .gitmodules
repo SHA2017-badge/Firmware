@@ -24,4 +24,4 @@
 	branch = master
 [submodule "auto-flasher"]
 	path = auto-flasher
-	url = git@github.com:SHA2017-badge/auto-flasher.git
+	url = https://github.com/SHA2017-badge/auto-flasher.git
