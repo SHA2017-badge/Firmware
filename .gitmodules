@@ -22,3 +22,6 @@
 	path = examples
 	url = https://github.com/SHA2017-badge/micropython-examples-sha2017.git
 	branch = master
+[submodule "auto-flasher"]
+	path = auto-flasher
+	url = git@github.com:SHA2017-badge/auto-flasher.git

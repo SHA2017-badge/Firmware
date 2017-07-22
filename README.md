@@ -25,7 +25,7 @@ Debian prerequisites
 --------------------
 
 ```
-sudo apt-get install libncurses5-dev flex bison gperf python-serial libffi-dev libsdl2-dev libmbedtls-dev
+sudo apt-get install libncurses5-dev flex bison gperf python-serial libffi-dev libsdl2-dev libmbedtls-dev perl
 ```
 
 Compiling and flashing
@@ -35,20 +35,29 @@ Compiling and flashing
 git submodule update --init --recursive
 source set_env.sh
 make defconfig
-make flash
+make -j5
 ```
 
-Configuration
+Optional configuration
 -------------
 ```
 make menuconfig
 ```
 
-Compiling and flashing MicroPython
+Compiling MicroPython
 ----------------------------------
 
 ```
-make -C micropython/esp32/ deploy
+make -j5 -C micropython/mpy-cross
+make -j5 -C micropython/esp32/
+```
+
+Flashing MicroPython
+----------------------------------
+
+```
+cp micropython/esp32/build/application.bin auto-flasher/firmware/sha2017-badge.bin
+./auto-flaser/auto_flash.pl /dev/ttyUSB0
 ```
 
 Interacting via serial
