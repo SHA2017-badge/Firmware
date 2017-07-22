@@ -4,6 +4,7 @@
 #include <stdint.h>
 #include <string.h>
 
+#include <esp_heap_caps.h>
 #include <esp_log.h>
 
 #include "badge_pins.h"
@@ -38,14 +39,32 @@ static const uint8_t xlat_curve[256] = {
     0xf5,0xf8,0xfb,0xfe,
 };
 
-static uint8_t badge_eink_tmpbuf[DISP_SIZE_X_B * DISP_SIZE_Y];
+static uint32_t *badge_eink_tmpbuf = NULL;
 #ifdef CONFIG_SHA_BADGE_EINK_DEPG0290B1
-static uint8_t badge_eink_oldbuf[DISP_SIZE_X_B * DISP_SIZE_Y];
+static uint32_t *badge_eink_oldbuf = NULL;
 #endif // CONFIG_SHA_BADGE_EINK_DEPG0290B1
 static bool badge_eink_have_oldbuf = false;
 
 static void
-badge_eink_create_bitplane(const uint8_t *img, uint8_t *buf, int bit, int flags)
+memcpy_u32(uint32_t *dst, uint32_t *src, size_t size)
+{
+	while (size-- > 0)
+	{
+		*dst++ = *src++;
+	}
+}
+
+static void
+memset_u32(uint32_t *dst, uint32_t value, size_t size)
+{
+	while (size-- > 0)
+	{
+		*dst++ = value;
+	}
+}
+
+static void
+badge_eink_create_bitplane(const uint8_t *img, uint32_t *buf, int bit, int flags)
 {
 #ifdef EPD_ROTATED_180
 	flags ^= DISPLAY_FLAG_ROTATE_180;
@@ -67,8 +86,8 @@ badge_eink_create_bitplane(const uint8_t *img, uint8_t *buf, int bit, int flags)
 	for (y = 0; y < DISP_SIZE_Y; y++) {
 		for (x = 0; x < DISP_SIZE_X;) {
 			int x_bits;
-			uint8_t res = 0;
-			for (x_bits=0; x_bits<8; x_bits++)
+			uint32_t res = 0;
+			for (x_bits=0; x_bits<32; x_bits++)
 			{
 				res <<= 1;
 				if (flags & DISPLAY_FLAG_GREYSCALE)
@@ -95,18 +114,18 @@ badge_eink_create_bitplane(const uint8_t *img, uint8_t *buf, int bit, int flags)
 }
 
 static void
-badge_eink_write_bitplane(const uint8_t *buf, int y_start, int y_end)
+badge_eink_write_bitplane(const uint32_t *buf, int y_start, int y_end)
 {
 	badge_eink_set_ram_area(0, DISP_SIZE_X_B - 1, 0, DISP_SIZE_Y - 1);
 	badge_eink_set_ram_pointer(0, 0);
 	badge_eink_dev_write_command_init(0x24);
 	int pos;
-	for (pos=0; pos < y_start * DISP_SIZE_X_B; pos++)
-		badge_eink_dev_write_byte(0);
-	for (; pos < (y_end+1) * DISP_SIZE_X_B; pos++)
-		badge_eink_dev_write_byte(buf[pos]);
-	for (; pos < DISP_SIZE_Y * DISP_SIZE_X_B; pos++)
-		badge_eink_dev_write_byte(0);
+	for (pos=0; pos < y_start * DISP_SIZE_X_B/4; pos++)
+		badge_eink_dev_write_byte_u32(0);
+	for (; pos < (y_end+1) * DISP_SIZE_X_B/4; pos++)
+		badge_eink_dev_write_byte_u32(buf[pos]);
+	for (; pos < DISP_SIZE_Y * DISP_SIZE_X_B/4; pos++)
+		badge_eink_dev_write_byte_u32(0);
 	badge_eink_dev_write_command_end();
 }
 
@@ -151,7 +170,7 @@ badge_eink_update(const struct badge_eink_update *upd_conf)
 #else
 	badge_eink_dev_write_command_stream(0x32, lut, 70);
 	if (badge_eink_have_oldbuf)
-		badge_eink_dev_write_command_stream(0x26, badge_eink_oldbuf, sizeof(badge_eink_oldbuf));
+		badge_eink_dev_write_command_stream_u32(0x26, badge_eink_oldbuf, DISP_SIZE_X_B * DISP_SIZE_Y/4);
 #endif
 
 	// write number of overscan lines
@@ -182,7 +201,7 @@ badge_eink_update(const struct badge_eink_update *upd_conf)
 	badge_eink_dev_write_command(0x20);
 
 #ifdef CONFIG_SHA_BADGE_EINK_DEPG0290B1
-	memcpy(badge_eink_oldbuf, badge_eink_tmpbuf, sizeof(badge_eink_oldbuf));
+	memcpy_u32(badge_eink_oldbuf, badge_eink_tmpbuf, DISP_SIZE_X_B * DISP_SIZE_Y/4);
 #endif // CONFIG_SHA_BADGE_EINK_DEPG0290B1
 	badge_eink_have_oldbuf = true;
 }
@@ -193,8 +212,15 @@ badge_eink_display_one_layer(const uint8_t *img, int flags)
 	int lut_mode = 
 		(flags >> DISPLAY_FLAG_LUT_BIT) & ((1 << DISPLAY_FLAG_LUT_SIZE)-1);
 
-	uint8_t *buf = badge_eink_tmpbuf;
-	badge_eink_create_bitplane(img, buf, 0x80, flags);
+	uint32_t *buf = badge_eink_tmpbuf;
+	if (img == NULL)
+	{
+		memset_u32(buf, 0, DISP_SIZE_X_B * DISP_SIZE_Y/4);
+	}
+	else
+	{
+		badge_eink_create_bitplane(img, buf, 0x80, flags);
+	}
 
 	if ((flags & DISPLAY_FLAG_NO_UPDATE) != 0)
 	{
@@ -238,10 +264,7 @@ badge_eink_display(const uint8_t *img, int flags)
 	}
 
 	{ // start with black.
-		memset(badge_eink_tmpbuf, 0, sizeof(badge_eink_tmpbuf));
-		badge_eink_display_one_layer(badge_eink_tmpbuf, (flags | DISPLAY_FLAG_FULL_UPDATE) & ~DISPLAY_FLAG_GREYSCALE);
-//		badge_eink_have_oldbuf = false;
-//		badge_eink_display_one_layer(badge_eink_tmpbuf, flags & ~DISPLAY_FLAG_GREYSCALE);
+		badge_eink_display_one_layer(NULL, (flags | DISPLAY_FLAG_FULL_UPDATE) & ~DISPLAY_FLAG_GREYSCALE);
 	}
 
 	int i;
@@ -265,7 +288,7 @@ badge_eink_display(const uint8_t *img, int flags)
 			int y_start = 0 + j * (DISP_SIZE_Y / p);
 			int y_end = y_start + (DISP_SIZE_Y / p) - 1;
 
-			uint8_t *buf = badge_eink_tmpbuf;
+			uint32_t *buf = badge_eink_tmpbuf;
 			badge_eink_create_bitplane(img, buf, i << 1, DISPLAY_FLAG_GREYSCALE|(flags & DISPLAY_FLAG_ROTATE_180));
 
 			badge_eink_write_bitplane(buf, y_start, y_end);
@@ -337,6 +360,17 @@ badge_eink_init(void)
 		return ESP_OK;
 
 	ESP_LOGD(TAG, "init called");
+
+	// allocate buffers
+	badge_eink_tmpbuf = heap_caps_malloc(DISP_SIZE_X_B * DISP_SIZE_Y, MALLOC_CAP_32BIT);
+	if (badge_eink_tmpbuf == NULL)
+		return ESP_ERR_NO_MEM;
+
+#ifdef CONFIG_SHA_BADGE_EINK_DEPG0290B1
+	badge_eink_oldbuf = heap_caps_malloc(DISP_SIZE_X_B * DISP_SIZE_Y, MALLOC_CAP_32BIT);
+	if (badge_eink_oldbuf == NULL)
+		return ESP_ERR_NO_MEM;
+#endif // CONFIG_SHA_BADGE_EINK_DEPG0290B1
 
 	// initialize spi interface to display
 	esp_err_t res = badge_eink_dev_init();
