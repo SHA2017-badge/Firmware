@@ -1,0 +1,9 @@
+menu "SHA2017 First Run"
+
+config ALLOW_BATTERY_FIRST_BOOT
+    bool "Allow battery present during first boot sequence"
+    default n
+    help
+        If enabled the first run will not stop when battery voltage is detected, useful for developing
+
+endmenu
