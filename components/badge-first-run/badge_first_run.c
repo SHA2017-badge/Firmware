@@ -593,7 +593,7 @@ badge_first_run(void)
 		disp_line(line, 0);
 		for (i=0; i<num_ap; i++) {
 			sprintf(line, "ssid '%s'\n", ap_records[i].ssid);
-			disp_line(line, 0);
+			// disp_line(line, 0);
 		}
 		if (num_ap == 0) {
 			disp_line("no ssids found.",0);
