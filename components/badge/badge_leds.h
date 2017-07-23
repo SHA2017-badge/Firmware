@@ -24,15 +24,6 @@ extern esp_err_t badge_leds_enable(void);
 extern esp_err_t badge_leds_disable(void);
 
 /**
- * Configure the 6 on-board leds with the given rgbw data.
- * @param rgbw array with red, green, blue and white data for every
- *   led. First index is the left led.
- * @return ESP_OK on success; any other value indicates an error
- * @deprecated use badge_leds_send_data() instead.
- */
-extern esp_err_t badge_leds_set_state(uint8_t *rgbw) __attribute__((deprecated));
-
-/**
  * Send color-data to the leds bus.
  * @param data the data-bytes to send on the bus.
  * @param len the data-length.

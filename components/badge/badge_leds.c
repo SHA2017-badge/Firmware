@@ -165,36 +165,6 @@ badge_leds_send_data(uint8_t *data, int len)
 }
 
 esp_err_t
-badge_leds_set_state(uint8_t *rgbw)
-{
-	uint8_t buf[6*4];
-
-	int pos=0;
-	bool all_zero = true;
-	int i;
-	for (i=5; i>=0; i--)
-	{
-		int r = rgbw[i*4+0];
-		int g = rgbw[i*4+1];
-		int b = rgbw[i*4+2];
-		int w = rgbw[i*4+3];
-		buf[pos++] = g;
-		buf[pos++] = r;
-		buf[pos++] = b;
-		buf[pos++] = w;
-		if (r|g|b|w)
-			all_zero = false;
-	}
-
-	if (all_zero)
-	{
-		return badge_leds_disable();
-	}
-
-	return badge_leds_send_data(buf, sizeof(buf));
-}
-
-esp_err_t
 badge_leds_init(void)
 {
 	static bool badge_leds_init_done = false;
