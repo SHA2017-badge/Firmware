@@ -34,13 +34,13 @@ script:
   - source set_env.sh
   - make defconfig
   # Build project from the git repository
-  - make
+  - make -j3
   # Build the micropython firmware
-  - make -C micropython/esp32
+  - make -j3 -C micropython/esp32
   # Build micropython unix 'badge emulator'
   - git clone https://github.com/ARMmbed/mbedtls.git micropython/lib/mbedtls
-  - make -C micropython/lib/mbedtls
-  - make -C micropython/unix
+  - make -j3 -C micropython/lib/mbedtls
+  - make -j3 -C micropython/unix
   - du -hs
 
 notifications:
