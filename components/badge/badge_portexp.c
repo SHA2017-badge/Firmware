@@ -1,14 +1,18 @@
 #include <sdkconfig.h>
 
+#ifdef CONFIG_SHA_BADGE_PORTEXP_DEBUG
+#define LOG_LOCAL_LEVEL ESP_LOG_DEBUG
+#endif // CONFIG_SHA_BADGE_PORTEXP_DEBUG
+
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <string.h>
 
-#include <rom/ets_sys.h>
 #include <freertos/FreeRTOS.h>
 #include <freertos/semphr.h>
 #include <freertos/task.h>
+#include <rom/ets_sys.h>
 #include <esp_log.h>
 #include <driver/gpio.h>
 
@@ -52,13 +56,11 @@ badge_portexp_read_reg(uint8_t reg)
 	esp_err_t res = badge_i2c_read_reg(I2C_PORTEXP_ADDR, reg, &value, 1);
 
 	if (res != ESP_OK) {
-		ets_printf("badge_portexp: i2c read reg(0x%02x): error %d\n", reg, res);
+		ESP_LOGE(TAG, "i2c read reg(0x%02x): error %d", reg, res);
 		return -1;
 	}
 
-#ifdef CONFIG_SHA_BADGE_PORTEXP_DEBUG
-	ets_printf("badge_portexp: i2c read reg(0x%02x): 0x%02x\n", reg, value);
-#endif // CONFIG_SHA_BADGE_PORTEXP_DEBUG
+	ESP_LOGD(TAG, "i2c read reg(0x%02x): 0x%02x", reg, value);
 
 	return value;
 }
@@ -69,13 +71,11 @@ badge_portexp_write_reg(uint8_t reg, uint8_t value)
 	esp_err_t res = badge_i2c_write_reg(I2C_PORTEXP_ADDR, reg, value);
 
 	if (res != ESP_OK) {
-		ets_printf("badge_portexp: i2c write reg(0x%02x, 0x%02x): error %d\n", reg, value, res);
+		ESP_LOGE(TAG, "i2c write reg(0x%02x, 0x%02x): error %d", reg, value, res);
 		return res;
 	}
 
-#ifdef CONFIG_SHA_BADGE_PORTEXP_DEBUG
-	ets_printf("badge_portexp: i2c write reg(0x%02x, 0x%02x): ok\n", reg, value);
-#endif // CONFIG_SHA_BADGE_PORTEXP_DEBUG
+	ESP_LOGD(TAG, "i2c write reg(0x%02x, 0x%02x): ok", reg, value);
 
 	return ESP_OK;
 }
@@ -113,17 +113,14 @@ badge_portexp_intr_task(void *arg)
 
 void
 badge_portexp_intr_handler(void *arg)
-{
-
+{ /* in interrupt handler */
 	int gpio_state = gpio_get_level(PIN_NUM_PORTEXP_INT);
+
 #ifdef CONFIG_SHA_BADGE_PORTEXP_DEBUG
 	static int gpio_last_state = -1;
-	if (gpio_last_state != gpio_state)
+	if (gpio_state != -1 && gpio_last_state != gpio_state)
 	{
-		if (gpio_state == 1)
-			ets_printf("badge_portexp: I2C Int down\n");
-		else if (gpio_state == 0)
-			ets_printf("badge_portexp: I2C Int up\n");
+		ets_printf("badge_touch: I2C Int %s\n", gpio_state == 0 ? "up" : "down");
 	}
 	gpio_last_state = gpio_state;
 #endif // CONFIG_SHA_BADGE_PORTEXP_DEBUG

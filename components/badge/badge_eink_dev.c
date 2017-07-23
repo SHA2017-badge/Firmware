@@ -1,5 +1,9 @@
 #include <sdkconfig.h>
 
+#ifdef CONFIG_SHA_BADGE_EINK_DEBUG
+#define LOG_LOCAL_LEVEL ESP_LOG_DEBUG
+#endif // CONFIG_SHA_BADGE_EINK_DEBUG
+
 #include <stdbool.h>
 #include <stdint.h>
 
@@ -74,16 +78,14 @@ badge_eink_dev_busy_wait(void)
 
 void
 badge_eink_dev_intr_handler(void *arg)
-{
+{ /* in interrupt handler */
 	int gpio_state = gpio_get_level(PIN_NUM_EPD_BUSY);
+
 #ifdef CONFIG_SHA_BADGE_EINK_DEBUG
 	static int gpio_last_state = -1;
-	if (gpio_last_state != gpio_state)
+	if (gpio_state != -1 && gpio_last_state != gpio_state)
 	{
-		if (gpio_state == 1)
-			ets_printf("badge_eink_dev: EPD-Busy Int down\n");
-		else if (gpio_state == 0)
-			ets_printf("badge_eink_dev: EPD-Busy Int up\n");
+		ets_printf("badge_eink_dev: EPD-Busy Int %s\n", gpio_state == 0 ? "up" : "down");
 	}
 	gpio_last_state = gpio_state;
 #endif // CONFIG_SHA_BADGE_EINK_DEBUG

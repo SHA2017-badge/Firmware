@@ -14,7 +14,7 @@ int badge_gpiobutton_old_state[40] = { 0 };
 
 void
 badge_gpiobutton_handler(void *arg)
-{
+{ /* in interrupt handler */
 	uint32_t gpio_num = (uint32_t) arg;
 
 	int new_state = gpio_get_level(gpio_num);

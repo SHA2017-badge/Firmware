@@ -5,7 +5,6 @@
 #include <stdio.h>
 #include <string.h>
 
-#include <rom/ets_sys.h>
 #include <esp_log.h>
 #include <driver/i2c.h>
 
@@ -108,7 +107,7 @@ badge_i2c_read_reg(uint8_t addr, uint8_t reg, uint8_t *value, size_t value_len)
 
 	if (xSemaphoreGive(badge_i2c_mux) != pdTRUE)
 	{
-		ets_printf("badge_i2c: xSemaphoreGive() did not return pdTRUE.\n");
+		ESP_LOGE(TAG, "xSemaphoreGive() did not return pdTRUE.");
 	}
 
 	return res;
@@ -139,7 +138,7 @@ badge_i2c_write_reg(uint8_t addr, uint8_t reg, uint8_t value)
 
 	if (xSemaphoreGive(badge_i2c_mux) != pdTRUE)
 	{
-		ets_printf("badge_i2c: xSemaphoreGive() did not return pdTRUE.\n");
+		ESP_LOGE(TAG, "xSemaphoreGive() did not return pdTRUE.");
 	}
 
 	return res;
@@ -170,7 +169,7 @@ badge_i2c_read_event(uint8_t addr, uint8_t *buf)
 
 	if (xSemaphoreGive(badge_i2c_mux) != pdTRUE)
 	{
-		ets_printf("badge_i2c: xSemaphoreGive() did not return pdTRUE.\n");
+		ESP_LOGE(TAG, "xSemaphoreGive() did not return pdTRUE.");
 	}
 
 	return res;

@@ -1,5 +1,9 @@
 #include <sdkconfig.h>
 
+#ifdef CONFIG_SHA_BADGE_INPUT_DEBUG
+#define LOG_LOCAL_LEVEL ESP_LOG_DEBUG
+#endif // CONFIG_SHA_BADGE_INPUT_DEBUG
+
 #include <esp_event.h>
 #include <esp_log.h>
 
@@ -32,25 +36,29 @@ badge_input_init(void)
 	return ESP_OK;
 }
 
+static const char *badge_input_button_name[11] = {
+	"(null)",
+	"UP",
+	"DOWN",
+	"LEFT",
+	"RIGHT",
+	"(null)",
+	"A",
+	"B",
+	"SELECT",
+	"START",
+	"FLASH",
+};
+
 void
 badge_input_add_event(uint32_t button_id, bool pressed, bool in_isr)
-{
+{ /* maybe in interrupt handler */
 #ifdef CONFIG_SHA_BADGE_INPUT_DEBUG
-	const char *button_name[11] = {
-		"(null)",
-		"UP",
-		"DOWN",
-		"LEFT",
-		"RIGHT",
-		"(null)",
-		"A",
-		"B",
-		"SELECT",
-		"START",
-		"FLASH",
-	};
-	ets_printf("badge_input: Button %s %s.\n", button_name[button_id < 11 ? button_id : 0], pressed ? "pressed" : "released");
+	ets_printf("badge_input: Button %s %s.\n",
+			badge_input_button_name[button_id < 11 ? button_id : 0],
+			pressed ? "pressed" : "released");
 #endif // CONFIG_SHA_BADGE_INPUT_DEBUG
+
 	if (pressed)
 	{
 		badge_input_button_state |= 1 << button_id;
