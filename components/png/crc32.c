@@ -3,6 +3,20 @@
 
 #include "crc32.h"
 
+#define USE_ESP32_ROM_CRC32
+
+#ifdef USE_ESP32_ROM_CRC32
+
+#include <rom/crc.h>
+#include <rom/ets_sys.h>
+uint32_t
+lib_crc32(const uint8_t *buf, size_t buf_len, uint32_t crc)
+{
+	return crc32_le(crc, buf, buf_len);
+}
+
+#else
+
 static const uint32_t lib_crc32_lookup[256] = {
 	0x00000000,0x77073096,0xee0e612c,0x990951ba,0x076dc419,0x706af48f,0xe963a535,0x9e6495a3,
 	0x0edb8832,0x79dcb8a4,0xe0d5e91e,0x97d2d988,0x09b64c2b,0x7eb17cbd,0xe7b82d07,0x90bf1d91,
@@ -50,3 +64,5 @@ lib_crc32(const uint8_t *buf, size_t buf_len, uint32_t crc)
 
 	return crc ^ 0xffffffff;
 }
+
+#endif
