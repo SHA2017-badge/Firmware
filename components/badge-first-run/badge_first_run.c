@@ -713,7 +713,7 @@ badge_check_first_run(void)
 	}
 
 	uint8_t buf[64];
-	ESP_LOGD(TAG, "nvs partition address: 0x%x\n", nvs_partition->address);
+	ESP_LOGD(TAG, "nvs partition address: 0x%x", nvs_partition->address);
 	int res = spi_flash_read(nvs_partition->address, buf, sizeof(buf));
 	if (res != ESP_OK)
 	{

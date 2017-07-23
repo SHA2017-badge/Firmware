@@ -1,11 +1,14 @@
 #include <sdkconfig.h>
 
+#ifdef CONFIG_SHA_BADGE_POWER_DEBUG
+#define LOG_LOCAL_LEVEL ESP_LOG_DEBUG
+#endif // CONFIG_SHA_BADGE_POWER_DEBUG
+
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <string.h>
 
-#include <rom/ets_sys.h>
 #include <esp_log.h>
 #include <driver/adc.h>
 #include <driver/gpio.h>
@@ -63,9 +66,7 @@ static int badge_power_leds_sdcard = 0; // bit 0 = leds, bit 1 = sd-card
 static esp_err_t
 badge_power_sdcard_leds_enable(void)
 {
-#ifdef CONFIG_SHA_BADGE_POWER_DEBUG
-	ets_printf("badge_power: enabling power to sdcard and leds.\n");
-#endif // CONFIG_SHA_BADGE_POWER_DEBUG
+	ESP_LOGD(TAG, "enabling power to sdcard and leds.");
 
 	esp_err_t ret;
 #ifdef PORTEXP_PIN_NUM_LEDS
@@ -76,10 +77,10 @@ badge_power_sdcard_leds_enable(void)
 	ret = ESP_OK;
 #endif
 
-#ifdef CONFIG_SHA_BADGE_POWER_DEBUG
 	if (ret != ESP_OK)
-		ets_printf("badge_power: failed to enable power.\n");
-#endif // CONFIG_SHA_BADGE_POWER_DEBUG
+	{
+		ESP_LOGW(TAG, "failed to enable power.");
+	}
 
 	return ret;
 }
@@ -113,9 +114,7 @@ badge_power_sdcard_leds_disable(void)
 		return res;
 #endif // PIN_NUM_SD_CLK
 
-#ifdef CONFIG_SHA_BADGE_POWER_DEBUG
-	ets_printf("badge_power: disabling power to sdcard and leds.\n");
-#endif // CONFIG_SHA_BADGE_POWER_DEBUG
+	ESP_LOGD(TAG, "disabling power to sdcard and leds.");
 
 	int ret;
 #ifdef PORTEXP_PIN_NUM_LEDS
@@ -126,10 +125,10 @@ badge_power_sdcard_leds_disable(void)
 	ret = ESP_OK;
 #endif
 
-#ifdef CONFIG_SHA_BADGE_POWER_DEBUG
 	if (ret != ESP_OK)
-		ets_printf("badge_power: failed to disable power.\n");
-#endif // CONFIG_SHA_BADGE_POWER_DEBUG
+	{
+		ESP_LOGW(TAG, "failed to disable power.");
+	}
 
 	return ret;
 }
@@ -225,9 +224,6 @@ badge_power_init(void)
 	ESP_LOGD(TAG, "init called");
 
 	esp_err_t res;
-#ifdef CONFIG_SHA_BADGE_POWER_DEBUG
-	ets_printf("badge_power: initializing.\n");
-#endif // CONFIG_SHA_BADGE_POWER_DEBUG
 
 	// configure adc width
 #if defined(ADC1_CHAN_VBAT_SENSE) || defined(ADC1_CHAN_VUSB_SENSE)

@@ -1,11 +1,14 @@
 #include <sdkconfig.h>
 
+#ifdef CONFIG_SHA_BADGE_MPR121_DEBUG
+#define LOG_LOCAL_LEVEL ESP_LOG_DEBUG
+#endif // CONFIG_SHA_BADGE_MPR121_DEBUG
+
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <string.h>
 
-#include <rom/ets_sys.h>
 #include <freertos/FreeRTOS.h>
 #include <freertos/semphr.h>
 #include <freertos/task.h>
@@ -57,13 +60,11 @@ badge_mpr121_read_reg(uint8_t reg)
 	esp_err_t res = badge_i2c_read_reg(I2C_MPR121_ADDR, reg, &value, 1);
 
 	if (res != ESP_OK) {
-		ets_printf("badge_mpr121: i2c read reg(0x%02x): error %d\n", reg, res);
+		ESP_LOGE(TAG, "i2c read reg(0x%02x): error %d", reg, res);
 		return -1;
 	}
 
-#ifdef CONFIG_SHA_BADGE_MPR121_DEBUG
-	ets_printf("badge_mpr121: i2c read reg(0x%02x): 0x%02x\n", reg, value);
-#endif // CONFIG_SHA_BADGE_MPR121_DEBUG
+	ESP_LOGD(TAG, "i2c read reg(0x%02x): 0x%02x", reg, value);
 
 	return value;
 }
@@ -74,16 +75,27 @@ badge_mpr121_read_regs(uint8_t reg, uint8_t *data, size_t data_len)
 	esp_err_t res = badge_i2c_read_reg(I2C_MPR121_ADDR, reg, data, data_len);
 
 	if (res != ESP_OK) {
-		ets_printf("badge_mpr121: i2c read regs(0x%02x, %d): error %d\n", reg, data_len, res);
+		ESP_LOGE(TAG, "i2c read regs(0x%02x, %d): error %d", reg, data_len, res);
 		return res;
 	}
 
 #ifdef CONFIG_SHA_BADGE_MPR121_DEBUG
-	int i;
-	ets_printf("badge_mpr121: i2c read regs(0x%02x, %d): 0x%02x", reg, data_len, data[0]);
-	for (i=1; i<data_len; i++)
-		ets_printf(", 0x%02x", data[i]);
-	ets_printf("\n");
+	{
+		ESP_LOGD(TAG, "i2c read regs(0x%02x, %d):", reg, data_len);
+		char line[16*3 + 1];
+		char *lptr = line;
+		int i;
+		for (i=0; i<data_len; i++)
+		{
+			sprintf(lptr, " %02x", data[i]);
+			lptr = &lptr[3];
+			if ((i % 16) == 15 || i == data_len-1)
+			{
+				ESP_LOGD(TAG, "%s", line);
+				lptr = line;
+			}
+		}
+	}
 #endif // CONFIG_SHA_BADGE_MPR121_DEBUG
 
 	return res;
@@ -95,13 +107,11 @@ badge_mpr121_write_reg(uint8_t reg, uint8_t value)
 	esp_err_t res = badge_i2c_write_reg(I2C_MPR121_ADDR, reg, value);
 
 	if (res != ESP_OK) {
-		ets_printf("badge_mpr121: i2c write reg(0x%02x, 0x%02x): error %d\n", reg, value, res);
+		ESP_LOGE(TAG, "i2c write reg(0x%02x, 0x%02x): error %d", reg, value, res);
 		return res;
 	}
 
-#ifdef CONFIG_SHA_BADGE_MPR121_DEBUG
-	ets_printf("badge_mpr121: i2c write reg(0x%02x, 0x%02x): ok\n", reg, value);
-#endif // CONFIG_SHA_BADGE_MPR121_DEBUG
+	ESP_LOGD(TAG, "i2c write reg(0x%02x, 0x%02x): ok", reg, value);
 
 	return res;
 }
@@ -124,7 +134,7 @@ badge_mpr121_intr_task(void *arg)
 				if (state != -1)
 					break;
 
-				ets_printf("badge_mpr121: failed to read status registers.\n");
+				ESP_LOGE(TAG, "failed to read status registers.");
 				vTaskDelay(1000 / portTICK_PERIOD_MS);
 			}
 
@@ -145,18 +155,22 @@ badge_mpr121_intr_task(void *arg)
 
 			if (state & 0x8000)
 			{
-				ets_printf("badge_mpr121: over-current detected!\n");
+				ESP_LOGE(TAG, "over-current detected!");
 				vTaskDelay(1000 / portTICK_PERIOD_MS);
 
 				// clear OVCF by writing a 1
 				esp_err_t res = badge_mpr121_write_reg(0x01, state >> 8);
 				if (res != ESP_OK)
-					ets_printf("badge_mpr121: failed to reset over-current.\n");
+				{
+					ESP_LOGE(TAG, "failed to reset over-current.");
+				}
 
 				// enable run-mode, set base-line tracking
 				res = badge_mpr121_write_reg(0x5e, 0x88);
 				if (res != ESP_OK)
-					ets_printf("badge_mpr121: failed to re-enable touch.\n");
+				{
+					ESP_LOGE(TAG, "failed to re-enable touch.");
+				}
 			}
 
 			old_state = state;
@@ -166,17 +180,14 @@ badge_mpr121_intr_task(void *arg)
 
 void
 badge_mpr121_intr_handler(void *arg)
-{
-
+{ /* in interrupt handler */
 	int gpio_state = gpio_get_level(PIN_NUM_MPR121_INT);
+
 #ifdef CONFIG_SHA_BADGE_MPR121_DEBUG
 	static int gpio_last_state = -1;
-	if (gpio_last_state != gpio_state)
+	if (gpio_state != -1 && gpio_last_state != gpio_state)
 	{
-		if (gpio_state == 1)
-			ets_printf("badge_mpr121: I2C Int down\n");
-		else if (gpio_state == 0)
-			ets_printf("badge_mpr121: I2C Int up\n");
+		ets_printf("badge_mpr121: I2C Int %s\n", gpio_state == 0 ? "up" : "down");
 	}
 	gpio_last_state = gpio_state;
 #endif // CONFIG_SHA_BADGE_MPR121_DEBUG

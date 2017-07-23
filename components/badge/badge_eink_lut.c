@@ -1,9 +1,13 @@
 #include <sdkconfig.h>
 
+#ifdef CONFIG_SHA_BADGE_EINK_LUT_DEBUG
+#define LOG_LOCAL_LEVEL ESP_LOG_DEBUG
+#endif // CONFIG_SHA_BADGE_EINK_LUT_DEBUG
+
 #include <stdint.h>
 #include <string.h>
+#include <stdio.h>
 
-#include <rom/ets_sys.h>
 #include <esp_log.h>
 
 #include "badge_eink_lut.h"
@@ -86,9 +90,8 @@ uint8_t *
 badge_eink_lut_generate(const struct badge_eink_lut_entry *list, enum badge_eink_lut_flags flags)
 {
 	static uint8_t lut[30];
-#ifdef CONFIG_SHA_BADGE_EINK_LUT_DEBUG
-	ets_printf("badge_eink_lut_generate: flags = %d.\n", flags);
-#endif // CONFIG_SHA_BADGE_EINK_LUT_DEBUG
+
+	ESP_LOGD(TAG, "badge_eink_lut_generate: flags = %d.", flags);
 
 	memset(lut, 0, sizeof(lut));
 
@@ -102,7 +105,7 @@ badge_eink_lut_generate(const struct badge_eink_lut_entry *list, enum badge_eink
 			int plen = len > 15 ? 15 : len;
 			if (pos == 20)
 			{
-				ets_printf("badge_eink_lut_generate: lut overflow.\n");
+				ESP_LOGE(TAG, "badge_eink_lut_generate: lut overflow.");
 				return NULL; // full
 			}
 			lut[pos] = voltages;
@@ -120,7 +123,7 @@ badge_eink_lut_generate(const struct badge_eink_lut_entry *list, enum badge_eink
 	// the GDEH029A01 needs an empty update cycle at the end.
 	if (pos == 20)
 	{
-		ets_printf("badge_eink_lut_generate: lut overflow.\n");
+		ESP_LOGE(TAG, "badge_eink_lut_generate: lut overflow.");
 		return NULL; // full
 	}
 	if ((pos & 1) == 0)
@@ -129,13 +132,21 @@ badge_eink_lut_generate(const struct badge_eink_lut_entry *list, enum badge_eink
 		lut[20+(pos >> 1)] |= 1 << 4;
 
 #ifdef CONFIG_SHA_BADGE_EINK_LUT_DEBUG
-	ets_printf("badge_eink_lut_generate: dump.\n");
-	int i;
-	for (i=0; i<30; i++)
 	{
-		ets_printf(" %02x", lut[i]);
-		if ((i % 10) == 9)
-			ets_printf("\n");
+		ESP_LOGD(TAG, "badge_eink_lut_generate: dump.");
+		char line[10*3 + 1];
+		char *lptr = line;
+		int i;
+		for (i=0; i<30; i++)
+		{
+			sprintf(lptr, " %02x", lut[i]);
+			lptr = &lptr[3];
+			if ((i % 10) == 9)
+			{
+				ESP_LOGD(TAG, "%s", line);
+				lptr = line;
+			}
+		}
 	}
 #endif // CONFIG_SHA_BADGE_EINK_LUT_DEBUG
 
@@ -149,9 +160,8 @@ uint8_t *
 badge_eink_lut_generate(const struct badge_eink_lut_entry *list, enum badge_eink_lut_flags flags)
 {
 	static uint8_t lut[70];
-#ifdef CONFIG_SHA_BADGE_EINK_LUT_DEBUG
-	ets_printf("badge_eink_lut_generate: flags = %d.\n", flags);
-#endif // CONFIG_SHA_BADGE_EINK_LUT_DEBUG
+
+	ESP_LOGD(TAG, "badge_eink_lut_generate: flags = %d.", flags);
 
 	memset(lut, 0, sizeof(lut));
 
@@ -162,7 +172,7 @@ badge_eink_lut_generate(const struct badge_eink_lut_entry *list, enum badge_eink
 		int len = list->length;
 		if (pos == 7)
 		{
-			ets_printf("badge_eink_lut_generate: lut overflow.\n");
+			ESP_LOGE(TAG, "badge_eink_lut_generate: lut overflow.");
 			return NULL; // full
 		}
 		uint8_t voltages = badge_eink_lut_conv(list->voltages, flags);
@@ -185,19 +195,31 @@ badge_eink_lut_generate(const struct badge_eink_lut_entry *list, enum badge_eink
 	}
 
 #ifdef CONFIG_SHA_BADGE_EINK_LUT_DEBUG
-	ets_printf("badge_eink_lut_generate: dump.\n");
-	int i;
-	for (i=0; i<35; i++)
 	{
-		ets_printf(" %02x", lut[i]);
-		if ((i % 7) == 6)
-			ets_printf("\n");
-	}
-	for (; i<70; i++)
-	{
-		ets_printf(" %02x", lut[i]);
-		if ((i % 5) == 4)
-			ets_printf("\n");
+		ESP_LOGD(TAG, "badge_eink_lut_generate: dump.");
+		char line[3*7+1];
+		char *lptr = line;
+		int i;
+		for (i=0; i<35; i++)
+		{
+			sprintf(lptr, " %02x", lut[i]);
+			lptr = &lptr[3];
+			if ((i % 7) == 6)
+			{
+				ESP_LOGD(TAG, "%s", line);
+				lptr = line;
+			}
+		}
+		for (; i<70; i++)
+		{
+			sprintf(lptr, " %02x", lut[i]);
+			lptr = &lptr[3];
+			if ((i % 5) == 4)
+			{
+				ESP_LOGD(TAG, "%s", line);
+				lptr = line;
+			}
+		}
 	}
 #endif // CONFIG_SHA_BADGE_EINK_LUT_DEBUG
 

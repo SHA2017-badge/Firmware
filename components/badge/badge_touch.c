@@ -1,11 +1,14 @@
 #include <sdkconfig.h>
 
+#ifdef CONFIG_SHA_BADGE_TOUCH_DEBUG
+#define LOG_LOCAL_LEVEL ESP_LOG_DEBUG
+#endif // CONFIG_SHA_BADGE_TOUCH_DEBUG
+
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <string.h>
 
-#include <rom/ets_sys.h>
 #include <esp_log.h>
 
 #include <badge_pins.h>
@@ -26,12 +29,10 @@ badge_touch_read_event(void)
 	esp_err_t ret = badge_i2c_read_event(I2C_TOUCHPAD_ADDR, buf);
 
 	if (ret == ESP_OK) {
-#ifdef CONFIG_SHA_BADGE_TOUCH_DEBUG
-		ets_printf("badge_touch: event: 0x%02x, 0x%02x, 0x%02x\n", buf[0], buf[1], buf[2]);
-#endif // CONFIG_SHA_BADGE_TOUCH_DEBUG
+		ESP_LOGD(TAG, "event: 0x%02x, 0x%02x, 0x%02x", buf[0], buf[1], buf[2]);
 		return (buf[0] << 16) | (buf[1] << 8) | (buf[2]);
 	} else {
-		ets_printf("badge_touch: i2c master read: error %d\n", ret);
+		ESP_LOGE(TAG, "i2c master read: error %d", ret);
 		return -1;
 	}
 }
