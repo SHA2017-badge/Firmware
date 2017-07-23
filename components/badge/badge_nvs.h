@@ -12,10 +12,10 @@
 extern esp_err_t badge_nvs_init(void);
 
 /**
- *  Set an uint8 value in namespace, key
+ *  Erase a value from namespace, key
  * @return ESP_OK on success; any other value indicates an error
  */
-extern esp_err_t badge_nvs_set_u8(const char* namespace, const char* key, uint8_t value);
+extern esp_err_t badge_nvs_erase_key(const char* namespace, const char* key);
 
 /**
  *  Get an uint8 value from namespace, key
@@ -24,10 +24,10 @@ extern esp_err_t badge_nvs_set_u8(const char* namespace, const char* key, uint8_
 extern esp_err_t badge_nvs_get_u8(const char* namespace, const char* key, uint8_t *value);
 
 /**
- *  Set an uint16 value in namespace, key
+ *  Set an uint8 value in namespace, key
  * @return ESP_OK on success; any other value indicates an error
  */
-extern esp_err_t badge_nvs_set_u16(const char* namespace, const char* key, uint16_t value);
+extern esp_err_t badge_nvs_set_u8(const char* namespace, const char* key, uint8_t value);
 
 /**
  *  Get an uint16 value from namespace, key
@@ -36,15 +36,21 @@ extern esp_err_t badge_nvs_set_u16(const char* namespace, const char* key, uint1
 extern esp_err_t badge_nvs_get_u16(const char* namespace, const char* key, uint16_t *value);
 
 /**
- *  Set a string value in namespace, key
+ *  Set an uint16 value in namespace, key
  * @return ESP_OK on success; any other value indicates an error
  */
-extern esp_err_t badge_nvs_set_str(const char* namespace, const char* key, const char *value);
+extern esp_err_t badge_nvs_set_u16(const char* namespace, const char* key, uint16_t value);
 
 /**
  *  Get a string value from namespace, key
  * @return ESP_OK on success; any other value indicates an error
  */
 extern esp_err_t badge_nvs_get_str(const char* namespace, const char* key, char *value, size_t *length);
+
+/**
+ *  Set a string value in namespace, key
+ * @return ESP_OK on success; any other value indicates an error
+ */
+extern esp_err_t badge_nvs_set_str(const char* namespace, const char* key, const char *value);
 
 #endif // BADGE_NVS_H
