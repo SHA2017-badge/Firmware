@@ -62,11 +62,9 @@ void flashDone(uint32_t changeId, void *arg) {
 void doDeepSleep(int delayMs, void *arg) {
 	delayMs-=8000; //to compensate for startup delay
 	if (delayMs<5000) return; //not worth sleeping
-	// printf("Sleeping for %d ms...\n", delayMs);
+	printf("Sleeping for %d ms...\n", delayMs);
 	blockdecodeShutDown(otablockdecoder);
-	// esp_deep_sleep_enable_timer_wakeup(delayMs*1000);
-  printf("Rebooting...\n");
-  esp_deep_sleep_enable_timer_wakeup(1);
+	esp_deep_sleep_enable_timer_wakeup(delayMs*1000);
 	esp_deep_sleep_start();
 }
 
