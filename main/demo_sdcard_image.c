@@ -74,7 +74,7 @@ demo_sdcard_image(void)
         return;
     }
 
-	int res = lib_png_load_image(pr, badge_eink_fb, BADGE_EINK_WIDTH, BADGE_EINK_HEIGHT, BADGE_EINK_WIDTH);
+	int res = lib_png_load_image(pr, badge_eink_fb, 0, 0, BADGE_EINK_WIDTH, BADGE_EINK_HEIGHT, BADGE_EINK_WIDTH);
 	lib_png_destroy(pr);
 	lib_file_destroy(fr);
 	esp_vfs_fat_sdmmc_unmount();

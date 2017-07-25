@@ -75,7 +75,7 @@ load_png(int x, int y, const char *filename)
 		return;
 	}
 
-	int res = lib_png_load_image(pr, &badge_eink_fb[x + y*BADGE_EINK_WIDTH], BADGE_EINK_WIDTH-x, BADGE_EINK_HEIGHT-y, BADGE_EINK_WIDTH);
+	int res = lib_png_load_image(pr, &badge_eink_fb[x + y*BADGE_EINK_WIDTH], 0, 0, BADGE_EINK_WIDTH-x, BADGE_EINK_HEIGHT-y, BADGE_EINK_WIDTH);
 	lib_png_destroy(pr);
 	lib_file_destroy(fr);
 

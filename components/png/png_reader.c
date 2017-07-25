@@ -188,7 +188,7 @@ lib_png_paeth(uint8_t _a, uint8_t _b, uint8_t _c)
 }
 
 static inline int
-lib_png_decode(struct lib_png_reader *pr, uint32_t width, uint32_t height, uint32_t scanline_width, uint8_t *dst, int dst_width, int dst_height, int dst_pixlen, int dst_linelen)
+lib_png_decode(struct lib_png_reader *pr, uint32_t width, uint32_t height, uint32_t scanline_width, uint8_t *dst, uint32_t dst_min_x, uint32_t dst_min_y, uint32_t dst_width, uint32_t dst_height, uint32_t dst_pixlen, uint32_t dst_linelen)
 {
 	memset(pr->scanline, 0, scanline_width);
 
@@ -385,9 +385,10 @@ lib_png_decode(struct lib_png_reader *pr, uint32_t width, uint32_t height, uint3
 					break;
 			}
 
-			uint32_t grey = ( r + g + b + 1 ) / 3;
-			if (a != 0 && x < dst_width && y < dst_height)
+			if (a != 0 && x >= dst_min_x && x < dst_width && y >= dst_min_y && y < dst_height)
 			{
+				uint32_t grey = ( r + g + b + 1 ) / 3;
+
 				int ptr = y * dst_linelen + x * dst_pixlen;
 				if (a == 0xffff)
 				{
@@ -408,7 +409,7 @@ lib_png_decode(struct lib_png_reader *pr, uint32_t width, uint32_t height, uint3
 }
 
 int
-lib_png_load_image(struct lib_png_reader *pr, uint8_t *dst, int dst_width, int dst_height, int dst_linelen)
+lib_png_load_image(struct lib_png_reader *pr, uint8_t *dst, uint32_t dst_min_x, uint32_t dst_min_y, uint32_t dst_width, uint32_t dst_height, uint32_t dst_linelen)
 {
 	static const uint8_t png_sig[8] = {
 		0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a,
@@ -576,7 +577,7 @@ lib_png_load_image(struct lib_png_reader *pr, uint8_t *dst, int dst_width, int d
 
 	if (pr->ihdr.interlace_method == 0)
 	{
-		res = lib_png_decode(pr, pr->ihdr.width, pr->ihdr.height, pr->scanline_width, dst, dst_width, dst_height, 1, dst_linelen);
+		res = lib_png_decode(pr, pr->ihdr.width, pr->ihdr.height, pr->scanline_width, dst, dst_min_x, dst_min_y, dst_width, dst_height, 1, dst_linelen);
 		if (res < 0)
 			return res;
 	}
@@ -585,13 +586,15 @@ lib_png_load_image(struct lib_png_reader *pr, uint8_t *dst, int dst_width, int d
 		/* pass 1 */
 		uint32_t width  = ( pr->ihdr.width  + 7 ) >> 3;
 		uint32_t height = ( pr->ihdr.height + 7 ) >> 3;
+		uint32_t d_min_x  = ( dst_min_x + 7 ) >> 3;
+		uint32_t d_min_y  = ( dst_min_y + 7 ) >> 3;
 		uint32_t d_width  = ( dst_width  + 7 ) >> 3;
 		uint32_t d_height = ( dst_height + 7 ) >> 3;
 
 		if (width && height)
 		{
 			uint32_t scanline_width = (width * bits_per_pixel + 7) >> 3;
-			res = lib_png_decode(pr, width, height, scanline_width, dst, d_width, d_height, 8, dst_linelen*8);
+			res = lib_png_decode(pr, width, height, scanline_width, dst, d_min_x, d_min_y, d_width, d_height, 8, dst_linelen*8);
 			if (res < 0)
 				return res;
 		}
@@ -599,13 +602,15 @@ lib_png_load_image(struct lib_png_reader *pr, uint8_t *dst, int dst_width, int d
 		/* pass 2 */
 		width  = ( pr->ihdr.width  + 3 ) >> 3;
 		height = ( pr->ihdr.height + 7 ) >> 3;
+		d_min_x  = ( dst_min_x + 3 ) >> 3;
+		d_min_y  = ( dst_min_y + 7 ) >> 3;
 		d_width  = ( dst_width  + 3 ) >> 3;
 		d_height = ( dst_height + 7 ) >> 3;
 
 		if (width && height)
 		{
 			uint32_t scanline_width = (width * bits_per_pixel + 7) >> 3;
-			res = lib_png_decode(pr, width, height, scanline_width, &dst[4], d_width, d_height, 8, dst_linelen*8);
+			res = lib_png_decode(pr, width, height, scanline_width, &dst[4], d_min_x, d_min_y, d_width, d_height, 8, dst_linelen*8);
 			if (res < 0)
 				return res;
 		}
@@ -613,13 +618,15 @@ lib_png_load_image(struct lib_png_reader *pr, uint8_t *dst, int dst_width, int d
 		/* pass 3 */
 		width  = ( pr->ihdr.width  + 3 ) >> 2;
 		height = ( pr->ihdr.height + 3 ) >> 3;
+		d_min_x  = ( dst_min_x + 3 ) >> 2;
+		d_min_y  = ( dst_min_y + 3 ) >> 3;
 		d_width  = ( dst_width  + 3 ) >> 2;
 		d_height = ( dst_height + 3 ) >> 3;
 
 		if (width && height)
 		{
 			uint32_t scanline_width = (width * bits_per_pixel + 7) >> 3;
-			res = lib_png_decode(pr, width, height, scanline_width, &dst[4*dst_linelen], d_width, d_height, 4, dst_linelen*8);
+			res = lib_png_decode(pr, width, height, scanline_width, &dst[4*dst_linelen], d_min_x, d_min_y, d_width, d_height, 4, dst_linelen*8);
 			if (res < 0)
 				return res;
 		}
@@ -627,13 +634,15 @@ lib_png_load_image(struct lib_png_reader *pr, uint8_t *dst, int dst_width, int d
 		/* pass 4 */
 		width  = ( pr->ihdr.width  + 1 ) >> 2;
 		height = ( pr->ihdr.height + 3 ) >> 2;
+		d_min_x  = ( dst_min_x + 1 ) >> 2;
+		d_min_y  = ( dst_min_y + 3 ) >> 2;
 		d_width  = ( dst_width  + 1 ) >> 2;
 		d_height = ( dst_height + 3 ) >> 2;
 
 		if (width && height)
 		{
 			uint32_t scanline_width = (width * bits_per_pixel + 7) >> 3;
-			res = lib_png_decode(pr, width, height, scanline_width, &dst[2], d_width, d_height, 4, dst_linelen*4);
+			res = lib_png_decode(pr, width, height, scanline_width, &dst[2], d_min_x, d_min_y, d_width, d_height, 4, dst_linelen*4);
 			if (res < 0)
 				return res;
 		}
@@ -641,13 +650,15 @@ lib_png_load_image(struct lib_png_reader *pr, uint8_t *dst, int dst_width, int d
 		/* pass 5 */
 		width  = ( pr->ihdr.width  + 1 ) >> 1;
 		height = ( pr->ihdr.height + 1 ) >> 2;
+		d_min_x  = ( dst_min_x + 1 ) >> 1;
+		d_min_y  = ( dst_min_y + 1 ) >> 2;
 		d_width  = ( dst_width  + 1 ) >> 1;
 		d_height = ( dst_height + 1 ) >> 2;
 
 		if (width && height)
 		{
 			uint32_t scanline_width = (width * bits_per_pixel + 7) >> 3;
-			res = lib_png_decode(pr, width, height, scanline_width, &dst[2*dst_linelen], d_width, d_height, 2, dst_linelen*4);
+			res = lib_png_decode(pr, width, height, scanline_width, &dst[2*dst_linelen], d_min_x, d_min_y, d_width, d_height, 2, dst_linelen*4);
 			if (res < 0)
 				return res;
 		}
@@ -655,13 +666,15 @@ lib_png_load_image(struct lib_png_reader *pr, uint8_t *dst, int dst_width, int d
 		/* pass 6 */
 		width  = ( pr->ihdr.width  + 0 ) >> 1;
 		height = ( pr->ihdr.height + 1 ) >> 1;
+		d_min_x  = ( dst_min_x + 0 ) >> 1;
+		d_min_y  = ( dst_min_y + 1 ) >> 1;
 		d_width  = ( dst_width  + 0 ) >> 1;
 		d_height = ( dst_height + 1 ) >> 1;
 
 		if (width && height)
 		{
 			uint32_t scanline_width = (width * bits_per_pixel + 7) >> 3;
-			res = lib_png_decode(pr, width, height, scanline_width, &dst[1], d_width, d_height, 2, dst_linelen*2);
+			res = lib_png_decode(pr, width, height, scanline_width, &dst[1], d_min_x, d_min_y, d_width, d_height, 2, dst_linelen*2);
 			if (res < 0)
 				return res;
 		}
@@ -669,13 +682,15 @@ lib_png_load_image(struct lib_png_reader *pr, uint8_t *dst, int dst_width, int d
 		/* pass 7 */
 		width  = pr->ihdr.width;
 		height = ( pr->ihdr.height ) >> 1;
+		d_min_x  = dst_min_x;
+		d_min_y  = ( dst_min_y ) >> 1;
 		d_width  = dst_width;
 		d_height = ( dst_height ) >> 1;
 
 		if (width && height)
 		{
 			uint32_t scanline_width = (width * bits_per_pixel + 7) >> 3;
-			res = lib_png_decode(pr, width, height, scanline_width, &dst[dst_linelen], d_width, d_height, 1, dst_linelen*2);
+			res = lib_png_decode(pr, width, height, scanline_width, &dst[dst_linelen], d_min_x, d_min_y, d_width, d_height, 1, dst_linelen*2);
 			if (res < 0)
 				return res;
 		}
