@@ -2,10 +2,6 @@
 	path = esp-idf
 	url = https://github.com/SHA2017-badge/esp-idf.git
 	branch = master
-[submodule "nodemcu-prebuilt-toolchains"]
-	path = nodemcu-prebuilt-toolchains
-	url = https://github.com/jmattsson/nodemcu-prebuilt-toolchains
-	branch = master
 [submodule "micropython"]
 	path = micropython
 	url = https://github.com/SHA2017-badge/micropython-esp32.git
@@ -25,3 +21,6 @@
 [submodule "auto-flasher"]
 	path = auto-flasher
 	url = https://github.com/SHA2017-badge/auto-flasher.git
+[submodule "xtensa-esp32-elf"]
+	path = xtensa-esp32-elf
+	url = https://github.com/SHA2017-badge/xtensa-esp32-elf.git

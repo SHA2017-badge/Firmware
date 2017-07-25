@@ -33,7 +33,6 @@ script:
   - make --version
   - du -hs
   - source set_env.sh
-  - cp /usr/lib/gcc/x86_64-linux-gnu/4.8/liblto_plugin.so* ./nodemcu-prebuilt-toolchains/esp32/libexec/gcc/xtensa-esp32-elf/5.2.0/
   - make defconfig
   # Build project from the git repository
   - make -j3
