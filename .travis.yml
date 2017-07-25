@@ -12,6 +12,7 @@ addons:
       - python-serial
       - libffi-dev
       - libsdl2-dev
+      - gcc-4.8-plugin-dev
 
 before_install:
   # Save path to the git respository
@@ -32,6 +33,7 @@ script:
   - make --version
   - du -hs
   - source set_env.sh
+  - cp /usr/lib/gcc/x86_64-linux-gnu/4.8/liblto_plugin.so* ./nodemcu-prebuilt-toolchains/esp32/libexec/gcc/xtensa-esp32-elf/5.2.0/
   - make defconfig
   # Build project from the git repository
   - make -j3
