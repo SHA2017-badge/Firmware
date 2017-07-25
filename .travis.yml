@@ -12,7 +12,7 @@ addons:
       - python-serial
       - libffi-dev
       - libsdl2-dev
-      - gcc-5
+      - gcc-4.8
 
 before_install:
   # Save path to the git respository
