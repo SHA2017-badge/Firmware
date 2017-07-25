@@ -58,7 +58,7 @@ const char *touch_name[8] = {
 };
 
 void
-display_png(const char *filename)
+load_png(int x, int y, const char *filename)
 {
 	struct lib_file_reader *fr = lib_file_new(filename, 1024);
 	if (fr == NULL)
@@ -75,7 +75,7 @@ display_png(const char *filename)
 		return;
 	}
 
-	int res = lib_png_load_image(pr, badge_eink_fb, BADGE_EINK_WIDTH, BADGE_EINK_HEIGHT, BADGE_EINK_WIDTH);
+	int res = lib_png_load_image(pr, &badge_eink_fb[x + y*BADGE_EINK_WIDTH], BADGE_EINK_WIDTH-x, BADGE_EINK_HEIGHT-y, BADGE_EINK_WIDTH);
 	lib_png_destroy(pr);
 	lib_file_destroy(fr);
 
@@ -84,8 +84,6 @@ display_png(const char *filename)
 		fprintf(stderr, "failed to load image: res = %i\n", res);
 		return;
 	}
-
-	badge_eink_display(badge_eink_fb, DISPLAY_FLAG_GREYSCALE);
 }
 
 #define NUM_DISP_LINES 12
@@ -691,7 +689,10 @@ badge_first_run(void)
 
 	// if we get here, the badge is ok.
 	badge_init();
-	display_png("/media/hacking.png");
+	load_png(0,0, "/media/hacking.png");
+	load_png(2,2, "/media/badge_version.png");
+	load_png(0,0, "/media/badge_type.png");
+	badge_eink_display(badge_eink_fb, DISPLAY_FLAG_GREYSCALE);
 
 	while (1)
 	{
