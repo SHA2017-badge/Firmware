@@ -362,6 +362,36 @@ badge_init_locfd(void)
 	return ESP_OK;
 }
 
+static int
+wait_for_key_a(void)
+{
+	while (1) {
+		struct badge_mpr121_touch_info ti;
+		int res = badge_mpr121_get_touch_info(&ti);
+		if (res != 0)
+		{
+			disp_line("Error: failed to read touch info!", FONT_MONOSPACE);
+			return -1;
+		}
+		if ((ti.touch_state & 1) == 0)
+			break; // touched
+	}
+
+	while (1) {
+		struct badge_mpr121_touch_info ti;
+		int res = badge_mpr121_get_touch_info(&ti);
+		if (res != 0)
+		{
+			disp_line("Error: failed to read touch info!", FONT_MONOSPACE);
+			return -1;
+		}
+		if ((ti.touch_state & 1) == 1)
+			break; // released
+	}
+
+	return 0;
+}
+
 void
 badge_first_run(void)
 {
@@ -513,13 +543,21 @@ badge_first_run(void)
 	sprintf(line, "Vbat = %u.%03u V", pwr_vbat/1000, pwr_vbat % 1000);
 	disp_line(line, 0);
 	if (pwr_vbat > 100) {
-		#ifdef CONFIG_ALLOW_BATTERY_FIRST_BOOT
-			disp_line("WARNING: Did not expect any power on Vbat.",FONT_MONOSPACE);
-			vTaskDelay(2000 / portTICK_PERIOD_MS);
-		#else // CONFIG_ALLOW_BATTERY_FIRST_BOOT
-			disp_line("Error: Did not expect any power on Vbat.",FONT_MONOSPACE);
-			return;
-		#endif // CONFIG_ALLOW_BATTERY_FIRST_BOOT
+#ifdef CONFIG_ALLOW_BATTERY_FIRST_BOOT
+		disp_line("WARNING: Did not expect any power on Vbat.",FONT_MONOSPACE);
+		vTaskDelay(2000 / portTICK_PERIOD_MS);
+#else // CONFIG_ALLOW_BATTERY_FIRST_BOOT
+		disp_line("Error: Did not expect any power on Vbat.",FONT_MONOSPACE);
+		return;
+#endif // CONFIG_ALLOW_BATTERY_FIRST_BOOT
+	}
+	else if (bat_chrg)
+	{ // no battery detected. why is it charging?
+		disp_line("WARNING: Charging, but no battery connected?",FONT_MONOSPACE);
+		disp_line("*ACTION* touch button A to accept.", FONT_INVERT|NO_NEWLINE);
+		int i = wait_for_key_a();
+		if (i == -1)
+			return; // error
 	}
 
 	disp_line("Vusb = ...",NO_NEWLINE);
