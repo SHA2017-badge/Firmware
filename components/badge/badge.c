@@ -182,6 +182,21 @@ badge_init(void)
 #endif // I2C_TOUCHPAD_ADDR
 
 #ifdef I2C_MPR121_ADDR
+	badge_mpr121_set_interrupt_handler(MPR121_PIN_NUM_A     , mpr121_event_handler, (void*) (BADGE_BUTTON_A));
+	badge_mpr121_set_interrupt_handler(MPR121_PIN_NUM_B     , mpr121_event_handler, (void*) (BADGE_BUTTON_B));
+	badge_mpr121_set_interrupt_handler(MPR121_PIN_NUM_START , mpr121_event_handler, (void*) (BADGE_BUTTON_START));
+	badge_mpr121_set_interrupt_handler(MPR121_PIN_NUM_SELECT, mpr121_event_handler, (void*) (BADGE_BUTTON_SELECT));
+	badge_mpr121_set_interrupt_handler(MPR121_PIN_NUM_DOWN  , mpr121_event_handler, (void*) (BADGE_BUTTON_DOWN));
+	badge_mpr121_set_interrupt_handler(MPR121_PIN_NUM_RIGHT , mpr121_event_handler, (void*) (BADGE_BUTTON_RIGHT));
+	badge_mpr121_set_interrupt_handler(MPR121_PIN_NUM_UP    , mpr121_event_handler, (void*) (BADGE_BUTTON_UP));
+	badge_mpr121_set_interrupt_handler(MPR121_PIN_NUM_LEFT  , mpr121_event_handler, (void*) (BADGE_BUTTON_LEFT));
+
+	err = badge_mpr121_init();
+	if (err != ESP_OK)
+	{
+		ESP_LOGE(TAG, "badge_mpr121_init failed: %d", err);
+	}
+
 #ifdef CONFIG_SHA_BADGE_MPR121_HARDCODE_BASELINE
 	uint32_t mpr121_baseline[8] = {
 		0x0138,
@@ -201,36 +216,18 @@ badge_init(void)
 		if (err != ESP_OK)
 			mpr121_strict = false;
 	}
-	err = badge_mpr121_init();
-	if (err != ESP_OK)
-	{
-		ESP_LOGE(TAG, "badge_mpr121_init failed: %d", err);
-	}
 	err = badge_mpr121_configure(mpr121_baseline, mpr121_strict);
 	if (err != ESP_OK)
 	{
 		ESP_LOGE(TAG, "badge_mpr121_configure failed: %d", err);
 	}
 #else
-	err = badge_mpr121_init();
-	if (err != ESP_OK)
-	{
-		ESP_LOGE(TAG, "badge_mpr121_init failed: %d", err);
-	}
 	err = badge_mpr121_configure(NULL, false);
 	if (err != ESP_OK)
 	{
 		ESP_LOGE(TAG, "badge_mpr121_configure failed: %d", err);
 	}
 #endif // CONFIG_SHA_BADGE_MPR121_HARDCODE_BASELINE
-	badge_mpr121_set_interrupt_handler(MPR121_PIN_NUM_A     , mpr121_event_handler, (void*) (BADGE_BUTTON_A));
-	badge_mpr121_set_interrupt_handler(MPR121_PIN_NUM_B     , mpr121_event_handler, (void*) (BADGE_BUTTON_B));
-	badge_mpr121_set_interrupt_handler(MPR121_PIN_NUM_START , mpr121_event_handler, (void*) (BADGE_BUTTON_START));
-	badge_mpr121_set_interrupt_handler(MPR121_PIN_NUM_SELECT, mpr121_event_handler, (void*) (BADGE_BUTTON_SELECT));
-	badge_mpr121_set_interrupt_handler(MPR121_PIN_NUM_DOWN  , mpr121_event_handler, (void*) (BADGE_BUTTON_DOWN));
-	badge_mpr121_set_interrupt_handler(MPR121_PIN_NUM_RIGHT , mpr121_event_handler, (void*) (BADGE_BUTTON_RIGHT));
-	badge_mpr121_set_interrupt_handler(MPR121_PIN_NUM_UP    , mpr121_event_handler, (void*) (BADGE_BUTTON_UP));
-	badge_mpr121_set_interrupt_handler(MPR121_PIN_NUM_LEFT  , mpr121_event_handler, (void*) (BADGE_BUTTON_LEFT));
 #endif // I2C_MPR121_ADDR
 
 	// configure the voltage measuring for charging-info feedback
