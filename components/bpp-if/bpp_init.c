@@ -65,7 +65,7 @@ void doDeepSleep(int delayMs, void *arg) {
 	printf("Sleeping for %d ms...\n", delayMs);
 	blockdecodeShutDown(otablockdecoder);
   // FIXME the wake on touch should be in badge_input_init
-  esp_deep_sleep_enable_ext0_wakeup(GPIO_NUM_25 , 0)
+  esp_deep_sleep_enable_ext0_wakeup(GPIO_NUM_25 , 0);
   // TODO don't use hardcoded GPIO_NUM_25
 	esp_deep_sleep_enable_timer_wakeup(delayMs*1000);
 	esp_deep_sleep_start();
