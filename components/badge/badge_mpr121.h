@@ -99,4 +99,12 @@ extern int badge_mpr121_get_gpio_level(int pin);
  */
 extern int badge_mpr121_set_gpio_level(int pin, int value);
 
+/**
+ * Check for missed key-presses
+ * @note This function should be called after initialization and
+ *   after setting up the handlers. You normally do not have to
+ *   use this method.
+ */
+extern void badge_mpr121_check_missed_events(void);
+
 #endif // BADGE_MPR121_H

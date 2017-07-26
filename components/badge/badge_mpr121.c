@@ -331,13 +331,17 @@ badge_mpr121_init(void)
 
 	xTaskCreate(&badge_mpr121_intr_task, "MPR121 interrupt task", 4096, NULL, 10, NULL);
 
-	badge_mpr121_intr_handler(NULL);
-
 	badge_mpr121_init_done = true;
 
 	ESP_LOGD(TAG, "init done");
 
 	return ESP_OK;
+}
+
+void
+badge_mpr121_check_missed_events(void)
+{
+	xSemaphoreGive(badge_mpr121_intr_trigger);
 }
 
 void
