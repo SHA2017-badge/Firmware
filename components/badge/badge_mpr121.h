@@ -38,7 +38,9 @@ struct badge_mpr121_touch_info {
 extern esp_err_t badge_mpr121_configure(const uint32_t *baseline, bool strict);
 
 /**
- * Initialize interrupt-handling for the MPR121.
+ * Initialize internal structures and interrupt-handling for the MPR121.
+ * @note This should be called before using any other methods.
+ *   The only exception is badge_mpr121_set_interrupt_handler().
  * @return ESP_OK on success; any other value indicates an error
  */
 extern esp_err_t badge_mpr121_init(void);
@@ -48,6 +50,7 @@ extern esp_err_t badge_mpr121_init(void);
  * @param pin the pin-number on the mpr121 chip.
  * @param handler the handler to be called on an interrupt.
  * @param arg the argument passed on to the handler.
+ * @note It is allowed to set the interrupt handler before a badge_mpr121().
  */
 extern void badge_mpr121_set_interrupt_handler(uint8_t pin, badge_mpr121_intr_t handler, void *arg);
 

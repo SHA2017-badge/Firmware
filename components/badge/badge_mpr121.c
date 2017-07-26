@@ -331,6 +331,8 @@ badge_mpr121_init(void)
 
 	xTaskCreate(&badge_mpr121_intr_task, "MPR121 interrupt task", 4096, NULL, 10, NULL);
 
+	xSemaphoreGive(badge_mpr121_intr_trigger);
+
 	badge_mpr121_init_done = true;
 
 	ESP_LOGD(TAG, "init done");
@@ -339,20 +341,22 @@ badge_mpr121_init(void)
 }
 
 void
-badge_mpr121_check_missed_events(void)
-{
-	xSemaphoreGive(badge_mpr121_intr_trigger);
-}
-
-void
 badge_mpr121_set_interrupt_handler(uint8_t pin, badge_mpr121_intr_t handler, void *arg)
 {
-	xSemaphoreTake(badge_mpr121_mux, portMAX_DELAY);
+	if (badge_mpr121_mux == NULL)
+	{ // allow setting handlers when badge_mpr121 is not initialized yet.
+		badge_mpr121_handlers[pin] = handler;
+		badge_mpr121_arg[pin] = arg;
+	}
+	else
+	{
+		xSemaphoreTake(badge_mpr121_mux, portMAX_DELAY);
 
-	badge_mpr121_handlers[pin] = handler;
-	badge_mpr121_arg[pin] = arg;
+		badge_mpr121_handlers[pin] = handler;
+		badge_mpr121_arg[pin] = arg;
 
-	xSemaphoreGive(badge_mpr121_mux);
+		xSemaphoreGive(badge_mpr121_mux);
+	}
 }
 
 int
