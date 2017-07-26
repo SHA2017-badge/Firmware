@@ -15,8 +15,6 @@ void sha2017_ota_percentage_init() {
   robotoBlackItalic = gdispOpenFont("Roboto_BlackItalic24");
   permanentMarker = gdispOpenFont("PermanentMarker22");
   permanentMarker36 = gdispOpenFont("PermanentMarker36");
-
-  target_lut = 2;
 }
 
 void show_percentage(char *name, uint8_t percentage, bool show_percentage) {
@@ -27,9 +25,12 @@ void show_percentage(char *name, uint8_t percentage, bool show_percentage) {
   gdispClear(back);
 
   if (show_percentage) {
+    target_lut = 2;
     char perc[10];
     sprintf(perc, "%d%%", percentage);
     gdispDrawString(30, 45, perc, permanentMarker36, front);
+  } else {
+    target_lut = 0;
   }
 
   gdispDrawString(show_percentage ? 150 : 60, 25, "STILL", robotoBlackItalic, front);
