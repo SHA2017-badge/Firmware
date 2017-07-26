@@ -62,11 +62,12 @@ void flashDone(uint32_t changeId, void *arg) {
 void doDeepSleep(int delayMs, void *arg) {
 	delayMs-=8000; //to compensate for startup delay
 	if (delayMs<5000) return; //not worth sleeping
-	// printf("Sleeping for %d ms...\n", delayMs);
+	printf("Sleeping for %d ms...\n", delayMs);
 	blockdecodeShutDown(otablockdecoder);
-	// esp_deep_sleep_enable_timer_wakeup(delayMs*1000);
-  printf("Rebooting...\n");
-  esp_deep_sleep_enable_timer_wakeup(1);
+  // FIXME the wake on touch should be in badge_input_init
+  esp_deep_sleep_enable_ext0_wakeup(GPIO_NUM_25 , 0)
+  // TODO don't use hardcoded GPIO_NUM_25
+	esp_deep_sleep_enable_timer_wakeup(delayMs*1000);
 	esp_deep_sleep_start();
 }
 
