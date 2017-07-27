@@ -575,7 +575,7 @@ badge_first_run(void)
 
 	disp_line("power measurements ok.",0);
 
-#if defined(PORTEXP_PIN_NUM_SD_CD) || defined(MPR121_PIN_NUM_SD_CD)
+#if defined(FXL6408_PIN_NUM_SD_CD) || defined(MPR121_PIN_NUM_SD_CD)
 	// sdcard detect (not expecting an sd-card)
 	disp_line("read sdcard-detect line.",0);
 	err = badge_sdcard_init();

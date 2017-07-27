@@ -14,7 +14,7 @@
 #include <driver/gpio.h>
 
 #include "badge_pins.h"
-#include "badge_portexp.h"
+#include "badge_fxl6408.h"
 #include "badge_mpr121.h"
 #include "badge_power.h"
 
@@ -51,8 +51,8 @@ badge_usb_volt_sense(void)
 bool
 badge_battery_charge_status(void)
 {
-#ifdef PORTEXP_PIN_NUM_CHRGSTAT
-	return ((badge_portexp_get_input() >> PORTEXP_PIN_NUM_CHRGSTAT) & 1) == 0;
+#ifdef FXL6408_PIN_NUM_CHRGSTAT
+	return ((badge_fxl6408_get_input() >> FXL6408_PIN_NUM_CHRGSTAT) & 1) == 0;
 #elif defined(MPR121_PIN_NUM_CHRGSTAT)
 	return badge_mpr121_get_gpio_level(MPR121_PIN_NUM_CHRGSTAT) == 0;
 #else
@@ -69,8 +69,8 @@ badge_power_sdcard_leds_enable(void)
 	ESP_LOGD(TAG, "enabling power to sdcard and leds.");
 
 	esp_err_t ret;
-#ifdef PORTEXP_PIN_NUM_LEDS
-	ret = badge_portexp_set_output_state(PORTEXP_PIN_NUM_LEDS, 1);
+#ifdef FXL6408_PIN_NUM_LEDS
+	ret = badge_fxl6408_set_output_state(FXL6408_PIN_NUM_LEDS, 1);
 #elif defined(MPR121_PIN_NUM_LEDS)
 	ret = badge_mpr121_set_gpio_level(MPR121_PIN_NUM_LEDS, 1);
 #else
@@ -117,8 +117,8 @@ badge_power_sdcard_leds_disable(void)
 	ESP_LOGD(TAG, "disabling power to sdcard and leds.");
 
 	int ret;
-#ifdef PORTEXP_PIN_NUM_LEDS
-	ret = badge_portexp_set_output_state(PORTEXP_PIN_NUM_LEDS, 0);
+#ifdef FXL6408_PIN_NUM_LEDS
+	ret = badge_fxl6408_set_output_state(FXL6408_PIN_NUM_LEDS, 0);
 #elif defined(MPR121_PIN_NUM_LEDS)
 	ret = badge_mpr121_set_gpio_level(MPR121_PIN_NUM_LEDS, 0);
 #else
@@ -247,8 +247,8 @@ badge_power_init(void)
 	assert( res == ESP_OK );
 #endif // ADC1_CHAN_VUSB_SENSE
 
-#if defined(PORTEXP_PIN_NUM_CHRGSTAT) || defined(PORTEXP_PIN_NUM_LEDS)
-	res = badge_portexp_init();
+#if defined(FXL6408_PIN_NUM_CHRGSTAT) || defined(FXL6408_PIN_NUM_LEDS)
+	res = badge_fxl6408_init();
 	if (res != ESP_OK)
 		return res;
 #endif
@@ -260,17 +260,17 @@ badge_power_init(void)
 #endif
 
 	// configure charge-stat pin
-#ifdef PORTEXP_PIN_NUM_CHRGSTAT
-	res = badge_portexp_set_io_direction(PORTEXP_PIN_NUM_CHRGSTAT, 0);
+#ifdef FXL6408_PIN_NUM_CHRGSTAT
+	res = badge_fxl6408_set_io_direction(FXL6408_PIN_NUM_CHRGSTAT, 0);
 	if (res != ESP_OK)
 		return res;
-	res = badge_portexp_set_input_default_state(PORTEXP_PIN_NUM_CHRGSTAT, 0);
+	res = badge_fxl6408_set_input_default_state(FXL6408_PIN_NUM_CHRGSTAT, 0);
 	if (res != ESP_OK)
 		return res;
-	res = badge_portexp_set_pull_enable(PORTEXP_PIN_NUM_CHRGSTAT, 0);
+	res = badge_fxl6408_set_pull_enable(FXL6408_PIN_NUM_CHRGSTAT, 0);
 	if (res != ESP_OK)
 		return res;
-	res = badge_portexp_set_interrupt_enable(PORTEXP_PIN_NUM_CHRGSTAT, 0);
+	res = badge_fxl6408_set_interrupt_enable(FXL6408_PIN_NUM_CHRGSTAT, 0);
 	if (res != ESP_OK)
 		return res;
 #elif defined(MPR121_PIN_NUM_CHRGSTAT)
@@ -280,14 +280,14 @@ badge_power_init(void)
 #endif
 
 	// configure power to the leds and sd-card
-#ifdef PORTEXP_PIN_NUM_LEDS
-	res = badge_portexp_set_output_state(PORTEXP_PIN_NUM_LEDS, 0);
+#ifdef FXL6408_PIN_NUM_LEDS
+	res = badge_fxl6408_set_output_state(FXL6408_PIN_NUM_LEDS, 0);
 	if (res != ESP_OK)
 		return res;
-	res = badge_portexp_set_output_high_z(PORTEXP_PIN_NUM_LEDS, 0);
+	res = badge_fxl6408_set_output_high_z(FXL6408_PIN_NUM_LEDS, 0);
 	if (res != ESP_OK)
 		return res;
-	res = badge_portexp_set_io_direction(PORTEXP_PIN_NUM_LEDS, 1);
+	res = badge_fxl6408_set_io_direction(FXL6408_PIN_NUM_LEDS, 1);
 	if (res != ESP_OK)
 		return res;
 #elif defined(MPR121_PIN_NUM_LEDS)

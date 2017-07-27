@@ -13,7 +13,7 @@
 
 #include <badge_pins.h>
 #include <badge_i2c.h>
-#include <badge_portexp.h>
+#include <badge_fxl6408.h>
 #include <badge_cpt112s.h>
 
 #ifdef I2C_CPT112S_ADDR
@@ -43,11 +43,11 @@ badge_cpt112s_intr_handler(void *arg)
 	while (1)
 	{
 		// read cpt112s-controller interrupt line
-		int x = badge_portexp_get_input();
+		int x = badge_fxl6408_get_input();
 		if (x == -1) // error
 			continue; // retry..
 
-		if (x & (1 << PORTEXP_PIN_NUM_CPT112S)) // no events waiting
+		if (x & (1 << FXL6408_PIN_NUM_CPT112S)) // no events waiting
 			break;
 
 		// event waiting
@@ -72,16 +72,16 @@ badge_cpt112s_init(void)
 	ESP_LOGD(TAG, "init called");
 
 	esp_err_t res;
-	res = badge_portexp_init();
+	res = badge_fxl6408_init();
 	if (res != ESP_OK)
 		return res;
-	res = badge_portexp_set_input_default_state(PORTEXP_PIN_NUM_CPT112S, 1);
+	res = badge_fxl6408_set_input_default_state(FXL6408_PIN_NUM_CPT112S, 1);
 	if (res != ESP_OK)
 		return res;
-	res = badge_portexp_set_interrupt_enable(PORTEXP_PIN_NUM_CPT112S, 1);
+	res = badge_fxl6408_set_interrupt_enable(FXL6408_PIN_NUM_CPT112S, 1);
 	if (res != ESP_OK)
 		return res;
-	badge_portexp_set_interrupt_handler(PORTEXP_PIN_NUM_CPT112S, badge_cpt112s_intr_handler, NULL);
+	badge_fxl6408_set_interrupt_handler(FXL6408_PIN_NUM_CPT112S, badge_cpt112s_intr_handler, NULL);
 
 	// read pending old events
 	badge_cpt112s_intr_handler(NULL);
