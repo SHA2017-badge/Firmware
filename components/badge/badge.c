@@ -29,24 +29,20 @@ touch_event_handler(int event)
 	int event_type = (event >> 16) & 0x0f; // 0=touch, 1=release, 2=slider
 	if (event_type == 0 || event_type == 1) {
 		static const int conv[12] = {
-			-1,
-			-1,
-			BADGE_BUTTON_LEFT,
-			BADGE_BUTTON_UP,
-			BADGE_BUTTON_RIGHT,
-			BADGE_BUTTON_DOWN,
-			-1,
-			BADGE_BUTTON_SELECT,
-			BADGE_BUTTON_START,
-			BADGE_BUTTON_B,
-			-1,
-			BADGE_BUTTON_A,
+			[ TOUCH_PIN_NUM_LEFT   ] = BADGE_BUTTON_LEFT,
+			[ TOUCH_PIN_NUM_UP     ] = BADGE_BUTTON_UP,
+			[ TOUCH_PIN_NUM_RIGHT  ] = BADGE_BUTTON_RIGHT,
+			[ TOUCH_PIN_NUM_DOWN   ] = BADGE_BUTTON_DOWN,
+			[ TOUCH_PIN_NUM_SELECT ] = BADGE_BUTTON_SELECT,
+			[ TOUCH_PIN_NUM_START  ] = BADGE_BUTTON_START,
+			[ TOUCH_PIN_NUM_B      ] = BADGE_BUTTON_B,
+			[ TOUCH_PIN_NUM_A      ] = BADGE_BUTTON_A,
 		};
 		if (((event >> 8) & 0xff) < 12) {
-			int id = conv[(event >> 8) & 0xff];
-			if (id != -1)
+			int button_id = conv[(event >> 8) & 0xff];
+			if (button_id != 0)
 			{
-				badge_input_add_event(id, event_type == 0 ? EVENT_BUTTON_PRESSED : EVENT_BUTTON_RELEASED, NOT_IN_ISR);
+				badge_input_add_event(button_id, event_type == 0 ? EVENT_BUTTON_PRESSED : EVENT_BUTTON_RELEASED, NOT_IN_ISR);
 			}
 		}
 	}

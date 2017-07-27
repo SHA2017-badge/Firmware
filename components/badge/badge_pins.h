@@ -81,6 +81,15 @@
 #define PORTEXP_PIN_NUM_EXT_IO_4 6
 #define PORTEXP_PIN_NUM_EXT_IO_3 7
 
+#define TOUCH_PIN_NUM_LEFT    2
+#define TOUCH_PIN_NUM_UP      3
+#define TOUCH_PIN_NUM_RIGHT   4
+#define TOUCH_PIN_NUM_DOWN    5
+#define TOUCH_PIN_NUM_SELECT  7
+#define TOUCH_PIN_NUM_START   8
+#define TOUCH_PIN_NUM_B       9
+#define TOUCH_PIN_NUM_A      11
+
 #elif defined(CONFIG_SHA_BADGE_V3)
 
 // Badge revision 1.0.x
