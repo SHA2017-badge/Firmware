@@ -362,6 +362,7 @@ badge_init_locfd(void)
 	return ESP_OK;
 }
 
+#ifdef I2C_MPR121_ADDR
 static int
 wait_for_key_a(void)
 {
@@ -391,6 +392,7 @@ wait_for_key_a(void)
 
 	return 0;
 }
+#endif // I2C_MPR121_ADDR
 
 void
 badge_first_run(void)
@@ -554,10 +556,12 @@ badge_first_run(void)
 	else if (bat_chrg)
 	{ // no battery detected. why is it charging?
 		disp_line("WARNING: Charging, but no battery connected?",FONT_MONOSPACE);
+#ifdef I2C_MPR121_ADDR
 		disp_line("*ACTION* touch button A to accept.", FONT_INVERT|NO_NEWLINE);
 		int i = wait_for_key_a();
 		if (i == -1)
 			return; // error
+#endif // I2C_MPR121_ADDR
 	}
 
 	disp_line("Vusb = ...",NO_NEWLINE);
