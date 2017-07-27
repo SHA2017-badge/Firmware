@@ -28,7 +28,6 @@ bool_t userfs_ren(const char * oldname, const char * newname){
 }
 
 bool_t userfs_open(GFILE *f, const char * fname){
-    ets_printf("Opening file\n");
     switch(f->flags){
         case GFILEFLG_READ:
             f->obj = fopen(fname, "r");
@@ -64,12 +63,10 @@ int userfs_write(GFILE *f, const void *buf, int size){
 }
 
 bool_t userfs_setpos(GFILE *f, long int pos){
-    printf("Setpos\n");
     return fseek(f->obj, pos, SEEK_SET) != -1;
 }
 
 long int userfs_getsize(GFILE * f){
-    printf("Getsize\n");
     long int oldpos = ftell(f->obj);
     fseek(f->obj, 0, SEEK_END);
     long int size = ftell(f->obj);
@@ -78,21 +75,17 @@ long int userfs_getsize(GFILE * f){
 }
 
 bool_t userfs_eof(GFILE *f){
-    printf("Feof\n");
     return feof(f->obj);
 }
 
 bool_t userfs_mount(const char* drive){
-    printf("Mounting\n");
     return 1;
 }
 
 bool_t userfs_unmount(const char* drive){
-    printf("Unmounting\n");
     return 1;
 }
 
 bool_t userfs_sync(GFILE * f){
-    printf("Syncing\n");
     return 1;
 }
