@@ -318,11 +318,11 @@
 //#define GFILE_NEED_MEMFS                             FALSE
 // #define GFILE_NEED_ROMFS                             TRUE
 //#define GFILE_NEED_RAMFS                             FALSE
-#define GFILE_NEED_FATFS                             TRUE
-#define GFILE_FATFS_EXTERNAL_LIB                     TRUE
+//#define GFILE_NEED_FATFS                             TRUE
+//#define GFILE_FATFS_EXTERNAL_LIB                     TRUE
 //#define GFILE_NEED_NATIVEFS                          FALSE
 //#define GFILE_NEED_CHBIOSFS                          FALSE
-//#define GFILE_NEED_USERFS                            TRUE
+#define GFILE_NEED_USERFS                            TRUE
 
 //#define GFILE_ALLOW_FLOATS                           FALSE
 //#define GFILE_ALLOW_DEVICESPECIFIC                   FALSE
