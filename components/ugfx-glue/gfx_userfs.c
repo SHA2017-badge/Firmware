@@ -46,36 +46,57 @@ bool_t userfs_open(GFILE *f, const char * fname){
             break;
             /*return 0;*/
     }
-    f->flags |= GFILEFLG_OPEN;
-    return f->obj != NULL;
+    if(f->obj != NULL){
+        f->flags |= GFILEFLG_OPEN;
+        return 1;
+    }
+    return 0;
 }
 
 void userfs_close(GFILE *f){
-    fclose(f->obj);
+    if(f->obj){
+        fclose(f->obj);
+        f->flags &= ~GFILEFLG_OPEN;
+    }
 }
 
 int userfs_read(GFILE *f, void * buf, int size){
-    return fread(buf, 1, size, f->obj);
+    if(f->obj){
+        return fread(buf, 1, size, f->obj);
+    }
+    return 0;
 }
 
 int userfs_write(GFILE *f, const void *buf, int size){
-    return fwrite(buf, 1, size, f->obj);
+    if(f->obj){
+        return fwrite(buf, 1, size, f->obj);
+    }
+    return 0;
 }
 
 bool_t userfs_setpos(GFILE *f, long int pos){
-    return fseek(f->obj, pos, SEEK_SET) != -1;
+    if(f->obj){
+        return fseek(f->obj, pos, SEEK_SET) != -1;
+    }
+    return 0;
 }
 
 long int userfs_getsize(GFILE * f){
-    long int oldpos = ftell(f->obj);
-    fseek(f->obj, 0, SEEK_END);
-    long int size = ftell(f->obj);
-    fseek(f->obj, oldpos, SEEK_SET);
-    return size;
+    if(f->obj){
+        long int oldpos = ftell(f->obj);
+        fseek(f->obj, 0, SEEK_END);
+        long int size = ftell(f->obj);
+        fseek(f->obj, oldpos, SEEK_SET);
+        return size;
+    }
+    return 0;
 }
 
 bool_t userfs_eof(GFILE *f){
-    return feof(f->obj);
+    if(f->obj){
+        return feof(f->obj);
+    }
+    return 0;
 }
 
 bool_t userfs_mount(const char* drive){
