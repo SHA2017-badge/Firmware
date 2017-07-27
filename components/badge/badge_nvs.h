@@ -12,6 +12,12 @@
 extern esp_err_t badge_nvs_init(void);
 
 /**
+ *  Erase a page from namespace
+ * @return ESP_OK on success; any other value indicates an error
+ */
+extern esp_err_t badge_nvs_erase_all(const char* namespace);
+
+/**
  *  Erase a value from namespace, key
  * @return ESP_OK on success; any other value indicates an error
  */

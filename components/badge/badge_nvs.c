@@ -64,6 +64,41 @@ badge_nvs_init(void)
 }
 
 esp_err_t
+badge_nvs_erase_all(const char* namespace)
+{
+	nvs_handle my_handle;
+	esp_err_t err;
+
+	// Open
+	err = nvs_open(namespace, NVS_READWRITE, &my_handle);
+	if (err != ESP_OK) {
+		ESP_LOGD(TAG, "failed to open namespace '%s' for writing. (err=%d)", namespace, err);
+		return err;
+	}
+
+	// Write
+	err = nvs_erase_all(my_handle);
+	if (err != ESP_OK) {
+		ESP_LOGD(TAG, "failed to erase all nvs keys'. (err=%d)", err);
+		nvs_close(my_handle);
+		return err;
+	}
+
+	// Commit changes to nvs
+	err = nvs_commit(my_handle);
+	if (err != ESP_OK) {
+		ESP_LOGD(TAG, "failed to commit changes to nvs. (err=%d)", err);
+		nvs_close(my_handle);
+		return err;
+	}
+
+	// Close
+	nvs_close(my_handle);
+
+	return ESP_OK;
+}
+
+esp_err_t
 badge_nvs_erase_key(const char* namespace, const char* key)
 {
 	nvs_handle my_handle;
