@@ -120,7 +120,7 @@ badge_portexp_intr_handler(void *arg)
 	static int gpio_last_state = -1;
 	if (gpio_state != -1 && gpio_last_state != gpio_state)
 	{
-		ets_printf("badge_touch: I2C Int %s\n", gpio_state == 0 ? "up" : "down");
+		ets_printf("badge_portexp: I2C Int %s\n", gpio_state == 0 ? "up" : "down");
 	}
 	gpio_last_state = gpio_state;
 #endif // CONFIG_SHA_BADGE_PORTEXP_DEBUG

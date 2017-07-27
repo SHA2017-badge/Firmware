@@ -60,8 +60,8 @@ config SHA_BADGE_PORTEXP_DEBUG
     help
         Debugging
 
-config SHA_BADGE_TOUCH_DEBUG
-    bool "Enable touch debug messages"
+config SHA_BADGE_CPT112S_DEBUG
+    bool "Enable CPT112S debug messages"
     depends on SHA_BADGE_V2
     default n
     help

@@ -11,7 +11,7 @@
 #include "badge_i2c.h"
 #include "badge_portexp.h"
 #include "badge_mpr121.h"
-#include "badge_touch.h"
+#include "badge_cpt112s.h"
 #include "badge_power.h"
 #include "badge_leds.h"
 #include "badge_vibrator.h"
@@ -21,7 +21,7 @@
 
 static const char *TAG = "badge";
 
-#ifdef I2C_TOUCHPAD_ADDR
+#ifdef I2C_CPT112S_ADDR
 static void
 touch_event_handler(int event)
 {
@@ -29,14 +29,14 @@ touch_event_handler(int event)
 	int event_type = (event >> 16) & 0x0f; // 0=touch, 1=release, 2=slider
 	if (event_type == 0 || event_type == 1) {
 		static const int conv[12] = {
-			[ TOUCH_PIN_NUM_LEFT   ] = BADGE_BUTTON_LEFT,
-			[ TOUCH_PIN_NUM_UP     ] = BADGE_BUTTON_UP,
-			[ TOUCH_PIN_NUM_RIGHT  ] = BADGE_BUTTON_RIGHT,
-			[ TOUCH_PIN_NUM_DOWN   ] = BADGE_BUTTON_DOWN,
-			[ TOUCH_PIN_NUM_SELECT ] = BADGE_BUTTON_SELECT,
-			[ TOUCH_PIN_NUM_START  ] = BADGE_BUTTON_START,
-			[ TOUCH_PIN_NUM_B      ] = BADGE_BUTTON_B,
-			[ TOUCH_PIN_NUM_A      ] = BADGE_BUTTON_A,
+			[ CPT112S_PIN_NUM_LEFT   ] = BADGE_BUTTON_LEFT,
+			[ CPT112S_PIN_NUM_UP     ] = BADGE_BUTTON_UP,
+			[ CPT112S_PIN_NUM_RIGHT  ] = BADGE_BUTTON_RIGHT,
+			[ CPT112S_PIN_NUM_DOWN   ] = BADGE_BUTTON_DOWN,
+			[ CPT112S_PIN_NUM_SELECT ] = BADGE_BUTTON_SELECT,
+			[ CPT112S_PIN_NUM_START  ] = BADGE_BUTTON_START,
+			[ CPT112S_PIN_NUM_B      ] = BADGE_BUTTON_B,
+			[ CPT112S_PIN_NUM_A      ] = BADGE_BUTTON_A,
 		};
 		if (((event >> 8) & 0xff) < 12) {
 			int button_id = conv[(event >> 8) & 0xff];
@@ -47,7 +47,7 @@ touch_event_handler(int event)
 		}
 	}
 }
-#endif // I2C_TOUCHPAD_ADDR
+#endif // I2C_CPT112S_ADDR
 
 #ifdef I2C_MPR121_ADDR
 static void
@@ -168,14 +168,14 @@ badge_init(void)
 	}
 #endif // I2C_PORTEXP_ADDR
 
-#ifdef I2C_TOUCHPAD_ADDR
-	err = badge_touch_init();
+#ifdef I2C_CPT112S_ADDR
+	err = badge_cpt112s_init();
 	if (err != ESP_OK)
 	{
-		ESP_LOGE(TAG, "badge_touch_init failed: %d", err);
+		ESP_LOGE(TAG, "badge_cpt112s_init failed: %d", err);
 	}
-	badge_touch_set_event_handler(touch_event_handler);
-#endif // I2C_TOUCHPAD_ADDR
+	badge_cpt112s_set_event_handler(touch_event_handler);
+#endif // I2C_CPT112S_ADDR
 
 #ifdef I2C_MPR121_ADDR
 	badge_mpr121_set_interrupt_handler(MPR121_PIN_NUM_A     , mpr121_event_handler, (void*) (BADGE_BUTTON_A));
