@@ -1,7 +1,7 @@
 #include "gfx_userfs.h"
 
 bool_t userfs_del(const char * fname){
-    if(unlink(fname)){
+    if(!unlink(fname)){
         return 1;
     }
     return 0;
