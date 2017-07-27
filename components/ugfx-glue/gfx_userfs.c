@@ -1,0 +1,98 @@
+#include "gfx_userfs.h"
+
+bool_t userfs_del(const char * fname){
+    if(unlink(fname)){
+        return 1;
+    }
+    return 0;
+}
+
+bool_t userfs_exists(const char * fname){
+    struct stat statbuf;
+    if(stat(fname, &statbuf) == 0){
+        return 1;
+    }
+    return 0;
+}
+
+long int userfs_filesize(const char * fname){
+    struct stat statbuf;
+    if(stat(fname, &statbuf) == 0){
+        return statbuf.st_size;
+    }
+    return 0;
+}
+
+bool_t userfs_ren(const char * oldname, const char * newname){
+    return rename(oldname, newname) != -1;
+}
+
+bool_t userfs_open(GFILE *f, const char * fname){
+    ets_printf("Opening file\n");
+    switch(f->flags){
+        case GFILEFLG_READ:
+            f->obj = fopen(fname, "r");
+            break;
+        case GFILEFLG_WRITE:
+            f->obj = fopen(fname, "w");
+            break;
+        case GFILEFLG_READ|GFILEFLG_WRITE:
+            f->obj = fopen(fname, "rw");
+            break;
+        case GFILEFLG_WRITE|GFILEFLG_APPEND:
+            f->obj = fopen(fname, "wa");
+            break;
+        default:
+            f->obj = fopen(fname, "rw");
+            break;
+            /*return 0;*/
+    }
+    f->flags |= GFILEFLG_OPEN;
+    return f->obj != NULL;
+}
+
+void userfs_close(GFILE *f){
+    fclose(f->obj);
+}
+
+int userfs_read(GFILE *f, void * buf, int size){
+    return fread(buf, 1, size, f->obj);
+}
+
+int userfs_write(GFILE *f, const void *buf, int size){
+    return fwrite(buf, 1, size, f->obj);
+}
+
+bool_t userfs_setpos(GFILE *f, long int pos){
+    printf("Setpos\n");
+    return fseek(f->obj, pos, SEEK_SET) != -1;
+}
+
+long int userfs_getsize(GFILE * f){
+    printf("Getsize\n");
+    long int oldpos = ftell(f->obj);
+    fseek(f->obj, 0, SEEK_END);
+    long int size = ftell(f->obj);
+    fseek(f->obj, oldpos, SEEK_SET);
+    return size;
+}
+
+bool_t userfs_eof(GFILE *f){
+    printf("Feof\n");
+    return feof(f->obj);
+}
+
+bool_t userfs_mount(const char* drive){
+    printf("Mounting\n");
+    return 1;
+}
+
+bool_t userfs_unmount(const char* drive){
+    printf("Unmounting\n");
+    return 1;
+}
+
+bool_t userfs_sync(GFILE * f){
+    printf("Syncing\n");
+    return 1;
+}
