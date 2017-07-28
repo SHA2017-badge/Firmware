@@ -53,8 +53,8 @@ config SHA_BADGE_INPUT_DEBUG
     help
         Debugging
 
-config SHA_BADGE_PORTEXP_DEBUG
-    bool "Enable port-expander debug messages"
+config SHA_BADGE_FXL6408_DEBUG
+    bool "Enable FXL6408 port-expander debug messages"
     depends on SHA_BADGE_V2
     default n
     help

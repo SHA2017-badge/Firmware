@@ -9,7 +9,7 @@
 #include "badge_button.h"
 #include "badge_gpiobutton.h"
 #include "badge_i2c.h"
-#include "badge_portexp.h"
+#include "badge_fxl6408.h"
 #include "badge_mpr121.h"
 #include "badge_cpt112s.h"
 #include "badge_power.h"
@@ -160,13 +160,13 @@ badge_init(void)
 	}
 #endif // PIN_NUM_I2C_CLK
 
-#ifdef I2C_PORTEXP_ADDR
-	err = badge_portexp_init();
+#ifdef I2C_FXL6408_ADDR
+	err = badge_fxl6408_init();
 	if (err != ESP_OK)
 	{
-		ESP_LOGE(TAG, "badge_portexp_init failed: %d", err);
+		ESP_LOGE(TAG, "badge_fxl6408_init failed: %d", err);
 	}
-#endif // I2C_PORTEXP_ADDR
+#endif // I2C_FXL6408_ADDR
 
 #ifdef I2C_CPT112S_ADDR
 	err = badge_cpt112s_init();
@@ -242,13 +242,13 @@ badge_init(void)
 	}
 #endif // PIN_NUM_LEDS
 
-#if defined(PORTEXP_PIN_NUM_VIBRATOR) || defined(MPR121_PIN_NUM_VIBRATOR)
+#if defined(FXL6408_PIN_NUM_VIBRATOR) || defined(MPR121_PIN_NUM_VIBRATOR)
 	err = badge_vibrator_init();
 	if (err != ESP_OK)
 	{
 		ESP_LOGE(TAG, "badge_vibrator_init failed: %d", err);
 	}
-#endif // defined(PORTEXP_PIN_NUM_VIBRATOR) || defined(MPR121_PIN_NUM_VIBRATOR)
+#endif // defined(FXL6408_PIN_NUM_VIBRATOR) || defined(MPR121_PIN_NUM_VIBRATOR)
 
 	err = badge_sdcard_init();
 	if (err != ESP_OK)

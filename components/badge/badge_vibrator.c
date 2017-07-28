@@ -13,19 +13,19 @@
 
 #include "badge_pins.h"
 #include "badge_i2c.h"
-#include "badge_portexp.h"
+#include "badge_fxl6408.h"
 #include "badge_mpr121.h"
 #include "badge_vibrator.h"
 
 static const char *TAG = "badge_vibrator";
 
-#if defined(PORTEXP_PIN_NUM_VIBRATOR) || defined(MPR121_PIN_NUM_VIBRATOR)
+#if defined(FXL6408_PIN_NUM_VIBRATOR) || defined(MPR121_PIN_NUM_VIBRATOR)
 
 static int
 badge_vibrator_on(void)
 {
-#ifdef PORTEXP_PIN_NUM_VIBRATOR
-	return badge_portexp_set_output_state(PORTEXP_PIN_NUM_VIBRATOR, 1);
+#ifdef FXL6408_PIN_NUM_VIBRATOR
+	return badge_fxl6408_set_output_state(FXL6408_PIN_NUM_VIBRATOR, 1);
 #elif defined(MPR121_PIN_NUM_VIBRATOR)
 	return badge_mpr121_set_gpio_level(MPR121_PIN_NUM_VIBRATOR, 1);
 #endif
@@ -34,8 +34,8 @@ badge_vibrator_on(void)
 static int
 badge_vibrator_off(void)
 {
-#ifdef PORTEXP_PIN_NUM_VIBRATOR
-	return badge_portexp_set_output_state(PORTEXP_PIN_NUM_VIBRATOR, 0);
+#ifdef FXL6408_PIN_NUM_VIBRATOR
+	return badge_fxl6408_set_output_state(FXL6408_PIN_NUM_VIBRATOR, 0);
 #elif defined(MPR121_PIN_NUM_VIBRATOR)
 	return badge_mpr121_set_gpio_level(MPR121_PIN_NUM_VIBRATOR, 0);
 #endif
@@ -68,17 +68,17 @@ badge_vibrator_init(void)
 	ESP_LOGD(TAG, "init called");
 
 	// configure vibrator pin
-#ifdef PORTEXP_PIN_NUM_VIBRATOR
-	res = badge_portexp_init();
+#ifdef FXL6408_PIN_NUM_VIBRATOR
+	res = badge_fxl6408_init();
 	if (res != ESP_OK)
 		return res;
-	res = badge_portexp_set_output_state(PORTEXP_PIN_NUM_VIBRATOR, 0);
+	res = badge_fxl6408_set_output_state(FXL6408_PIN_NUM_VIBRATOR, 0);
 	if (res != ESP_OK)
 		return res;
-	res = badge_portexp_set_output_high_z(PORTEXP_PIN_NUM_VIBRATOR, 0);
+	res = badge_fxl6408_set_output_high_z(FXL6408_PIN_NUM_VIBRATOR, 0);
 	if (res != ESP_OK)
 		return res;
-	res = badge_portexp_set_io_direction(PORTEXP_PIN_NUM_VIBRATOR, 1);
+	res = badge_fxl6408_set_io_direction(FXL6408_PIN_NUM_VIBRATOR, 1);
 	if (res != ESP_OK)
 		return res;
 #elif defined(MPR121_PIN_NUM_VIBRATOR)
@@ -97,4 +97,4 @@ badge_vibrator_init(void)
 	return ESP_OK;
 }
 
-#endif // defined(PORTEXP_PIN_NUM_VIBRATOR) || defined(MPR121_PIN_NUM_VIBRATOR)
+#endif // defined(FXL6408_PIN_NUM_VIBRATOR) || defined(MPR121_PIN_NUM_VIBRATOR)
