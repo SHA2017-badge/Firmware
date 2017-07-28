@@ -129,14 +129,6 @@ badge_eink_write_bitplane(const uint32_t *buf, int y_start, int y_end)
 	badge_eink_dev_write_command_end();
 }
 
-const struct badge_eink_update eink_upd_default = {
-	.lut      = BADGE_EINK_LUT_DEFAULT,
-	.reg_0x3a = 26,   // 26 dummy lines per gate
-	.reg_0x3b = 0x08, // 62us per line
-	.y_start  = 0,
-	.y_end    = 295,
-};
-
 void
 badge_eink_update(const struct badge_eink_update *upd_conf)
 {
