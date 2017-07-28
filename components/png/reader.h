@@ -1,3 +1,4 @@
+/** @file reader.h */
 #ifndef LIB_READER_H
 #define LIB_READER_H
 

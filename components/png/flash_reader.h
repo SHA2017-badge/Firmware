@@ -1,3 +1,4 @@
+/** @file flash_reader.h */
 #ifndef LIB_FLASH_READER_H
 #define LIB_FLASH_READER_H
 

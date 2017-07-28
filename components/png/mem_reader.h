@@ -1,3 +1,4 @@
+/** @file mem_reader.h */
 #ifndef LIB_MEM_READER_H
 #define LIB_MEM_READER_H
 

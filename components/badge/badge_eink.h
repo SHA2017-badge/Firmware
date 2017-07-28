@@ -54,15 +54,19 @@ extern const struct badge_eink_update eink_upd_default;
  */
 extern void badge_eink_update(const struct badge_eink_update *upd_conf);
 
-/* badge_eink_display 'mode' settings */
-// bitmapped flags:
-#define DISPLAY_FLAG_GREYSCALE  1
-#define DISPLAY_FLAG_ROTATE_180 2
-#define DISPLAY_FLAG_NO_UPDATE  4
-#define DISPLAY_FLAG_FULL_UPDATE 8
-// fields and sizes:
-#define DISPLAY_FLAG_LUT_BIT    8
-#define DISPLAY_FLAG_LUT_SIZE   4
+/** badge_eink_display 'flags' settings */
+enum badge_eink_flags_t {
+	// bitmapped flags:
+	DISPLAY_FLAG_GREYSCALE   = 1
+	DISPLAY_FLAG_ROTATE_180  = 2
+	DISPLAY_FLAG_NO_UPDATE   = 4
+	DISPLAY_FLAG_FULL_UPDATE = 8
+	// fields and sizes:
+	DISPLAY_FLAG_LUT_BIT     = 8
+	DISPLAY_FLAG_LUT_SIZE    = 4
+};
+
+/** convenience macro to specify LUT in the flags */
 #define DISPLAY_FLAG_LUT(x) ((1+(x)) << DISPLAY_FLAG_LUT_BIT)
 
 extern void badge_eink_display_one_layer(const uint8_t *img, int flags);

@@ -1,3 +1,4 @@
+/** @file png_reader.h */
 #ifndef LIB_PNG_READER_H
 #define LIB_PNG_READER_H
 
