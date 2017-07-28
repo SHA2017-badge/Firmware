@@ -86,14 +86,12 @@ badge_eink_lut_conv(uint8_t voltages, enum badge_eink_lut_flags flags)
 // GDEH029A1
 #ifdef CONFIG_SHA_BADGE_EINK_GDEH029A1
 
-uint8_t *
-badge_eink_lut_generate(const struct badge_eink_lut_entry *list, enum badge_eink_lut_flags flags)
+int
+badge_eink_lut_generate(const struct badge_eink_lut_entry *list, enum badge_eink_lut_flags flags, uint8_t *lut)
 {
-	static uint8_t lut[30];
+	ESP_LOGD(TAG, "flags = %d.", flags);
 
-	ESP_LOGD(TAG, "badge_eink_lut_generate: flags = %d.", flags);
-
-	memset(lut, 0, sizeof(lut));
+	memset(lut, 0, 30);
 
 	int pos = 0;
 	while (list->length != 0)
@@ -105,8 +103,8 @@ badge_eink_lut_generate(const struct badge_eink_lut_entry *list, enum badge_eink
 			int plen = len > 15 ? 15 : len;
 			if (pos == 20)
 			{
-				ESP_LOGE(TAG, "badge_eink_lut_generate: lut overflow.");
-				return NULL; // full
+				ESP_LOGE(TAG, "lut overflow.");
+				return -1; // full
 			}
 			lut[pos] = voltages;
 			if ((pos & 1) == 0)
@@ -123,8 +121,8 @@ badge_eink_lut_generate(const struct badge_eink_lut_entry *list, enum badge_eink
 	// the GDEH029A01 needs an empty update cycle at the end.
 	if (pos == 20)
 	{
-		ESP_LOGE(TAG, "badge_eink_lut_generate: lut overflow.");
-		return NULL; // full
+		ESP_LOGE(TAG, "lut overflow.");
+		return -1; // full
 	}
 	if ((pos & 1) == 0)
 		lut[20+(pos >> 1)] = 1;
@@ -133,7 +131,7 @@ badge_eink_lut_generate(const struct badge_eink_lut_entry *list, enum badge_eink
 
 #ifdef CONFIG_SHA_BADGE_EINK_LUT_DEBUG
 	{
-		ESP_LOGD(TAG, "badge_eink_lut_generate: dump.");
+		ESP_LOGD(TAG, "dump.");
 		char line[10*3 + 1];
 		char *lptr = line;
 		int i;
@@ -150,20 +148,18 @@ badge_eink_lut_generate(const struct badge_eink_lut_entry *list, enum badge_eink
 	}
 #endif // CONFIG_SHA_BADGE_EINK_LUT_DEBUG
 
-	return lut;
+	return 30;
 }
 
 // DEPG0290B01
 #elif defined( CONFIG_SHA_BADGE_EINK_DEPG0290B1 )
 
-uint8_t *
-badge_eink_lut_generate(const struct badge_eink_lut_entry *list, enum badge_eink_lut_flags flags)
+int
+badge_eink_lut_generate(const struct badge_eink_lut_entry *list, enum badge_eink_lut_flags flags, uint8_t *lut)
 {
-	static uint8_t lut[70];
+	ESP_LOGD(TAG, "flags = %d.", flags);
 
-	ESP_LOGD(TAG, "badge_eink_lut_generate: flags = %d.", flags);
-
-	memset(lut, 0, sizeof(lut));
+	memset(lut, 0, 70);
 
 	int pos = 0;
 	int spos = 0;
@@ -172,8 +168,8 @@ badge_eink_lut_generate(const struct badge_eink_lut_entry *list, enum badge_eink
 		int len = list->length;
 		if (pos == 7)
 		{
-			ESP_LOGE(TAG, "badge_eink_lut_generate: lut overflow.");
-			return NULL; // full
+			ESP_LOGE(TAG, "lut overflow.");
+			return -1; // full
 		}
 		uint8_t voltages = badge_eink_lut_conv(list->voltages, flags);
 
@@ -196,7 +192,7 @@ badge_eink_lut_generate(const struct badge_eink_lut_entry *list, enum badge_eink
 
 #ifdef CONFIG_SHA_BADGE_EINK_LUT_DEBUG
 	{
-		ESP_LOGD(TAG, "badge_eink_lut_generate: dump.");
+		ESP_LOGD(TAG, "dump.");
 		char line[3*7+1];
 		char *lptr = line;
 		int i;
@@ -223,16 +219,15 @@ badge_eink_lut_generate(const struct badge_eink_lut_entry *list, enum badge_eink
 	}
 #endif // CONFIG_SHA_BADGE_EINK_LUT_DEBUG
 
-	return lut;
+	return 70;
 }
 
 #else
 
-uint8_t *
-badge_eink_lut_generate(const struct badge_eink_lut_entry *list, enum badge_eink_lut_flags flags)
+int
+badge_eink_lut_generate(const struct badge_eink_lut_entry *list, enum badge_eink_lut_flags flags, uint8_t *lut)
 {
-	static uint8_t lut[0];
-	return lut;
+	return 0;
 }
 
 #endif

@@ -4,6 +4,8 @@
 
 #include <stdint.h>
 
+#define BADGE_EINK_LUT_MAX_SIZE 70
+
 struct badge_eink_lut_entry {
 	/** the number of cycles the voltages are held; 0 = end of list */
 	uint8_t length;
@@ -29,7 +31,15 @@ enum badge_eink_lut_flags {
 	LUT_FLAG_BLACK    = 8, // black only
 };
 
-extern uint8_t * badge_eink_lut_generate(const struct badge_eink_lut_entry *list, enum badge_eink_lut_flags flags);
+/**
+ * Generate LUT data for specific eink display.
+ *
+ * @param list screen updata data in 'generic' format.
+ * @param flags optional alterations on generated lut data.
+ * @param lut output data buffer. should be of size BADGE_EINK_LUT_MAX_SIZE.
+ * @return lut length. returns -1 on error.
+ */
+extern int badge_eink_lut_generate(const struct badge_eink_lut_entry *list, enum badge_eink_lut_flags flags, uint8_t *lut);
 
 /* pre-defined lookup-table display-updates. */
 extern const struct badge_eink_lut_entry badge_eink_lut_full[];
