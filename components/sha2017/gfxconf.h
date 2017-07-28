@@ -1,1 +1,0 @@
-../ugfx/gfxconf.h
