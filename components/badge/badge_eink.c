@@ -162,13 +162,13 @@ badge_eink_update(const struct badge_eink_update *upd_conf)
 		lut_entries = badge_eink_lut_full;
 	}
 
-	const uint8_t *lut;
-	lut = badge_eink_lut_generate(lut_entries, upd_conf->lut_flags);
+	uint8_t lut[BADGE_EINK_LUT_MAX_SIZE];
+	int lut_len = badge_eink_lut_generate(lut_entries, upd_conf->lut_flags, lut);
+	assert( lut_len >= 0 );
 
-#ifndef CONFIG_SHA_BADGE_EINK_DEPG0290B1
-	badge_eink_dev_write_command_stream(0x32, lut, 30);
-#else
-	badge_eink_dev_write_command_stream(0x32, lut, 70);
+	badge_eink_dev_write_command_stream(0x32, lut, lut_len);
+
+#ifdef CONFIG_SHA_BADGE_EINK_DEPG0290B1
 	if (badge_eink_have_oldbuf)
 		badge_eink_dev_write_command_stream_u32(0x26, badge_eink_oldbuf, DISP_SIZE_X_B * DISP_SIZE_Y/4);
 #endif
