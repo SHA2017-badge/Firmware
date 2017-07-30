@@ -49,19 +49,15 @@ const struct menu_item demoMenu[] = {
 #endif // I2C_MPR121_ADDR
     {"text demo 1", &demoText1},
     {"text demo 2", &demoText2},
-#ifdef CONFIG_SHA_BADGE_EINK_GDEH029A1
     {"greyscale 1", &demoGreyscale1},
     {"greyscale 2", &demoGreyscale2},
     {"greyscale image 1", &demoGreyscaleImg1},
     {"greyscale image 2", &demoGreyscaleImg2},
     {"greyscale image 3", &demoGreyscaleImg3},
-#endif // CONFIG_SHA_BADGE_EINK_GDEH029A1
     {"greyscale image 4", &demoGreyscaleImg4},
 	{"demo sd-card image", &demo_sdcard_image},
     {"partial update test", &demoPartialUpdate},
-#ifdef CONFIG_SHA_BADGE_EINK_GDEH029A1
     {"dot 1", &demoDot1},
-#endif // CONFIG_SHA_BADGE_EINK_GDEH029A1
     {"ADC test", &demoTestAdc},
 #ifdef PIN_NUM_LEDS
     {"LEDs demo", &demo_leds},
@@ -121,6 +117,11 @@ displayMenu(const char *menu_title, const struct menu_item *itemlist) {
 				ets_printf("Selected '%s'\n", itemlist[item_pos].title);
 				if (itemlist[item_pos].handler != NULL)
 					itemlist[item_pos].handler();
+
+				// reset screen
+				memset(badge_eink_fb, 0xff, BADGE_EINK_WIDTH * BADGE_EINK_HEIGHT / 8);
+				badge_eink_display(badge_eink_fb, DISPLAY_FLAG_LUT(BADGE_EINK_LUT_NORMAL) | DISPLAY_FLAG_FULL_UPDATE);
+
 				need_redraw = true;
 				ets_printf("Button START handled\n");
 				continue;

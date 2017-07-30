@@ -1,28 +1,27 @@
 #include "sdkconfig.h"
 
-#ifdef CONFIG_SHA_BADGE_EINK_GDEH029A1
 #include <badge_input.h>
 #include <badge_eink_dev.h>
 #include <badge_eink_lut.h>
+#include <badge_eink_fb.h>
 #include <badge_eink.h>
 
 void demoGreyscale2(void) {
+  uint32_t *tmpbuf = (uint32_t *) badge_eink_fb;
+
   int i;
   for (i = 0; i < 3; i++) {
     /* draw initial pattern */
-    badge_eink_set_ram_area(0, DISP_SIZE_X_B - 1, 0, DISP_SIZE_Y - 1);
-    badge_eink_set_ram_pointer(0, 0);
-    badge_eink_dev_write_command_init(0x24);
     {
+      uint32_t *dptr = tmpbuf;
       int x, y;
       for (y = 0; y < DISP_SIZE_Y; y++) {
-        for (x = 0; x < 8; x++)
-          badge_eink_dev_write_byte((i & 1) ? 0xff : 0x00);
-        for (x = 8; x < 16; x++)
-          badge_eink_dev_write_byte((i & 1) ? 0x00 : 0xff);
+        *dptr++ = (i & 1) ? 0xffffffff : 0x00000000;
+        *dptr++ = (i & 1) ? 0xffffffff : 0x00000000;
+        *dptr++ = (i & 1) ? 0x00000000 : 0xffffffff;
+        *dptr++ = (i & 1) ? 0x00000000 : 0xffffffff;
       }
     }
-    badge_eink_dev_write_command_end();
 
     struct badge_eink_update eink_upd = {
       .lut      = BADGE_EINK_LUT_DEFAULT,
@@ -31,7 +30,7 @@ void demoGreyscale2(void) {
       .y_start  = 0,
       .y_end    = 295,
     };
-    badge_eink_update(&eink_upd);
+    badge_eink_update(tmpbuf, &eink_upd);
   }
 
 
@@ -42,35 +41,32 @@ void demoGreyscale2(void) {
     if (y_next > DISP_SIZE_Y)
       y_next = DISP_SIZE_Y;
 
-    badge_eink_set_ram_area(0, DISP_SIZE_X_B - 1, 0, DISP_SIZE_Y - 1);
-    badge_eink_set_ram_pointer(0, 0);
-    badge_eink_dev_write_command_init(0x24);
+    uint32_t *dptr = tmpbuf;
     int x, y;
     for (y = 0; y < y_first; y++) {
-      for (x = 0; x < 8; x++)
-        badge_eink_dev_write_byte(0x00);
-      for (x = 8; x < 16; x++)
-        badge_eink_dev_write_byte(0xff);
+      *dptr++ = 0x00000000;
+      *dptr++ = 0x00000000;
+      *dptr++ = 0xffffffff;
+      *dptr++ = 0xffffffff;
     }
     for (y = y_first; y < y_next; y++) {
-      for (x = 0; x < 8; x++)
-        badge_eink_dev_write_byte(0xff);
-      for (x = 8; x < 16; x++)
-        badge_eink_dev_write_byte(0x00);
+      *dptr++ = 0xffffffff;
+      *dptr++ = 0xffffffff;
+      *dptr++ = 0x00000000;
+      *dptr++ = 0x00000000;
     }
     for (y = y_next; y < DISP_SIZE_Y; y++) {
-      for (x = 0; x < 8; x++)
-        badge_eink_dev_write_byte(0x00);
-      for (x = 8; x < 16; x++)
-        badge_eink_dev_write_byte(0xff);
+      *dptr++ = 0x00000000;
+      *dptr++ = 0x00000000;
+      *dptr++ = 0xffffffff;
+      *dptr++ = 0xffffffff;
     }
-    badge_eink_dev_write_command_end();
 
     /* update LUT */
-	struct badge_eink_lut_entry lut[] = {
-		{ .length = i, .voltages = 0x18, },
-		{ .length = 0 }
-	};
+    struct badge_eink_lut_entry lut[] = {
+      { .length = i, .voltages = 0x18, },
+      { .length = 0 }
+    };
 
     struct badge_eink_update eink_upd = {
       .lut      = BADGE_EINK_LUT_CUSTOM,
@@ -80,11 +76,9 @@ void demoGreyscale2(void) {
       .y_start  = 0,
       .y_end    = 295,
     };
-    badge_eink_update(&eink_upd);
+    badge_eink_update(tmpbuf, &eink_upd);
   }
 
   // wait for random keypress
   badge_input_get_event(-1);
 }
-
-#endif // CONFIG_SHA_BADGE_EINK_GDEH029A1

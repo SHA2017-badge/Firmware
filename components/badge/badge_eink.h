@@ -47,9 +47,10 @@ struct badge_eink_update {
 };
 
 /** refresh the eink display with given config-settings
+ * @param buf the raw buffer to write to the screen
  * @param upd_conf the config-settings to use
  */
-extern void badge_eink_update(const struct badge_eink_update *upd_conf);
+extern void badge_eink_update(const uint32_t *buf, const struct badge_eink_update *upd_conf);
 
 /* badge_eink_display 'mode' settings */
 // bitmapped flags:
