@@ -3,10 +3,15 @@
 
 #define POWERDOWN_DBG 1
 
+typedef enum {
+	POWER_MODE_BPP=0,
+	POWER_MODE_UPY,
+	POWER_MODE_MAX
+} PowerMode;
 
-typedef void (PowerDownCb)(int delayMs, void *arg);
+typedef void (PowerDownCb)(int delayMs, void *arg, PowerMode newmode);
 
-void powerDownMgrInit(PowerDownCb *cb, void *arg);
+void powerDownMgrInit(PowerDownCb *cb, void *arg, PowerMode mode);
 
 #if POWERDOWN_DBG
 #define powerHold(ref, ht) _powerHold(ref, ht, __FUNCTION__, __LINE__)

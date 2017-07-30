@@ -6,7 +6,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 #include <sys/time.h>
+#include "esp_attr.h"
 #include "powerdown.h"
 
 typedef struct PowerItem PowerItem;
@@ -14,6 +16,9 @@ static PowerDownCb *pdCb=NULL;
 static void *pdCbArg=NULL;
 static SemaphoreHandle_t mux;
 static TimerHandle_t tmr;
+static PowerMode powerMode;
+
+RTC_DATA_ATTR time_t savedWakeTimestamp[POWER_MODE_MAX];
 
 #define ST_ACTIVE 0
 #define ST_CANSLEEP 1
@@ -46,8 +51,8 @@ static PowerItem *findItem(int ref) {
 }
 
 
-static void doSleep(int sleepMs) {
-	if (pdCb) pdCb(sleepMs, pdCbArg);
+static void doSleep(int sleepMs, PowerMode nextMode) {
+	if (pdCb) pdCb(sleepMs, pdCbArg, nextMode);
 }
 
 //Warning: very much not multithread-compatible. Probably isn't that big of a deal because
@@ -62,6 +67,7 @@ static const char *printref(const PowerItem *i) {
 	return buf;
 }
 
+//Warning: non-multithread compatible, needs to be mutexed off.
 static void checkCanSleep() {
 	PowerItem *i=powerItems;
 	int canSleepForMs=-1;
@@ -101,7 +107,23 @@ static void checkCanSleep() {
 		i=i->next;
 	}
 	//If we're here, we can sleep.
-	if (!cannotSleep) doSleep(canSleepForMs);
+	if (!cannotSleep) {
+		savedWakeTimestamp[powerMode]=time(NULL)+(canSleepForMs/1000);
+		//Figured out which mode needs to wake up next, by figuring out the lowest of the wake timestamps
+		int nearestMode=0;
+		for (int i=0; i<POWER_MODE_MAX; i++) {
+			if (savedWakeTimestamp[i]!=0 && savedWakeTimestamp[i]<savedWakeTimestamp[nearestMode]) {
+				nearestMode=i;
+			}
+		}
+		if (nearestMode==powerMode) {
+			//We can wake up in this mode again.
+			doSleep(canSleepForMs, nearestMode);
+		} else {
+			//We'll need a mode switch.
+			doSleep(savedWakeTimestamp[nearestMode]-time(NULL), nearestMode);
+		}
+	}
 	//No need to check power status any time soon again.
 	xTimerReset(tmr, portMAX_DELAY);
 }
@@ -161,11 +183,13 @@ void pwrdwnmgrTimer(TimerHandle_t xTimer) {
 	checkCanSleep();
 	xSemaphoreGive(mux);
 }
-void powerDownMgrInit(PowerDownCb *cb, void *arg) {
+
+void powerDownMgrInit(PowerDownCb *cb, void *arg, PowerMode mode) {
 	pdCb=cb;
 	pdCbArg=arg;
 	mux=xSemaphoreCreateMutex();
 	tmr=xTimerCreate("pwrdwnmgr", 5000/portTICK_PERIOD_MS, 1, NULL, pwrdwnmgrTimer);
 	xTimerReset(tmr, portMAX_DELAY);
 	xTimerStart(tmr, portMAX_DELAY);
+	powerMode=mode;
 }
