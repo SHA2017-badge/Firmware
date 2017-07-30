@@ -114,19 +114,11 @@ badge_eink_create_bitplane(const uint8_t *img, uint32_t *buf, int bit, int flags
 }
 
 static void
-badge_eink_write_bitplane(const uint32_t *buf, int y_start, int y_end)
+badge_eink_write_bitplane(const uint32_t *buf)
 {
 	badge_eink_set_ram_area(0, DISP_SIZE_X_B - 1, 0, DISP_SIZE_Y - 1);
 	badge_eink_set_ram_pointer(0, 0);
-	badge_eink_dev_write_command_init(0x24);
-	int pos;
-	for (pos=0; pos < y_start * DISP_SIZE_X_B/4; pos++)
-		badge_eink_dev_write_byte_u32(0);
-	for (; pos < (y_end+1) * DISP_SIZE_X_B/4; pos++)
-		badge_eink_dev_write_byte_u32(buf[pos]);
-	for (; pos < DISP_SIZE_Y * DISP_SIZE_X_B/4; pos++)
-		badge_eink_dev_write_byte_u32(0);
-	badge_eink_dev_write_command_end();
+	badge_eink_dev_write_command_stream_u32(0x24, buf, DISP_SIZE_X_B * DISP_SIZE_Y/4);
 }
 
 const struct badge_eink_update eink_upd_default = {
@@ -138,7 +130,7 @@ const struct badge_eink_update eink_upd_default = {
 };
 
 void
-badge_eink_update(const struct badge_eink_update *upd_conf)
+badge_eink_update(const uint32_t *buf, const struct badge_eink_update *upd_conf)
 {
 	// generate lut data
 	const struct badge_eink_lut_entry *lut_entries;
@@ -167,6 +159,11 @@ badge_eink_update(const struct badge_eink_update *upd_conf)
 	assert( lut_len >= 0 );
 
 	badge_eink_dev_write_command_stream(0x32, lut, lut_len);
+
+	if (buf == NULL)
+		buf = badge_eink_tmpbuf;
+
+	badge_eink_write_bitplane(buf);
 
 #ifdef CONFIG_SHA_BADGE_EINK_DEPG0290B1
 	if (badge_eink_have_oldbuf)
@@ -201,7 +198,7 @@ badge_eink_update(const struct badge_eink_update *upd_conf)
 	badge_eink_dev_write_command(0x20);
 
 #ifdef CONFIG_SHA_BADGE_EINK_DEPG0290B1
-	memcpy_u32(badge_eink_oldbuf, badge_eink_tmpbuf, DISP_SIZE_X_B * DISP_SIZE_Y/4);
+	memcpy_u32(badge_eink_oldbuf, buf, DISP_SIZE_X_B * DISP_SIZE_Y/4);
 #endif // CONFIG_SHA_BADGE_EINK_DEPG0290B1
 	badge_eink_have_oldbuf = true;
 }
@@ -224,24 +221,21 @@ badge_eink_display_one_layer(const uint8_t *img, int flags)
 
 	if ((flags & DISPLAY_FLAG_NO_UPDATE) != 0)
 	{
-		badge_eink_write_bitplane(buf, 0, DISP_SIZE_Y-1);
 		return;
 	}
 
 	int lut_flags = 0;
-	if (badge_eink_have_oldbuf)
+	if (!badge_eink_have_oldbuf || (flags & DISPLAY_FLAG_FULL_UPDATE))
 	{
-		// old image is known; prefer to do a partial update
-		if ((flags & DISPLAY_FLAG_FULL_UPDATE) == 0)
-			lut_flags |= LUT_FLAG_PARTIAL;
+		// old image not known (or full update requested); do full update
+		lut_flags |= LUT_FLAG_FIRST;
 	}
 	else
 	{
-		// old image not known; do full update
-		lut_flags |= LUT_FLAG_FIRST;
+		// old image is known; prefer to do a partial update
+		lut_flags |= LUT_FLAG_PARTIAL;
 	}
 
-	badge_eink_write_bitplane(buf, 0, DISP_SIZE_Y-1);
 	struct badge_eink_update eink_upd = {
 		.lut       = lut_mode > 0 ? lut_mode - 1 : BADGE_EINK_LUT_DEFAULT,
 		.lut_flags = lut_flags,
@@ -250,7 +244,7 @@ badge_eink_display_one_layer(const uint8_t *img, int flags)
 		.y_start   = 0,
 		.y_end     = 295,
 	};
-	badge_eink_update(&eink_upd);
+	badge_eink_update(buf, &eink_upd);
 }
 
 void
@@ -291,7 +285,9 @@ badge_eink_display(const uint8_t *img, int flags)
 			uint32_t *buf = badge_eink_tmpbuf;
 			badge_eink_create_bitplane(img, buf, i << 1, DISPLAY_FLAG_GREYSCALE|(flags & DISPLAY_FLAG_ROTATE_180));
 
-			badge_eink_write_bitplane(buf, y_start, y_end);
+			// clear borders
+			memset_u32(buf, 0, y_start * DISP_SIZE_X_B/4);
+			memset_u32(&buf[(y_end+1) * DISP_SIZE_X_B/4], 0, (DISP_SIZE_Y-y_end-1) * DISP_SIZE_X_B/4);
 
 			// LUT:
 			//   Ignore old state;
@@ -312,7 +308,7 @@ badge_eink_display(const uint8_t *img, int flags)
 				.y_start    = y_start,
 				.y_end      = y_end + 1,
 			};
-			badge_eink_update(&eink_upd);
+			badge_eink_update(buf, &eink_upd);
 		}
 	}
 	badge_eink_have_oldbuf = false;
