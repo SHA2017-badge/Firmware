@@ -409,11 +409,15 @@ lib_png_decode(struct lib_png_reader *pr, uint32_t width, uint32_t height, uint3
 }
 
 int
-lib_png_load_image(struct lib_png_reader *pr, uint8_t *dst, uint32_t dst_min_x, uint32_t dst_min_y, uint32_t dst_width, uint32_t dst_height, uint32_t dst_linelen)
+lib_png_read_header(struct lib_png_reader *pr)
 {
 	static const uint8_t png_sig[8] = {
 		0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a,
 	};
+
+	// check if header is already read
+	if (pr->ihdr.bit_depth != 0)
+		return 0;
 
 	uint8_t sig[8];
 	ssize_t res = pr->read(pr->read_p, sig, 8);
@@ -486,6 +490,31 @@ lib_png_load_image(struct lib_png_reader *pr, uint8_t *dst, uint32_t dst_min_x, 
 	if (pr->ihdr.interlace_method > 1)
 		return -1;
 
+	// calculate scanline
+	uint32_t bits_per_pixel = pr->ihdr.bit_depth;
+	if (pr->ihdr.color_type == 2)
+		bits_per_pixel *= 3; // r, g, b
+	if (pr->ihdr.color_type == 4)
+		bits_per_pixel *= 2; // grey, alpha
+	if (pr->ihdr.color_type == 6)
+		bits_per_pixel *= 4; // r, g, b, alpha
+
+	uint32_t scanline_bits = pr->ihdr.width * bits_per_pixel;
+
+	pr->scanline_bpp   = (bits_per_pixel + 7) >> 3;
+	pr->scanline_width = (scanline_bits + 7) >> 3;
+
+	return 0;
+}
+
+int
+lib_png_load_image(struct lib_png_reader *pr, uint8_t *dst, uint32_t dst_min_x, uint32_t dst_min_y, uint32_t dst_width, uint32_t dst_height, uint32_t dst_linelen)
+{
+	// read header
+	int res = lib_png_read_header(pr);
+	if (res < 0)
+		return res;
+
 	// read chunks until we locate the IDAT chunk
 	while (1)
 	{
@@ -535,19 +564,6 @@ lib_png_load_image(struct lib_png_reader *pr, uint8_t *dst, uint32_t dst_min_x, 
 		return -1; // no palette allowed
 
 	// allocate scanline
-	uint32_t bits_per_pixel = pr->ihdr.bit_depth;
-	if (pr->ihdr.color_type == 2)
-		bits_per_pixel *= 3; // r, g, b
-	if (pr->ihdr.color_type == 4)
-		bits_per_pixel *= 2; // grey, alpha
-	if (pr->ihdr.color_type == 6)
-		bits_per_pixel *= 4; // r, g, b, alpha
-
-	uint32_t scanline_bits = pr->ihdr.width * bits_per_pixel;
-
-	pr->scanline_bpp   = (bits_per_pixel + 7) >> 3;
-	pr->scanline_width = (scanline_bits + 7) >> 3;
-
 	pr->scanline = (uint8_t *) malloc(pr->scanline_width * 2);
 	if (pr->scanline == NULL)
 		return -1; // out of memory
@@ -590,6 +606,8 @@ lib_png_load_image(struct lib_png_reader *pr, uint8_t *dst, uint32_t dst_min_x, 
 		uint32_t d_min_y  = ( dst_min_y + 7 ) >> 3;
 		uint32_t d_width  = ( dst_width  + 7 ) >> 3;
 		uint32_t d_height = ( dst_height + 7 ) >> 3;
+
+		uint32_t bits_per_pixel = pr->ihdr.bit_depth;
 
 		if (width && height)
 		{
