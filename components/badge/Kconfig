@@ -24,17 +24,17 @@ config SHA_BADGE_NONE
     bool "Plain ESP32"
 endchoice
 
-choice SHA_BADGE_EINK_TYPE
-    prompt "SHA Badge e-ink display type"
-    default SHA_BADGE_EINK_DEPG0290B1
+choice SHA_BADGE_EINK_DEFAULT_TYPE
+    prompt "SHA Badge e-ink default display type"
+    default SHA_BADGE_EINK_DEF_DEPG0290B1
     depends on SHA_BADGE_V1 || SHA_BADGE_V2 || SHA_BADGE_V3
     help
         The DEPG0290B1 is the cheaper alternative.
         The GDEH029A1 was the original e-ink display.
 
-config SHA_BADGE_EINK_DEPG0290B1
+config SHA_BADGE_EINK_DEF_DEPG0290B1
     bool "DEPG0290B1"
-config SHA_BADGE_EINK_GDEH029A1
+config SHA_BADGE_EINK_DEF_GDEH029A1
     bool "GDEH029A1"
 endchoice
 

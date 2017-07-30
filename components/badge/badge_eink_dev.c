@@ -37,9 +37,11 @@
 #define VSPICLK_OUT_IDX VSPICLK_OUT_MUX_IDX
 #endif
 
-#ifdef PIN_NUM_EPD_RESET
-
 static const char *TAG = "badge_eink_dev";
+
+enum badge_eink_dev_t badge_eink_dev_type = BADGE_EINK_DEFAULT;
+
+#ifdef PIN_NUM_EPD_RESET
 
 esp_err_t
 badge_eink_dev_reset(void) {
@@ -131,7 +133,7 @@ badge_eink_dev_write_command_end(void)
 }
 
 esp_err_t
-badge_eink_dev_init(void)
+badge_eink_dev_init(enum badge_eink_dev_t dev_type)
 {
 	static bool badge_eink_dev_init_done = false;
 
@@ -139,6 +141,8 @@ badge_eink_dev_init(void)
 		return ESP_OK;
 
 	ESP_LOGD(TAG, "init called");
+
+	badge_eink_dev_type = dev_type;
 
 	esp_err_t res = badge_base_init();
 	if (res != ESP_OK)
@@ -277,7 +281,7 @@ badge_eink_dev_write_command_end(void)
 }
 
 esp_err_t
-badge_eink_dev_init(void)
+badge_eink_dev_init(enum badge_eink_dev_t dev_type)
 {
 	return ESP_OK;
 }
