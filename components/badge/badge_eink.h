@@ -46,9 +46,6 @@ struct badge_eink_update {
 	int y_end;
 };
 
-/** default config for convenience */
-extern const struct badge_eink_update eink_upd_default;
-
 /** refresh the eink display with given config-settings
  * @param upd_conf the config-settings to use
  */
