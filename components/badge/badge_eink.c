@@ -222,7 +222,7 @@ badge_eink_display_one_layer(const uint8_t *img, int flags)
 		// old image not known (or full update requested); do full update
 		lut_flags |= LUT_FLAG_FIRST;
 	}
-	else
+	else if (lut_mode - 1 != BADGE_EINK_LUT_FULL)
 	{
 		// old image is known; prefer to do a partial update
 		lut_flags |= LUT_FLAG_PARTIAL;
