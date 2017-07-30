@@ -400,7 +400,7 @@ badge_first_run(void)
 	char line[100];
 
 	// initialize display
-	esp_err_t err = badge_eink_init();
+	esp_err_t err = badge_eink_init(BADGE_EINK_DEFAULT);
 	assert( err == ESP_OK );
 
 	err = badge_eink_fb_init();
@@ -698,6 +698,9 @@ badge_first_run(void)
 
 	nvs_handle my_handle;
 	err = nvs_open("badge", NVS_READWRITE, &my_handle);
+	ESP_ERROR_CHECK( err );
+
+	err = nvs_set_u8(my_handle, "eink.dev.type", BADGE_EINK_DEFAULT);
 	ESP_ERROR_CHECK( err );
 
 #ifdef I2C_MPR121_ADDR

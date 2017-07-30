@@ -6,15 +6,20 @@
 #include <stdint.h>
 #include <esp_err.h>
 
+#include <badge_eink_types.h>
+
 // low-level display, 90 degrees rotated
 #define DISP_SIZE_X 128
 #define DISP_SIZE_Y 296
 #define DISP_SIZE_X_B ((DISP_SIZE_X + 7) >> 3)
 
+extern enum badge_eink_dev_t badge_eink_dev_type;
+
 /** Initialize the SPI bus to the eink display.
  * @return ESP_OK on success; any other value indicates an error
  */
-extern esp_err_t badge_eink_dev_init(void);
+extern esp_err_t badge_eink_dev_init(enum badge_eink_dev_t dev_type);
+
 /** Send reset to the device
  * @return ESP_OK on success; any other value indicates an error
  */

@@ -10,6 +10,7 @@
 
 #include <esp_log.h>
 
+#include "badge_eink_dev.h"
 #include "badge_eink_lut.h"
 
 static const char *TAG = "badge_eink_lut";
@@ -84,10 +85,8 @@ badge_eink_lut_conv(uint8_t voltages, enum badge_eink_lut_flags flags)
 
 
 // GDEH029A1
-#ifdef CONFIG_SHA_BADGE_EINK_GDEH029A1
-
 int
-badge_eink_lut_generate(const struct badge_eink_lut_entry *list, enum badge_eink_lut_flags flags, uint8_t *lut)
+badge_eink_lut_generate_gdeh029a1(const struct badge_eink_lut_entry *list, enum badge_eink_lut_flags flags, uint8_t *lut)
 {
 	ESP_LOGD(TAG, "flags = %d.", flags);
 
@@ -152,10 +151,8 @@ badge_eink_lut_generate(const struct badge_eink_lut_entry *list, enum badge_eink
 }
 
 // DEPG0290B01
-#elif defined( CONFIG_SHA_BADGE_EINK_DEPG0290B1 )
-
 int
-badge_eink_lut_generate(const struct badge_eink_lut_entry *list, enum badge_eink_lut_flags flags, uint8_t *lut)
+badge_eink_lut_generate_depg0290b1(const struct badge_eink_lut_entry *list, enum badge_eink_lut_flags flags, uint8_t *lut)
 {
 	ESP_LOGD(TAG, "flags = %d.", flags);
 
@@ -222,12 +219,18 @@ badge_eink_lut_generate(const struct badge_eink_lut_entry *list, enum badge_eink
 	return 70;
 }
 
-#else
-
 int
 badge_eink_lut_generate(const struct badge_eink_lut_entry *list, enum badge_eink_lut_flags flags, uint8_t *lut)
 {
+	if ( badge_eink_dev_type == BADGE_EINK_GDEH029A1 )
+	{
+		return badge_eink_lut_generate_gdeh029a1(list, flags, lut);
+	}
+
+	if ( badge_eink_dev_type == BADGE_EINK_DEPG0290B1 )
+	{
+		return badge_eink_lut_generate_depg0290b1(list, flags, lut);
+	}
+
 	return 0;
 }
-
-#endif
