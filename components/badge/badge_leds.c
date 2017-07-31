@@ -61,8 +61,6 @@ badge_leds_enable(void)
 	return ESP_OK;
 }
 
-extern esp_err_t badge_eink_dev_setup_spi(void);
-
 esp_err_t
 badge_leds_disable(void)
 {
