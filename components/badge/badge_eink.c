@@ -40,9 +40,7 @@ static const uint8_t xlat_curve[256] = {
 };
 
 static uint32_t *badge_eink_tmpbuf = NULL;
-#ifdef CONFIG_SHA_BADGE_EINK_DEPG0290B1
 static uint32_t *badge_eink_oldbuf = NULL;
-#endif // CONFIG_SHA_BADGE_EINK_DEPG0290B1
 static bool badge_eink_have_oldbuf = false;
 
 static void
@@ -114,31 +112,15 @@ badge_eink_create_bitplane(const uint8_t *img, uint32_t *buf, int bit, int flags
 }
 
 static void
-badge_eink_write_bitplane(const uint32_t *buf, int y_start, int y_end)
+badge_eink_write_bitplane(const uint32_t *buf)
 {
 	badge_eink_set_ram_area(0, DISP_SIZE_X_B - 1, 0, DISP_SIZE_Y - 1);
 	badge_eink_set_ram_pointer(0, 0);
-	badge_eink_dev_write_command_init(0x24);
-	int pos;
-	for (pos=0; pos < y_start * DISP_SIZE_X_B/4; pos++)
-		badge_eink_dev_write_byte_u32(0);
-	for (; pos < (y_end+1) * DISP_SIZE_X_B/4; pos++)
-		badge_eink_dev_write_byte_u32(buf[pos]);
-	for (; pos < DISP_SIZE_Y * DISP_SIZE_X_B/4; pos++)
-		badge_eink_dev_write_byte_u32(0);
-	badge_eink_dev_write_command_end();
+	badge_eink_dev_write_command_stream_u32(0x24, buf, DISP_SIZE_X_B * DISP_SIZE_Y/4);
 }
 
-const struct badge_eink_update eink_upd_default = {
-	.lut      = BADGE_EINK_LUT_DEFAULT,
-	.reg_0x3a = 26,   // 26 dummy lines per gate
-	.reg_0x3b = 0x08, // 62us per line
-	.y_start  = 0,
-	.y_end    = 295,
-};
-
 void
-badge_eink_update(const struct badge_eink_update *upd_conf)
+badge_eink_update(const uint32_t *buf, const struct badge_eink_update *upd_conf)
 {
 	// generate lut data
 	const struct badge_eink_lut_entry *lut_entries;
@@ -168,10 +150,13 @@ badge_eink_update(const struct badge_eink_update *upd_conf)
 
 	badge_eink_dev_write_command_stream(0x32, lut, lut_len);
 
-#ifdef CONFIG_SHA_BADGE_EINK_DEPG0290B1
-	if (badge_eink_have_oldbuf)
+	if (buf == NULL)
+		buf = badge_eink_tmpbuf;
+
+	badge_eink_write_bitplane(buf);
+
+	if (badge_eink_dev_type == BADGE_EINK_DEPG0290B1 && badge_eink_have_oldbuf)
 		badge_eink_dev_write_command_stream_u32(0x26, badge_eink_oldbuf, DISP_SIZE_X_B * DISP_SIZE_Y/4);
-#endif
 
 	// write number of overscan lines
 	badge_eink_dev_write_command_p1(0x3a, upd_conf->reg_0x3a);
@@ -200,9 +185,10 @@ badge_eink_update(const struct badge_eink_update *upd_conf)
 	// start update
 	badge_eink_dev_write_command(0x20);
 
-#ifdef CONFIG_SHA_BADGE_EINK_DEPG0290B1
-	memcpy_u32(badge_eink_oldbuf, badge_eink_tmpbuf, DISP_SIZE_X_B * DISP_SIZE_Y/4);
-#endif // CONFIG_SHA_BADGE_EINK_DEPG0290B1
+	if (badge_eink_dev_type == BADGE_EINK_DEPG0290B1)
+	{
+		memcpy_u32(badge_eink_oldbuf, buf, DISP_SIZE_X_B * DISP_SIZE_Y/4);
+	}
 	badge_eink_have_oldbuf = true;
 }
 
@@ -224,24 +210,21 @@ badge_eink_display_one_layer(const uint8_t *img, int flags)
 
 	if ((flags & DISPLAY_FLAG_NO_UPDATE) != 0)
 	{
-		badge_eink_write_bitplane(buf, 0, DISP_SIZE_Y-1);
 		return;
 	}
 
 	int lut_flags = 0;
-	if (badge_eink_have_oldbuf)
+	if (!badge_eink_have_oldbuf || (flags & DISPLAY_FLAG_FULL_UPDATE))
 	{
-		// old image is known; prefer to do a partial update
-		if ((flags & DISPLAY_FLAG_FULL_UPDATE) == 0)
-			lut_flags |= LUT_FLAG_PARTIAL;
-	}
-	else
-	{
-		// old image not known; do full update
+		// old image not known (or full update requested); do full update
 		lut_flags |= LUT_FLAG_FIRST;
 	}
+	else if (lut_mode - 1 != BADGE_EINK_LUT_FULL)
+	{
+		// old image is known; prefer to do a partial update
+		lut_flags |= LUT_FLAG_PARTIAL;
+	}
 
-	badge_eink_write_bitplane(buf, 0, DISP_SIZE_Y-1);
 	struct badge_eink_update eink_upd = {
 		.lut       = lut_mode > 0 ? lut_mode - 1 : BADGE_EINK_LUT_DEFAULT,
 		.lut_flags = lut_flags,
@@ -250,7 +233,7 @@ badge_eink_display_one_layer(const uint8_t *img, int flags)
 		.y_start   = 0,
 		.y_end     = 295,
 	};
-	badge_eink_update(&eink_upd);
+	badge_eink_update(buf, &eink_upd);
 }
 
 void
@@ -268,15 +251,11 @@ badge_eink_display(const uint8_t *img, int flags)
 	}
 
 	int i;
-#ifdef CONFIG_SHA_BADGE_EINK_DEPG0290B1
-	for (i = 64; i > 2; i >>= 1) {
+	int i_min = (badge_eink_dev_type == BADGE_EINK_DEPG0290B1) ? 2 : 0;
+	int p_ini = (badge_eink_dev_type == BADGE_EINK_DEPG0290B1) ? 2 : 8;
+	for (i = 64; i > i_min; i >>= 1) {
 		int ii = i;
-		int p = 2;
-#else
-	for (i = 64; i > 0; i >>= 1) {
-		int ii = i;
-		int p = 8;
-#endif
+		int p = p_ini;
 
 		while ((ii & 1) == 0 && (p > 1)) {
 			ii >>= 1;
@@ -291,7 +270,9 @@ badge_eink_display(const uint8_t *img, int flags)
 			uint32_t *buf = badge_eink_tmpbuf;
 			badge_eink_create_bitplane(img, buf, i << 1, DISPLAY_FLAG_GREYSCALE|(flags & DISPLAY_FLAG_ROTATE_180));
 
-			badge_eink_write_bitplane(buf, y_start, y_end);
+			// clear borders
+			memset_u32(buf, 0, y_start * DISP_SIZE_X_B/4);
+			memset_u32(&buf[(y_end+1) * DISP_SIZE_X_B/4], 0, (DISP_SIZE_Y-y_end-1) * DISP_SIZE_X_B/4);
 
 			// LUT:
 			//   Ignore old state;
@@ -312,7 +293,7 @@ badge_eink_display(const uint8_t *img, int flags)
 				.y_start    = y_start,
 				.y_end      = y_end + 1,
 			};
-			badge_eink_update(&eink_upd);
+			badge_eink_update(buf, &eink_upd);
 		}
 	}
 	badge_eink_have_oldbuf = false;
@@ -352,7 +333,7 @@ badge_eink_wakeup(void)
 }
 
 esp_err_t
-badge_eink_init(void)
+badge_eink_init(enum badge_eink_dev_t dev_type)
 {
 	static bool badge_eink_init_done = false;
 
@@ -361,83 +342,86 @@ badge_eink_init(void)
 
 	ESP_LOGD(TAG, "init called");
 
+	// initialize spi interface to display
+	esp_err_t res = badge_eink_dev_init(dev_type);
+	if (res != ESP_OK)
+		return res;
+
 	// allocate buffers
 	badge_eink_tmpbuf = heap_caps_malloc(DISP_SIZE_X_B * DISP_SIZE_Y, MALLOC_CAP_32BIT);
 	if (badge_eink_tmpbuf == NULL)
 		return ESP_ERR_NO_MEM;
 
-#ifdef CONFIG_SHA_BADGE_EINK_DEPG0290B1
-	badge_eink_oldbuf = heap_caps_malloc(DISP_SIZE_X_B * DISP_SIZE_Y, MALLOC_CAP_32BIT);
-	if (badge_eink_oldbuf == NULL)
-		return ESP_ERR_NO_MEM;
-#endif // CONFIG_SHA_BADGE_EINK_DEPG0290B1
+	if (badge_eink_dev_type == BADGE_EINK_DEPG0290B1)
+	{
+		badge_eink_oldbuf = heap_caps_malloc(DISP_SIZE_X_B * DISP_SIZE_Y, MALLOC_CAP_32BIT);
+		if (badge_eink_oldbuf == NULL)
+			return ESP_ERR_NO_MEM;
+	}
 
-	// initialize spi interface to display
-	esp_err_t res = badge_eink_dev_init();
-	if (res != ESP_OK)
-		return res;
+	if (badge_eink_dev_type == BADGE_EINK_GDEH029A1)
+	{
+		/* initialize GDEH029A1 */
 
-#ifdef CONFIG_SHA_BADGE_EINK_GDEH029A1
-	/* initialize GDEH029A1 */
+		// Hardware reset
+		badge_eink_dev_reset();
 
-	// Hardware reset
-	badge_eink_dev_reset();
+		// Software reset
+		badge_eink_dev_write_command(0x12);
 
-	// Software reset
-	badge_eink_dev_write_command(0x12);
+		// 0C: booster soft start control
+		badge_eink_dev_write_command_p3(0x0c, 0xd7, 0xd6, 0x9d);
 
-	// 0C: booster soft start control
-	badge_eink_dev_write_command_p3(0x0c, 0xd7, 0xd6, 0x9d);
+		// 2C: write VCOM register
+		badge_eink_dev_write_command_p1(0x2c, 0xa8); // VCOM 7c
 
-	// 2C: write VCOM register
-	badge_eink_dev_write_command_p1(0x2c, 0xa8); // VCOM 7c
+		// 11: data entry mode setting
+		badge_eink_dev_write_command_p1(0x11, 0x03); // X inc, Y inc
+	}
 
-	// 11: data entry mode setting
-	badge_eink_dev_write_command_p1(0x11, 0x03); // X inc, Y inc
-#endif // CONFIG_SHA_BADGE_EINK_GDEH029A1
+	if (badge_eink_dev_type == BADGE_EINK_DEPG0290B1)
+	{
+		/* initialize DEPG0290B01 */
 
-#ifdef CONFIG_SHA_BADGE_EINK_DEPG0290B1
-	/* initialize DEPG0290B01 */
+		// Hardware reset
+		badge_eink_dev_reset();
 
-	// Hardware reset
-	badge_eink_dev_reset();
+		// Software reset
+		badge_eink_dev_write_command(0x12);
 
-	// Software reset
-	badge_eink_dev_write_command(0x12);
+		// Set analog block control
+		badge_eink_dev_write_command_p1(0x74, 0x54);
 
-	// Set analog block control
-	badge_eink_dev_write_command_p1(0x74, 0x54);
+		// Set digital block control
+		badge_eink_dev_write_command_p1(0x7E, 0x3B);
 
-	// Set digital block control
-	badge_eink_dev_write_command_p1(0x7E, 0x3B);
+		// Set display size and driver output control
+		badge_eink_dev_write_command_p3(0x01, 0x27, 0x01, 0x00);
 
-	// Set display size and driver output control
-	badge_eink_dev_write_command_p3(0x01, 0x27, 0x01, 0x00);
+		// Ram data entry mode
+		// Adress counter is updated in Y direction, Y increment, X increment
+		badge_eink_dev_write_command_p1(0x11, 0x03);
 
-	// Ram data entry mode
-	// Adress counter is updated in Y direction, Y increment, X increment
-	badge_eink_dev_write_command_p1(0x11, 0x03);
+		// Set RAM X address (00h to 0Fh)
+		badge_eink_dev_write_command_p2(0x44, 0x00, 0x0F);
 
-	// Set RAM X address (00h to 0Fh)
-	badge_eink_dev_write_command_p2(0x44, 0x00, 0x0F);
+		// Set RAM Y address (0127h to 0000h)
+		badge_eink_dev_write_command_p4(0x45, 0x00, 0x00, 0x27, 0x01);
 
-	// Set RAM Y address (0127h to 0000h)
-	badge_eink_dev_write_command_p4(0x45, 0x00, 0x00, 0x27, 0x01);
+		// Set border waveform for VBD (see datasheet)
+		badge_eink_dev_write_command_p1(0x3C, 0x01);
 
-	// Set border waveform for VBD (see datasheet)
-	badge_eink_dev_write_command_p1(0x3C, 0x01);
+		// SET VOLTAGE
 
-	// SET VOLTAGE
+		// Set VCOM value
+		badge_eink_dev_write_command_p1(0x2C, 0x26);
 
-	// Set VCOM value
-	badge_eink_dev_write_command_p1(0x2C, 0x26);
+		// Gate voltage setting (17h = 20 Volt, ranges from 10v to 21v)
+		badge_eink_dev_write_command_p1(0x03, 0x17);
 
-	// Gate voltage setting (17h = 20 Volt, ranges from 10v to 21v)
-	badge_eink_dev_write_command_p1(0x03, 0x17);
-
-	// Source voltage setting (15volt, 0 volt and -15 volt)
-	badge_eink_dev_write_command_p3(0x04, 0x41, 0x00, 0x32);
-#endif // CONFIG_SHA_BADGE_EINK_DEPG0290B1
+		// Source voltage setting (15volt, 0 volt and -15 volt)
+		badge_eink_dev_write_command_p3(0x04, 0x41, 0x00, 0x32);
+	}
 
 	badge_eink_init_done = true;
 

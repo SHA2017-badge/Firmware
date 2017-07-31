@@ -5,6 +5,8 @@
 #include <stdint.h>
 #include <esp_err.h>
 
+#include <badge_eink_types.h>
+
 /** the width of the eink display */
 #define BADGE_EINK_WIDTH  296
 
@@ -14,7 +16,7 @@
 /** Initialize the eink display
  * @return ESP_OK on success; any other value indicates an error
  */
-extern esp_err_t badge_eink_init(void);
+extern esp_err_t badge_eink_init(enum badge_eink_dev_t dev_type);
 
 /** badge_eink_update 'lut' settings */
 enum badge_eink_lut
@@ -46,13 +48,11 @@ struct badge_eink_update {
 	int y_end;
 };
 
-/** default config for convenience */
-extern const struct badge_eink_update eink_upd_default;
-
 /** refresh the eink display with given config-settings
+ * @param buf the raw buffer to write to the screen
  * @param upd_conf the config-settings to use
  */
-extern void badge_eink_update(const struct badge_eink_update *upd_conf);
+extern void badge_eink_update(const uint32_t *buf, const struct badge_eink_update *upd_conf);
 
 /* badge_eink_display 'mode' settings */
 // bitmapped flags:

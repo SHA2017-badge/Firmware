@@ -1,9 +1,11 @@
 #include "sdkconfig.h"
 
-#ifdef CONFIG_SHA_BADGE_EINK_GDEH029A1
+#include <string.h>
+
 #include <badge_input.h>
 #include <badge_eink_dev.h>
 #include <badge_eink_lut.h>
+#include <badge_eink_fb.h>
 #include <badge_eink.h>
 
 #include "img_hacking.h"
@@ -16,17 +18,13 @@
  * sed 's/ /,/g'
  */
 void demoGreyscaleImg1(void) {
+  uint32_t *tmpbuf = (uint32_t *) badge_eink_fb;
+
   // trying to get rid of all ghosting and end with a black screen.
   int i;
   for (i = 0; i < 3; i++) {
     /* draw initial pattern */
-    badge_eink_set_ram_area(0, DISP_SIZE_X_B - 1, 0, DISP_SIZE_Y - 1);
-    badge_eink_set_ram_pointer(0, 0);
-    badge_eink_dev_write_command_init(0x24);
-    int c;
-    for (c = 0; c < DISP_SIZE_X_B * DISP_SIZE_Y; c++)
-      badge_eink_dev_write_byte((i & 1) ? 0xff : 0x00);
-    badge_eink_dev_write_command_end();
+    memset(tmpbuf, (i & 1) ? 0xff : 0x00, DISP_SIZE_X_B * DISP_SIZE_Y);
 
     struct badge_eink_update eink_upd = {
       .lut      = BADGE_EINK_LUT_DEFAULT,
@@ -35,44 +33,37 @@ void demoGreyscaleImg1(void) {
       .y_start  = 0,
       .y_end    = 295,
     };
-    badge_eink_update(&eink_upd);
+    badge_eink_update(tmpbuf, &eink_upd);
   }
 
   for (i = 0; i < 16; i++) {
-    //		// linear
-    //		uint8_t lvl = 17 * i;
-
     // curved
     const uint8_t lvl_buf[16] = {
-        //			0,32,61,87,110,131,150,167,182,196,209,220,230,239,248,255
+        //  0,32,61,87,110,131,150,167,182,196,209,220,230,239,248,255
         //// 0.21
         0,   36,  67,  95,  119, 141, 160, 176,
         191, 204, 215, 225, 234, 242, 249, 255 // 0.15
     };
     uint8_t lvl = lvl_buf[i];
-
-    badge_eink_set_ram_area(0, DISP_SIZE_X_B - 1, 0, DISP_SIZE_Y - 1);
-    badge_eink_set_ram_pointer(0, 0);
-    badge_eink_dev_write_command_init(0x24);
     int x, y;
     const uint8_t *ptr = img_hacking;
+    uint32_t *dptr = tmpbuf;
     for (y = 0; y < DISP_SIZE_Y; y++) {
-      uint8_t res = 0;
+      uint32_t res = 0;
       for (x = 0; x < DISP_SIZE_X; x++) {
         res <<= 1;
         if (*ptr++ <= lvl)
           res++;
-        if ((x & 7) == 7)
-          badge_eink_dev_write_byte(res);
+        if ((x & 31) == 31)
+          *dptr++ = res;
       }
     }
-    badge_eink_dev_write_command_end();
 
     /* update LUT */
-	struct badge_eink_lut_entry lut[] = {
-		{ .length = i, .voltages = 0x18, },
-		{ .length = 0 }
-	};
+    struct badge_eink_lut_entry lut[] = {
+      { .length = i, .voltages = 0x18, },
+      { .length = 0 }
+    };
 
     struct badge_eink_update eink_upd = {
       .lut      = BADGE_EINK_LUT_CUSTOM,
@@ -82,11 +73,9 @@ void demoGreyscaleImg1(void) {
       .y_start  = 0,
       .y_end    = 295,
     };
-    badge_eink_update(&eink_upd);
+    badge_eink_update(tmpbuf, &eink_upd);
   }
 
   // wait for random keypress
   badge_input_get_event(-1);
 }
-
-#endif // CONFIG_SHA_BADGE_EINK_GDEH029A1

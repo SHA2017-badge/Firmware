@@ -1,27 +1,28 @@
 #include "sdkconfig.h"
 
-#ifdef CONFIG_SHA_BADGE_EINK_GDEH029A1
+#include <string.h>
+
 #include <esp_event.h>
 
 #include <badge_input.h>
 #include <badge_eink.h>
 #include <badge_eink_dev.h>
+#include <badge_eink_fb.h>
 
 void demoGreyscale1(void) {
+  uint32_t *tmpbuf = (uint32_t *) badge_eink_fb;
+
   int i;
   for (i = 0; i < 2; i++) {
     /* draw test pattern */
-    badge_eink_set_ram_area(0, DISP_SIZE_X_B - 1, 0, DISP_SIZE_Y - 1);
-    badge_eink_set_ram_pointer(0, 0);
-    badge_eink_dev_write_command_init(0x24);
     {
+      uint32_t *dptr = tmpbuf;
       int x, y;
       for (y = 0; y < DISP_SIZE_Y; y++) {
-        for (x = 0; x < 16; x++)
-          badge_eink_dev_write_byte(x & 4 ? 0xff : 0x00);
+        for (x = 0; x < 4; x++)
+          *dptr++ = (x & 1) ? 0xffffffff : 0x00000000;
       }
     }
-    badge_eink_dev_write_command_end();
 
     struct badge_eink_update eink_upd = {
       .lut      = BADGE_EINK_LUT_DEFAULT,
@@ -30,24 +31,21 @@ void demoGreyscale1(void) {
       .y_start  = 0,
       .y_end    = 295,
     };
-    badge_eink_update(&eink_upd);
+    badge_eink_update(tmpbuf, &eink_upd);
   }
 
   int y = 0;
   int n = 8;
   while (y < DISP_SIZE_Y) {
     /* draw new test pattern */
-    badge_eink_set_ram_area(0, DISP_SIZE_X_B - 1, 0, DISP_SIZE_Y - 1);
-    badge_eink_set_ram_pointer(0, 0);
-    badge_eink_dev_write_command_init(0x24);
     {
+      uint32_t *dptr = tmpbuf;
       int x, y;
       for (y = 0; y < DISP_SIZE_Y; y++) {
-        for (x = 0; x < 16; x++)
-          badge_eink_dev_write_byte(x & 2 ? 0xff : 0x00);
+        for (x = 0; x < 4; x++)
+          *dptr++ = 0xffff0000;
       }
     }
-    badge_eink_dev_write_command_end();
 
     if (y + n > DISP_SIZE_Y)
       n = DISP_SIZE_Y - y;
@@ -59,7 +57,7 @@ void demoGreyscale1(void) {
       .y_start  = y,
       .y_end    = y+n,
     };
-    badge_eink_update(&eink_upd);
+    badge_eink_update(tmpbuf, &eink_upd);
 
     vTaskDelay(1000 / portTICK_PERIOD_MS);
     y += n;
@@ -69,17 +67,14 @@ void demoGreyscale1(void) {
   n = 4;
   while (y < DISP_SIZE_Y) {
     /* draw new test pattern */
-    badge_eink_set_ram_area(0, DISP_SIZE_X_B - 1, 0, DISP_SIZE_Y - 1);
-    badge_eink_set_ram_pointer(0, 0);
-    badge_eink_dev_write_command_init(0x24);
     {
+      uint32_t *dptr = tmpbuf;
       int x, y;
       for (y = 0; y < DISP_SIZE_Y; y++) {
-        for (x = 0; x < 16; x++)
-          badge_eink_dev_write_byte(x & 8 ? 0xff : 0x00);
+        for (x = 0; x < 4; x++)
+          *dptr++ = (x & 2) ? 0xffffffff : 0x00000000;
       }
     }
-    badge_eink_dev_write_command_end();
 
     if (y + n > DISP_SIZE_Y)
       n = DISP_SIZE_Y - y;
@@ -91,7 +86,7 @@ void demoGreyscale1(void) {
       .y_start  = y,
       .y_end    = y+n,
     };
-    badge_eink_update(&eink_upd);
+    badge_eink_update(tmpbuf, &eink_upd);
 
     vTaskDelay(1000 / portTICK_PERIOD_MS);
     y += n;
@@ -101,5 +96,3 @@ void demoGreyscale1(void) {
   // wait for random keypress
   badge_input_get_event(-1);
 }
-
-#endif // CONFIG_SHA_BADGE_EINK_GDEH029A1
