@@ -77,7 +77,7 @@ badge_leds_disable(void)
 	// FIXME:
 	//   Freeing the HSPI seems to (de)configure the VSPI as well..
 	//   See issue #70 on github.
-	//   Current workaround is an ugly hack in the esp-idf tree.
+	//   edit: fixed upstream.
 	res = spi_bus_free(HSPI_HOST);
 	if (res != ESP_OK)
 		return res;
