@@ -17,8 +17,9 @@ static void *pdCbArg=NULL;
 static SemaphoreHandle_t mux;
 static TimerHandle_t tmr;
 static PowerMode powerMode;
+static bool showDebugMsg;
 
-RTC_DATA_ATTR time_t savedWakeTimestamp[POWER_MODE_MAX];
+RTC_DATA_ATTR uint64_t savedWakeTimestamp[NO_POWER_MODES];
 
 #define ST_ACTIVE 0
 #define ST_CANSLEEP 1
@@ -34,6 +35,13 @@ struct PowerItem {
 #endif
 	PowerItem *next;
 };
+
+static uint64_t getCurrentTimeMs() {
+	struct timeval tv;
+	gettimeofday(&tv, NULL);
+	uint64_t ret=tv.tv_sec*1000+tv.tv_usec/1000;
+	return ret;
+}
 
 static PowerItem *powerItems;
 
@@ -81,21 +89,21 @@ static void checkCanSleep() {
 		if (i->state==ST_ACTIVE) {
 			//WARNING: SleepUntil is abused as an indicator when the hold expires
 			if (mssleep>0) {
-				printf("Power: Ref %s: active (hold lasts %d more ms)\n", printref(i), mssleep);
+				if (showDebugMsg) printf("Power: Ref %s: active (hold lasts %d more ms)\n", printref(i), mssleep);
 				cannotSleep=1;
 			} else {
-				printf("Power: Ref %s: expired!\n", printref(i));
+				if (showDebugMsg) printf("Power: Ref %s: expired!\n", printref(i));
 				i->state=ST_CANSLEEP;
 			}
 		} else if (i->state==ST_CANSLEEP_UNTIL) {
 			if (mssleep<2000) {
 				//Sleep req is too short.
 				//We're going to ignore this sleep request, and make the thing active again.
-					printf("Power: Ref %s: can sleep for %d ms. Too short, making active again.\n", printref(i), mssleep);
-					i->state=ST_ACTIVE;
-					cannotSleep=1;
+				if (showDebugMsg) printf("Power: Ref %s: can sleep for %d ms. Too short, making active again.\n", printref(i), mssleep);
+				i->state=ST_ACTIVE;
+				cannotSleep=1;
 			} else {
-				printf("Power: Ref %s: can sleep for %d ms\n", printref(i), mssleep);
+				if (showDebugMsg) printf("Power: Ref %s: can sleep for %d ms\n", printref(i), mssleep);
 				if (canSleepForMs==-1 || mssleep<canSleepForMs) {
 					canSleepForMs=mssleep;
 				}
@@ -106,12 +114,22 @@ static void checkCanSleep() {
 		}
 		i=i->next;
 	}
+	
+	//See if one of the higher-priority power modes need to wake.
+	for (int i=powerMode+1; i<NO_POWER_MODES; i++) {
+		if (savedWakeTimestamp[i]!=0 && savedWakeTimestamp[i]<getCurrentTimeMs()) {
+			//Yep. Immediately switch to this mode.
+			doSleep(0, i);
+			cannotSleep=1; //because we already called the callback
+		}
+	}
+	
 	//If we're here, we can sleep.
 	if (!cannotSleep) {
-		savedWakeTimestamp[powerMode]=time(NULL)+(canSleepForMs/1000);
+		savedWakeTimestamp[powerMode]=getCurrentTimeMs()+canSleepForMs;
 		//Figured out which mode needs to wake up next, by figuring out the lowest of the wake timestamps
 		int nearestMode=0;
-		for (int i=0; i<POWER_MODE_MAX; i++) {
+		for (int i=0; i<NO_POWER_MODES; i++) {
 			if (savedWakeTimestamp[i]!=0 && savedWakeTimestamp[i]<savedWakeTimestamp[nearestMode]) {
 				nearestMode=i;
 			}
@@ -121,7 +139,7 @@ static void checkCanSleep() {
 			doSleep(canSleepForMs, nearestMode);
 		} else {
 			//We'll need a mode switch.
-			doSleep(savedWakeTimestamp[nearestMode]-time(NULL), nearestMode);
+			doSleep(savedWakeTimestamp[nearestMode]-getCurrentTimeMs(), nearestMode);
 		}
 	}
 	//No need to check power status any time soon again.
@@ -184,7 +202,7 @@ void pwrdwnmgrTimer(TimerHandle_t xTimer) {
 	xSemaphoreGive(mux);
 }
 
-void powerDownMgrInit(PowerDownCb *cb, void *arg, PowerMode mode) {
+void powerDownMgrInit(PowerDownCb *cb, void *arg, PowerMode mode, bool dbg) {
 	pdCb=cb;
 	pdCbArg=arg;
 	mux=xSemaphoreCreateMutex();
@@ -192,4 +210,6 @@ void powerDownMgrInit(PowerDownCb *cb, void *arg, PowerMode mode) {
 	xTimerReset(tmr, portMAX_DELAY);
 	xTimerStart(tmr, portMAX_DELAY);
 	powerMode=mode;
+	showDebugMsg=dbg;
+	printf("Power down manager initialized. Mode is %d, %s\n", mode, dbg?"debug":"nodebug");
 }
