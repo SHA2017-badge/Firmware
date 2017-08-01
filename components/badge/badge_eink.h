@@ -77,7 +77,9 @@ extern void badge_eink_display_one_layer(const uint8_t *img, int flags);
  * - slow/full update
  * - greyscale update
  */
-extern void badge_eink_display(const uint8_t *img, int mode);
+extern void badge_eink_display(const uint8_t *img, int flags);
+
+extern void badge_eink_display_greyscale(const uint8_t *img, int flags, int layers);
 
 
 /* And some more low-level methods; only use them if you know what you're doing. :-) */

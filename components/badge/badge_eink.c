@@ -44,7 +44,7 @@ static uint32_t *badge_eink_oldbuf = NULL;
 static bool badge_eink_have_oldbuf = false;
 
 static void
-memcpy_u32(uint32_t *dst, uint32_t *src, size_t size)
+memcpy_u32(uint32_t *dst, const uint32_t *src, size_t size)
 {
 	while (size-- > 0)
 	{
@@ -246,19 +246,35 @@ badge_eink_display(const uint8_t *img, int flags)
 		return;
 	}
 
-	{ // start with black.
-		badge_eink_display_one_layer(NULL, (flags | DISPLAY_FLAG_FULL_UPDATE) & ~DISPLAY_FLAG_GREYSCALE);
+	badge_eink_display_greyscale(img, flags, 16);
+}
+
+void
+badge_eink_display_greyscale(const uint8_t *img, int flags, int layers)
+{
+	// start with black.
+	badge_eink_display_one_layer(NULL, (flags | DISPLAY_FLAG_FULL_UPDATE) & ~DISPLAY_FLAG_GREYSCALE);
+
+	// the max. number of layers. more layers will result in more ghosting
+	if (badge_eink_dev_type == BADGE_EINK_DEPG0290B1 && layers > 5) {
+		layers = 5;
+	} else if (badge_eink_dev_type == BADGE_EINK_GDEH029A1 && layers > 7) {
+		layers = 7;
 	}
 
-	int i;
-	int i_min = (badge_eink_dev_type == BADGE_EINK_DEPG0290B1) ? 2 : 0;
 	int p_ini = (badge_eink_dev_type == BADGE_EINK_DEPG0290B1) ? 2 : 8;
-	for (i = 64; i > i_min; i >>= 1) {
-		int ii = i;
+
+	int layer;
+	for (layer = 0; layer < layers; layer++) {
+		int bit = 128 >> layer;
+		int t = bit >> 1;
+		// gdeh: 64, 32, 16, 8, 4, 2, 1
+		// depg: 64, 32, 16, 8, 4
+
 		int p = p_ini;
 
-		while ((ii & 1) == 0 && (p > 1)) {
-			ii >>= 1;
+		while ((t & 1) == 0 && (p > 1)) {
+			t >>= 1;
 			p >>= 1;
 		}
 
@@ -268,7 +284,7 @@ badge_eink_display(const uint8_t *img, int flags)
 			int y_end = y_start + (DISP_SIZE_Y / p) - 1;
 
 			uint32_t *buf = badge_eink_tmpbuf;
-			badge_eink_create_bitplane(img, buf, i << 1, DISPLAY_FLAG_GREYSCALE|(flags & DISPLAY_FLAG_ROTATE_180));
+			badge_eink_create_bitplane(img, buf, bit, DISPLAY_FLAG_GREYSCALE|(flags & DISPLAY_FLAG_ROTATE_180));
 
 			// clear borders
 			memset_u32(buf, 0, y_start * DISP_SIZE_X_B/4);
@@ -278,9 +294,9 @@ badge_eink_display(const uint8_t *img, int flags)
 			//   Ignore old state;
 			//   Do nothing when bit is not set;
 			//   Make pixel whiter when bit is set;
-			//   Duration is <ii> cycles.
+			//   Duration is <t> cycles.
 			struct badge_eink_lut_entry lut[] = {
-				{ .length = ii, .voltages = 0x88, },
+				{ .length = t, .voltages = 0x88, },
 				{ .length = 0 }
 			};
 
@@ -296,6 +312,7 @@ badge_eink_display(const uint8_t *img, int flags)
 			badge_eink_update(buf, &eink_upd);
 		}
 	}
+
 	badge_eink_have_oldbuf = false;
 }
 
