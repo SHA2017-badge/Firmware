@@ -55,15 +55,16 @@ uint8_t target_lut;
 
 			if (target_lut >= 0xf0)
 			{
-				badge_eink_display(badge_eink_fb, DISPLAY_FLAG_GREYSCALE);
+				// 0xf0 was used in some examples. support it for now..
+				badge_eink_display_greyscale(badge_eink_fb, DISPLAY_FLAG_8BITPIXEL, target_lut > 0xf0 ? target_lut - 0xf0 : 16);
 			}
 			else if (target_lut < 0 || target_lut > BADGE_EINK_LUT_MAX)
 			{
-				badge_eink_display_one_layer(badge_eink_fb, DISPLAY_FLAG_GREYSCALE);
+				badge_eink_display(badge_eink_fb, DISPLAY_FLAG_8BITPIXEL);
 			}
 			else
 			{
-				badge_eink_display_one_layer(badge_eink_fb, DISPLAY_FLAG_LUT(target_lut) | DISPLAY_FLAG_GREYSCALE);
+				badge_eink_display(badge_eink_fb, DISPLAY_FLAG_LUT(target_lut) | DISPLAY_FLAG_8BITPIXEL);
 			}
 		}
 	#endif

@@ -86,7 +86,7 @@ demo_sdcard_image(void)
 		return;
 	}
 
-	badge_eink_display(badge_eink_fb, DISPLAY_FLAG_GREYSCALE);
+	badge_eink_display_greyscale(badge_eink_fb, DISPLAY_FLAG_8BITPIXEL, 16);
 
 	// wait for random keypress
 	badge_input_get_event(-1);
