@@ -56,7 +56,7 @@ extern void badge_eink_update(const uint32_t *buf, const struct badge_eink_updat
 
 /* badge_eink_display 'mode' settings */
 // bitmapped flags:
-#define DISPLAY_FLAG_GREYSCALE  1
+#define DISPLAY_FLAG_8BITPIXEL  1
 #define DISPLAY_FLAG_ROTATE_180 2
 #define DISPLAY_FLAG_NO_UPDATE  4
 #define DISPLAY_FLAG_FULL_UPDATE 8
@@ -65,7 +65,6 @@ extern void badge_eink_update(const uint32_t *buf, const struct badge_eink_updat
 #define DISPLAY_FLAG_LUT_SIZE   4
 #define DISPLAY_FLAG_LUT(x) ((1+(x)) << DISPLAY_FLAG_LUT_BIT)
 
-extern void badge_eink_display_one_layer(const uint8_t *img, int flags);
 /*
  * display image on badge
  *
@@ -79,14 +78,10 @@ extern void badge_eink_display_one_layer(const uint8_t *img, int flags);
  */
 extern void badge_eink_display(const uint8_t *img, int flags);
 
+/*
+ * display image on badge with greyscale hack
+ */
 extern void badge_eink_display_greyscale(const uint8_t *img, int flags, int layers);
-
-
-/* And some more low-level methods; only use them if you know what you're doing. :-) */
-
-extern void badge_eink_set_ram_area(uint8_t x_start, uint8_t x_end,
-		uint16_t y_start, uint16_t y_end);
-extern void badge_eink_set_ram_pointer(uint8_t x_addr, uint16_t y_addr);
 
 extern void badge_eink_deep_sleep(void);
 extern void badge_eink_wakeup(void);

@@ -88,7 +88,7 @@ badge_eink_create_bitplane(const uint8_t *img, uint32_t *buf, int bit, int flags
 			for (x_bits=0; x_bits<32; x_bits++)
 			{
 				res <<= 1;
-				if (flags & DISPLAY_FLAG_GREYSCALE)
+				if (flags & DISPLAY_FLAG_8BITPIXEL)
 				{
 					uint8_t pixel = img[pos];
 					pos += dx;
@@ -109,6 +109,25 @@ badge_eink_create_bitplane(const uint8_t *img, uint32_t *buf, int bit, int flags
 		}
 		pos += dy;
 	}
+}
+
+static void
+badge_eink_set_ram_area(uint8_t x_start, uint8_t x_end,
+		uint16_t y_start, uint16_t y_end)
+{
+	// set RAM X - address Start / End position
+	badge_eink_dev_write_command_p2(0x44, x_start, x_end);
+	// set RAM Y - address Start / End position
+	badge_eink_dev_write_command_p4(0x45, y_start & 0xff, y_start >> 8, y_end & 0xff, y_end >> 8);
+}
+
+static void
+badge_eink_set_ram_pointer(uint8_t x_addr, uint16_t y_addr)
+{
+	// set RAM X address counter
+	badge_eink_dev_write_command_p1(0x4e, x_addr);
+	// set RAM Y address counter
+	badge_eink_dev_write_command_p2(0x4f, y_addr & 0xff, y_addr >> 8);
 }
 
 static void
@@ -193,7 +212,7 @@ badge_eink_update(const uint32_t *buf, const struct badge_eink_update *upd_conf)
 }
 
 void
-badge_eink_display_one_layer(const uint8_t *img, int flags)
+badge_eink_display(const uint8_t *img, int flags)
 {
 	int lut_mode = 
 		(flags >> DISPLAY_FLAG_LUT_BIT) & ((1 << DISPLAY_FLAG_LUT_SIZE)-1);
@@ -237,23 +256,10 @@ badge_eink_display_one_layer(const uint8_t *img, int flags)
 }
 
 void
-badge_eink_display(const uint8_t *img, int flags)
-{
-	// is it a 1 bit per pixel image?
-	if ((flags & DISPLAY_FLAG_GREYSCALE) == 0)
-	{
-		badge_eink_display_one_layer(img, flags);
-		return;
-	}
-
-	badge_eink_display_greyscale(img, flags, 16);
-}
-
-void
 badge_eink_display_greyscale(const uint8_t *img, int flags, int layers)
 {
 	// start with black.
-	badge_eink_display_one_layer(NULL, (flags | DISPLAY_FLAG_FULL_UPDATE) & ~DISPLAY_FLAG_GREYSCALE);
+	badge_eink_display(NULL, flags | DISPLAY_FLAG_FULL_UPDATE);
 
 	// the max. number of layers. more layers will result in more ghosting
 	if (badge_eink_dev_type == BADGE_EINK_DEPG0290B1 && layers > 5) {
@@ -262,14 +268,14 @@ badge_eink_display_greyscale(const uint8_t *img, int flags, int layers)
 		layers = 7;
 	}
 
-	int p_ini = (badge_eink_dev_type == BADGE_EINK_DEPG0290B1) ? 2 : 8;
+	int p_ini = (badge_eink_dev_type == BADGE_EINK_DEPG0290B1) ? 4 : 16;
 
 	int layer;
 	for (layer = 0; layer < layers; layer++) {
 		int bit = 128 >> layer;
-		int t = bit >> 1;
-		// gdeh: 64, 32, 16, 8, 4, 2, 1
-		// depg: 64, 32, 16, 8, 4
+		int t = bit;
+		// gdeh: 128, 64, 32, 16, 8, 4, 2
+		// depg: 128, 64, 32, 16, 8
 
 		int p = p_ini;
 
@@ -284,7 +290,7 @@ badge_eink_display_greyscale(const uint8_t *img, int flags, int layers)
 			int y_end = y_start + (DISP_SIZE_Y / p) - 1;
 
 			uint32_t *buf = badge_eink_tmpbuf;
-			badge_eink_create_bitplane(img, buf, bit, DISPLAY_FLAG_GREYSCALE|(flags & DISPLAY_FLAG_ROTATE_180));
+			badge_eink_create_bitplane(img, buf, bit, flags);
 
 			// clear borders
 			memset_u32(buf, 0, y_start * DISP_SIZE_X_B/4);
@@ -314,25 +320,6 @@ badge_eink_display_greyscale(const uint8_t *img, int flags, int layers)
 	}
 
 	badge_eink_have_oldbuf = false;
-}
-
-void
-badge_eink_set_ram_area(uint8_t x_start, uint8_t x_end,
-		uint16_t y_start, uint16_t y_end)
-{
-	// set RAM X - address Start / End position
-	badge_eink_dev_write_command_p2(0x44, x_start, x_end);
-	// set RAM Y - address Start / End position
-	badge_eink_dev_write_command_p4(0x45, y_start & 0xff, y_start >> 8, y_end & 0xff, y_end >> 8);
-}
-
-void
-badge_eink_set_ram_pointer(uint8_t x_addr, uint16_t y_addr)
-{
-	// set RAM X address counter
-	badge_eink_dev_write_command_p1(0x4e, x_addr);
-	// set RAM Y address counter
-	badge_eink_dev_write_command_p2(0x4f, y_addr & 0xff, y_addr >> 8);
 }
 
 void
