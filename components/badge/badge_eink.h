@@ -11,6 +11,9 @@
 #define BADGE_EINK_WIDTH  296
 
 /** the height of the eink display */
+
+__BEGIN_DECLS
+
 #define BADGE_EINK_HEIGHT 128
 
 /** Initialize the eink display
@@ -89,4 +92,5 @@ extern void badge_eink_set_ram_pointer(uint8_t x_addr, uint16_t y_addr);
 extern void badge_eink_deep_sleep(void);
 extern void badge_eink_wakeup(void);
 
+__END_DECLS
 #endif // BADGE_EINK_H

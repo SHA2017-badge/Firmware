@@ -5,6 +5,8 @@
 #include <stdint.h>
 #include <esp_err.h>
 
+__BEGIN_DECLS
+
 /**
  * Initialize the nvs driver.
  * @return ESP_OK on success; any other value indicates an error
@@ -58,5 +60,7 @@ extern esp_err_t badge_nvs_get_str(const char* namespace, const char* key, char 
  * @return ESP_OK on success; any other value indicates an error
  */
 extern esp_err_t badge_nvs_set_str(const char* namespace, const char* key, const char *value);
+
+__END_DECLS
 
 #endif // BADGE_NVS_H

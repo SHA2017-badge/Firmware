@@ -5,6 +5,8 @@
 #include <stdint.h>
 #include <esp_err.h>
 
+__BEGIN_DECLS
+
 /** port-expander interrupt handler */
 typedef void (*badge_fxl6408_intr_t)(void*);
 
@@ -34,5 +36,7 @@ extern void badge_fxl6408_set_interrupt_handler(uint8_t pin, badge_fxl6408_intr_
 extern int badge_fxl6408_get_input(void);
 /** configure port-expander gpio port - get interrupt status */
 extern int badge_fxl6408_get_interrupt_status(void);
+
+__END_DECLS
 
 #endif // BADGE_FXL6408_H
