@@ -31,6 +31,8 @@ enum badge_eink_lut_flags {
 	LUT_FLAG_BLACK    = 8, // black only
 };
 
+__BEGIN_DECLS
+
 /**
  * Generate LUT data for specific eink display.
  *
@@ -46,5 +48,7 @@ extern const struct badge_eink_lut_entry badge_eink_lut_full[];
 extern const struct badge_eink_lut_entry badge_eink_lut_normal[];
 extern const struct badge_eink_lut_entry badge_eink_lut_faster[];
 extern const struct badge_eink_lut_entry badge_eink_lut_fastest[];
+
+__END_DECLS
 
 #endif // BADGE_EINK_LUT_H

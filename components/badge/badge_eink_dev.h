@@ -15,6 +15,8 @@
 
 extern enum badge_eink_dev_t badge_eink_dev_type;
 
+__BEGIN_DECLS
+
 /** Initialize the SPI bus to the eink display.
  * @return ESP_OK on success; any other value indicates an error
  */
@@ -96,5 +98,7 @@ static inline void badge_eink_dev_write_command_stream_u32(uint8_t command, cons
 	}
 	badge_eink_dev_write_command_end();
 }
+
+__END_DECLS
 
 #endif // BADGE_EINK_DEV_H
