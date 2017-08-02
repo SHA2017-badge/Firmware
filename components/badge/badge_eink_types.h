@@ -14,6 +14,9 @@ enum badge_eink_dev_t {
 	BADGE_EINK_DEPG0290B1,
 };
 
+/**
+ * BADGE_EINK_DEFAULT specifies the compile-time default display type
+ */
 #if defined(CONFIG_SHA_BADGE_EINK_DEF_DEPG0290B1)
  #define BADGE_EINK_DEFAULT BADGE_EINK_DEPG0290B1
 #elif defined(CONFIG_SHA_BADGE_EINK_DEF_GDEH029A1)
