@@ -9,6 +9,7 @@
 
 __BEGIN_DECLS
 
+/** the size of the badge_eink_fb buffer */
 #define BADGE_EINK_FB_LEN (BADGE_EINK_WIDTH * BADGE_EINK_HEIGHT)
 
 /** A one byte per pixel frame-buffer */

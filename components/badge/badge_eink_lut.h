@@ -4,8 +4,10 @@
 
 #include <stdint.h>
 
+/** the needed size of the buffer used in badge_eink_generate_lut() */
 #define BADGE_EINK_LUT_MAX_SIZE 70
 
+/** specification of display update instruction */
 struct badge_eink_lut_entry {
 	/** the number of cycles the voltages are held; 0 = end of list */
 	uint8_t length;
@@ -24,6 +26,7 @@ struct badge_eink_lut_entry {
 	uint8_t voltages;
 };
 
+/** filters to use on a badge_eink_lut_entry structure */
 enum badge_eink_lut_flags {
 	LUT_FLAG_FIRST    = 1, // do not depend on previous image
 	LUT_FLAG_PARTIAL  = 2, // do not touch already correct pixels
@@ -44,9 +47,14 @@ __BEGIN_DECLS
 extern int badge_eink_lut_generate(const struct badge_eink_lut_entry *list, enum badge_eink_lut_flags flags, uint8_t *lut);
 
 /* pre-defined lookup-table display-updates. */
+
+/** full screen update with inverse updates */
 extern const struct badge_eink_lut_entry badge_eink_lut_full[];
+/** screen update which just sets the black and white */
 extern const struct badge_eink_lut_entry badge_eink_lut_normal[];
+/** same as badge_eink_lut_normal but with shorter timings */
 extern const struct badge_eink_lut_entry badge_eink_lut_faster[];
+/** same as badge_eink_lut_faster but with shorter timings */
 extern const struct badge_eink_lut_entry badge_eink_lut_fastest[];
 
 __END_DECLS
