@@ -3,7 +3,6 @@
 #include <esp_event.h>
 
 #include <badge_eink.h>
-#include <badge_eink_fb.h>
 #include <badge_input.h>
 
 #include "imgv2_sha.h"
@@ -11,8 +10,6 @@
 
 void
 demoPartialUpdate(void) {
-	uint32_t *tmpbuf = (uint32_t *) badge_eink_fb;
-
 	struct badge_eink_update eink_upd = {
 		.lut      = BADGE_EINK_LUT_DEFAULT,
 //		.reg_0x3a = 26,   // 26 dummy lines per gate
