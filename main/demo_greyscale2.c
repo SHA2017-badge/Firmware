@@ -14,7 +14,7 @@ void demoGreyscale2(void) {
     /* draw initial pattern */
     {
       uint32_t *dptr = tmpbuf;
-      int x, y;
+      int y;
       for (y = 0; y < DISP_SIZE_Y; y++) {
         *dptr++ = (i & 1) ? 0xffffffff : 0x00000000;
         *dptr++ = (i & 1) ? 0xffffffff : 0x00000000;
@@ -42,7 +42,7 @@ void demoGreyscale2(void) {
       y_next = DISP_SIZE_Y;
 
     uint32_t *dptr = tmpbuf;
-    int x, y;
+    int y;
     for (y = 0; y < y_first; y++) {
       *dptr++ = 0x00000000;
       *dptr++ = 0x00000000;
