@@ -11,10 +11,12 @@
 #define BADGE_EINK_WIDTH  296
 
 /** the height of the eink display */
+#define BADGE_EINK_HEIGHT 128
+
+/** the max number of layers used for greyscale */
+#define BADGE_EINK_MAX_LAYERS 16
 
 __BEGIN_DECLS
-
-#define BADGE_EINK_HEIGHT 128
 
 /** Initialize the eink display
  * @return ESP_OK on success; any other value indicates an error
@@ -57,37 +59,52 @@ struct badge_eink_update {
  */
 extern void badge_eink_update(const uint32_t *buf, const struct badge_eink_update *upd_conf);
 
-/* badge_eink_display 'mode' settings */
-// bitmapped flags:
-#define DISPLAY_FLAG_8BITPIXEL  1
-#define DISPLAY_FLAG_ROTATE_180 2
-#define DISPLAY_FLAG_NO_UPDATE  4
-#define DISPLAY_FLAG_FULL_UPDATE 8
-// fields and sizes:
-#define DISPLAY_FLAG_LUT_BIT    8
-#define DISPLAY_FLAG_LUT_SIZE   4
+/** badge_eink_display 'mode' settings */
+enum badge_eink_flags_t
+{
+	// bitmapped flags:
+	DISPLAY_FLAG_8BITPIXEL   =  1,
+	DISPLAY_FLAG_ROTATE_180  =  2,
+	DISPLAY_FLAG_NO_UPDATE   =  4,
+	DISPLAY_FLAG_FULL_UPDATE =  8,
+
+	// fields and sizes:
+	DISPLAY_FLAG_LUT_BIT     =  8,
+	DISPLAY_FLAG_LUT_SIZE    =  4,
+};
+
+/** macro for specifying badge_eink_flags_t lut type */
 #define DISPLAY_FLAG_LUT(x) ((1+(x)) << DISPLAY_FLAG_LUT_BIT)
 
-/*
+/**
  * display image on badge
  *
- * img is 1 byte per pixel; from top-left corner in horizontal
- * direction first (296 pixels).
+ * @param img contains the image in 1 bit per pixel or 8 bits per pixel
+ * @param flags see `enum badge_eink_flags_t`
+ */
+extern void badge_eink_display(const uint8_t *img, enum badge_eink_flags_t flags);
+
+/**
+ * display greyscale image on badge (hack)
  *
- * mode is still work in progress. think of:
- * - fast update
- * - slow/full update
- * - greyscale update
+ * @param img contains the image in 1 bit per pixel or 8 bits per pixel
+ * @param flags see `enum badge_eink_flags_t`
+ * @param layers the number of layers used. (the max number of layers depends on te
+ *    display type)
  */
-extern void badge_eink_display(const uint8_t *img, int flags);
+extern void badge_eink_display_greyscale(const uint8_t *img, enum badge_eink_flags_t flags, int layers);
 
-/*
- * display image on badge with greyscale hack
+/**
+ * go in deep sleep mode. this disables the ram in the eink chip. a wake-up is needed
+ * to continue using the eink display
  */
-extern void badge_eink_display_greyscale(const uint8_t *img, int flags, int layers);
-
 extern void badge_eink_deep_sleep(void);
+
+/**
+ * wake-up from deep sleep mode.
+ */
 extern void badge_eink_wakeup(void);
 
 __END_DECLS
+
 #endif // BADGE_EINK_H

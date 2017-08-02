@@ -62,7 +62,7 @@ memset_u32(uint32_t *dst, uint32_t value, size_t size)
 }
 
 static void
-badge_eink_create_bitplane(const uint8_t *img, uint32_t *buf, int bit, int flags)
+badge_eink_create_bitplane(const uint8_t *img, uint32_t *buf, int bit, enum badge_eink_flags_t flags)
 {
 #ifdef EPD_ROTATED_180
 	flags ^= DISPLAY_FLAG_ROTATE_180;
@@ -212,7 +212,7 @@ badge_eink_update(const uint32_t *buf, const struct badge_eink_update *upd_conf)
 }
 
 void
-badge_eink_display(const uint8_t *img, int flags)
+badge_eink_display(const uint8_t *img, enum badge_eink_flags_t flags)
 {
 	int lut_mode = 
 		(flags >> DISPLAY_FLAG_LUT_BIT) & ((1 << DISPLAY_FLAG_LUT_SIZE)-1);
@@ -256,7 +256,7 @@ badge_eink_display(const uint8_t *img, int flags)
 }
 
 void
-badge_eink_display_greyscale(const uint8_t *img, int flags, int layers)
+badge_eink_display_greyscale(const uint8_t *img, enum badge_eink_flags_t flags, int layers)
 {
 	// start with black.
 	badge_eink_display(NULL, flags | DISPLAY_FLAG_FULL_UPDATE);
