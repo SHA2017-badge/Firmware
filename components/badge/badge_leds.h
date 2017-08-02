@@ -5,6 +5,8 @@
 #include <stdint.h>
 #include <esp_err.h>
 
+__BEGIN_DECLS
+
 /**
  * Initialize the leds driver. (configure SPI bus and GPIO pins)
  * @return ESP_OK on success; any other value indicates an error
@@ -32,5 +34,7 @@ extern esp_err_t badge_leds_disable(void);
  * @return ESP_OK on success; any other value indicates an error
  */
 extern esp_err_t badge_leds_send_data(uint8_t *data, int len);
+
+__END_DECLS
 
 #endif // BADGE_LEDS_H
