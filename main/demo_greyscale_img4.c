@@ -8,7 +8,7 @@
 void
 demoGreyscaleImg4(void)
 {
-	badge_eink_display_greyscale(imgv2_hacking, DISPLAY_FLAG_8BITPIXEL, 16);
+	badge_eink_display_greyscale(imgv2_hacking, DISPLAY_FLAG_8BITPIXEL, BADGE_EINK_MAX_LAYERS);
 
 	// wait for random keypress
 	badge_input_get_event(-1);

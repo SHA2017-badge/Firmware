@@ -737,7 +737,7 @@ badge_first_run(void)
 	load_png(0,0, "/media/hacking.png");
 	load_png(2,2, "/media/badge_version.png");
 	load_png(0,0, "/media/badge_type.png");
-	badge_eink_display_greyscale(badge_eink_fb, DISPLAY_FLAG_8BITPIXEL, 16);
+	badge_eink_display_greyscale(badge_eink_fb, DISPLAY_FLAG_8BITPIXEL, BADGE_EINK_MAX_LAYERS);
 
 	while (1)
 	{
