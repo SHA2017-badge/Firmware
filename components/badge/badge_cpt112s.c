@@ -71,6 +71,8 @@ badge_cpt112s_init(void)
 
 	ESP_LOGD(TAG, "init called");
 
+	badge_fxl6408_set_interrupt_handler(FXL6408_PIN_NUM_CPT112S, badge_cpt112s_intr_handler, NULL);
+
 	esp_err_t res;
 	res = badge_fxl6408_init();
 	if (res != ESP_OK)
@@ -81,7 +83,6 @@ badge_cpt112s_init(void)
 	res = badge_fxl6408_set_interrupt_enable(FXL6408_PIN_NUM_CPT112S, 1);
 	if (res != ESP_OK)
 		return res;
-	badge_fxl6408_set_interrupt_handler(FXL6408_PIN_NUM_CPT112S, badge_cpt112s_intr_handler, NULL);
 
 	// read pending old events
 	badge_cpt112s_intr_handler(NULL);

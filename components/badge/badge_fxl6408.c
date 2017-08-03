@@ -390,12 +390,18 @@ badge_fxl6408_set_interrupt_enable(uint8_t pin, uint8_t enable)
 void
 badge_fxl6408_set_interrupt_handler(uint8_t pin, badge_fxl6408_intr_t handler, void *arg)
 {
-	xSemaphoreTake(badge_fxl6408_mux, portMAX_DELAY);
+	if (badge_fxl6408_mux == NULL)
+	{ // allow setting handlers when badge_fxl6408 is not initialized yet.
+		badge_fxl6408_handlers[pin] = handler;
+		badge_fxl6408_arg[pin] = arg;
+	} else {
+		xSemaphoreTake(badge_fxl6408_mux, portMAX_DELAY);
 
-	badge_fxl6408_handlers[pin] = handler;
-	badge_fxl6408_arg[pin] = arg;
+		badge_fxl6408_handlers[pin] = handler;
+		badge_fxl6408_arg[pin] = arg;
 
-	xSemaphoreGive(badge_fxl6408_mux);
+		xSemaphoreGive(badge_fxl6408_mux);
+	}
 }
 
 int
