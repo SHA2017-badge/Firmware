@@ -24,7 +24,7 @@ static const char *TAG = "badge";
 
 #ifdef I2C_CPT112S_ADDR
 static void
-touch_event_handler(int event)
+cpt112s_event_handler(int event)
 {
 	// convert into button queue event
 	int event_type = (event >> 16) & 0x0f; // 0=touch, 1=release, 2=slider
@@ -161,6 +161,15 @@ badge_init(void)
 	}
 #endif // PIN_NUM_I2C_CLK
 
+#ifdef I2C_CPT112S_ADDR
+	badge_cpt112s_set_event_handler(cpt112s_event_handler);
+	err = badge_cpt112s_init();
+	if (err != ESP_OK)
+	{
+		ESP_LOGE(TAG, "badge_cpt112s_init failed: %d", err);
+	}
+#endif // I2C_CPT112S_ADDR
+
 #ifdef I2C_FXL6408_ADDR
 	err = badge_fxl6408_init();
 	if (err != ESP_OK)
@@ -168,15 +177,6 @@ badge_init(void)
 		ESP_LOGE(TAG, "badge_fxl6408_init failed: %d", err);
 	}
 #endif // I2C_FXL6408_ADDR
-
-#ifdef I2C_CPT112S_ADDR
-	err = badge_cpt112s_init();
-	if (err != ESP_OK)
-	{
-		ESP_LOGE(TAG, "badge_cpt112s_init failed: %d", err);
-	}
-	badge_cpt112s_set_event_handler(touch_event_handler);
-#endif // I2C_CPT112S_ADDR
 
 #ifdef I2C_MPR121_ADDR
 	badge_mpr121_set_interrupt_handler(MPR121_PIN_NUM_A     , mpr121_event_handler, (void*) (BADGE_BUTTON_A));

@@ -14,7 +14,10 @@ __BEGIN_DECLS
  */
 extern esp_err_t badge_cpt112s_init(void);
 
-/** set the cpt112s-event callback method */
+/** set the cpt112s-event callback method
+ * @param handler the handler to install
+ * @note It is safe to set the event handler before a call to badge_cpt112s_init().
+ */
 extern void badge_cpt112s_set_event_handler(badge_cpt112s_event_t handler);
 
 __END_DECLS

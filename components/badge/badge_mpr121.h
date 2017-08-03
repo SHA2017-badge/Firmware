@@ -52,7 +52,7 @@ extern esp_err_t badge_mpr121_init(void);
  * @param pin the pin-number on the mpr121 chip.
  * @param handler the handler to be called on an interrupt.
  * @param arg the argument passed on to the handler.
- * @note It is allowed to set the interrupt handler before a badge_mpr121().
+ * @note It is safe to set the interrupt handler before a call to badge_mpr121_init().
  */
 extern void badge_mpr121_set_interrupt_handler(uint8_t pin, badge_mpr121_intr_t handler, void *arg);
 
