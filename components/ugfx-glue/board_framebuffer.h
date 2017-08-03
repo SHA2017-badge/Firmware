@@ -58,7 +58,7 @@ uint8_t target_lut;
 				// 0xf0 was used in some examples. support it for now..
 				badge_eink_display_greyscale(badge_eink_fb, DISPLAY_FLAG_8BITPIXEL, target_lut > 0xf0 ? target_lut - 0xf0 : 16);
 			}
-			else if (target_lut < 0 || target_lut > BADGE_EINK_LUT_MAX)
+			else if (target_lut > BADGE_EINK_LUT_MAX)
 			{
 				badge_eink_display(badge_eink_fb, DISPLAY_FLAG_8BITPIXEL);
 			}
