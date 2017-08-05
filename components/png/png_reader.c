@@ -52,13 +52,13 @@ lib_png_chunk_read(struct lib_png_reader *pr)
 	struct lib_png_chunk *c = &pr->chunk;
 
 	if (c->in_chunk)
-		return -1;
+		return -LIB_PNG_ERROR_UNEXPECTED_END_OF_FILE;
 
 	ssize_t res = pr->read(pr->read_p, (uint8_t *) &c->len, 4);
 	if (res < 0)
 		return res;
 	if (res < 4)
-		return -1; // not enough bytes
+		return -LIB_PNG_ERROR_UNEXPECTED_END_OF_FILE;
 
 #if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
 	c->len = __builtin_bswap32(c->len);
@@ -68,7 +68,7 @@ lib_png_chunk_read(struct lib_png_reader *pr)
 	if (res < 0)
 		return res;
 	if (res < 4)
-		return -1; // not enough bytes
+		return -LIB_PNG_ERROR_UNEXPECTED_END_OF_FILE;
 
 	c->crc = lib_crc32((uint8_t *) &c->type, 4, LIB_CRC32_INIT);
 	c->in_chunk = true;
@@ -88,7 +88,7 @@ lib_png_chunk_read_data(struct lib_png_reader *pr, uint8_t *buf, size_t buf_len)
 	if (res < 0)
 		return res;
 	if (res < buf_len)
-		return -1; // not enough bytes
+		return -LIB_PNG_ERROR_UNEXPECTED_END_OF_FILE;
 
 	c->len -= buf_len;
 	c->crc = lib_crc32(buf, buf_len, c->crc);
@@ -100,13 +100,13 @@ lib_png_chunk_read_data(struct lib_png_reader *pr, uint8_t *buf, size_t buf_len)
 		if (res < 0)
 			return res;
 		if (res < 4)
-			return -1; // not enough bytes
+			return -LIB_PNG_ERROR_UNEXPECTED_END_OF_FILE;
 
 #if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
 		crc_check = __builtin_bswap32(crc_check);
 #endif
 		if (c->crc != crc_check)
-			return -1; // crc32 mismatch
+			return -LIB_PNG_ERROR_CRC32_CHECKSUM_MISMATCH;
 
 		c->in_chunk = false;
 	}
@@ -129,7 +129,7 @@ lib_png_chunk_read_idat(struct lib_png_reader *pr, uint8_t *buf, size_t buf_len)
 				break;
 
 			if ((pr->chunk.type & TYPE_ANCILLARY) == 0)
-				return -1; // unknown critical chunk
+				return -LIB_PNG_ERROR_UNKNOWN_CRITICAL_CHUNK;
 
 			// skip chunk
 			while (pr->chunk.in_chunk)
@@ -160,7 +160,7 @@ lib_png_deflate_read(struct lib_png_reader *pr, uint8_t *buf, size_t buf_len)
 	if (res < 0)
 		return res;
 	if (res < buf_len)
-		return -1;
+		return -LIB_PNG_ERROR_UNEXPECTED_END_OF_FILE;
 	pr->adler = lib_adler32(buf, buf_len, pr->adler);
 
 	return res;
@@ -280,7 +280,7 @@ lib_png_decode(struct lib_png_reader *pr, uint32_t width, uint32_t height, uint3
 				break;
 
 			default:
-				return -1;
+				return -LIB_PNG_ERROR_INVALID_PNG_SCANLINE_TYPE;
 		}
 
 		for (x=0; x<width; x++)
@@ -424,25 +424,25 @@ lib_png_read_header(struct lib_png_reader *pr)
 	if (res < 0)
 		return res;
 	if (res < 8)
-		return -1; // not enough bytes
+		return -LIB_PNG_ERROR_UNEXPECTED_END_OF_FILE;
 
 	if (memcmp(sig, png_sig, 8) != 0)
-		return -1; // signature mismatch
+		return -LIB_PNG_ERROR_MISSING_SIGNATURE;
 
 	res = lib_png_chunk_read(pr);
 	if (res < 0)
 		return res;
 	if (pr->chunk.type != TYPE_IHDR)
-		return -1;
+		return -LIB_PNG_ERROR_INVALID_FIRST_CHUNK;
 
 	res = lib_png_chunk_read_data(pr, (uint8_t *) &pr->ihdr, sizeof(struct lib_png_ihdr));
 	if (res < 0)
 		return res;
 	if (res < sizeof(struct lib_png_ihdr))
-		return -1; // chunk too small?
+		return -LIB_PNG_ERROR_UNEXPECTED_END_OF_CHUNK; // chunk too small?
 
 	if (pr->chunk.len != 0)
-		return -1;
+		return -LIB_PNG_ERROR_CHUNK_TOO_LARGE;
 
 #if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
 	pr->ihdr.width  = __builtin_bswap32(pr->ihdr.width);
@@ -450,9 +450,9 @@ lib_png_read_header(struct lib_png_reader *pr)
 #endif
 	// verify png_ihdr
 	if (pr->ihdr.width == 0 || pr->ihdr.width > 0x80000000)
-		return -1;
+		return -LIB_PNG_ERROR_INVALID_PNG_TYPE;
 	if (pr->ihdr.height == 0 || pr->ihdr.height > 0x80000000)
-		return -1;
+		return -LIB_PNG_ERROR_INVALID_PNG_TYPE;
 	switch (pr->ihdr.color_type)
 	{
 		case 0:
@@ -461,7 +461,7 @@ lib_png_read_header(struct lib_png_reader *pr)
 			 && pr->ihdr.bit_depth != 4
 			 && pr->ihdr.bit_depth != 8
 			 && pr->ihdr.bit_depth != 16)
-				return -1;
+				return -LIB_PNG_ERROR_INVALID_PNG_TYPE;
 			break;
 
 		case 2:
@@ -469,7 +469,7 @@ lib_png_read_header(struct lib_png_reader *pr)
 		case 6:
 			if (pr->ihdr.bit_depth != 8
 			 && pr->ihdr.bit_depth != 16)
-				return -1;
+				return -LIB_PNG_ERROR_INVALID_PNG_TYPE;
 			break;
 
 		case 3:
@@ -477,18 +477,18 @@ lib_png_read_header(struct lib_png_reader *pr)
 			 && pr->ihdr.bit_depth != 2
 			 && pr->ihdr.bit_depth != 4
 			 && pr->ihdr.bit_depth != 8)
-				return -1;
+				return -LIB_PNG_ERROR_INVALID_PNG_TYPE;
 			break;
 
 		default:
-			return -1;
+			return -LIB_PNG_ERROR_INVALID_PNG_TYPE;
 	}
 	if (pr->ihdr.compression_method != 0)
-		return -1;
+		return -LIB_PNG_ERROR_INVALID_PNG_TYPE;
 	if (pr->ihdr.filter_method != 0)
-		return -1;
+		return -LIB_PNG_ERROR_INVALID_PNG_TYPE;
 	if (pr->ihdr.interlace_method > 1)
-		return -1;
+		return -LIB_PNG_ERROR_INVALID_PNG_TYPE;
 
 	// calculate scanline
 	uint32_t bits_per_pixel = pr->ihdr.bit_depth;
@@ -527,13 +527,13 @@ lib_png_load_image(struct lib_png_reader *pr, uint8_t *dst, uint32_t dst_min_x, 
 		if (pr->chunk.type == TYPE_PLTE)
 		{
 			if (pr->palette != NULL)
-				return -1; // only one palette allowed
+				return -LIB_PNG_ERROR_MULTIPLE_PALETTES_FOUND;
 			if (pr->chunk.len > 768 || pr->chunk.len % 3 != 0)
-				return -1; // should be a multiple of 3
+				return -LIB_PNG_ERROR_INVALID_PALETTE_SIZE;
 
 			pr->palette = (uint8_t *) malloc(pr->chunk.len);
 			if (pr->palette == NULL)
-				return -1; // out of memory
+				return -LIB_PNG_ERROR_OUT_OF_MEMORY;
 			pr->palette_len = pr->chunk.len / 3;
 
 			res = lib_png_chunk_read_data(pr, pr->palette, pr->chunk.len);
@@ -543,7 +543,7 @@ lib_png_load_image(struct lib_png_reader *pr, uint8_t *dst, uint32_t dst_min_x, 
 		}
 
 		if ((pr->chunk.type & TYPE_ANCILLARY) == 0)
-			return -1; // unknown critical chunk
+			return -LIB_PNG_ERROR_UNKNOWN_CRITICAL_CHUNK;
 
 		// skip chunk
 		while (pr->chunk.in_chunk)
@@ -557,16 +557,16 @@ lib_png_load_image(struct lib_png_reader *pr, uint8_t *dst, uint32_t dst_min_x, 
 
 	// do we have a palette?
 	if (pr->ihdr.color_type == 3 && pr->palette == NULL)
-		return -1; // no palette found
+		return -LIB_PNG_ERROR_NO_PALETTE_FOUND;
 	if (pr->ihdr.color_type == 0 && pr->palette != NULL)
-		return -1; // no palette allowed
+		return -LIB_PNG_ERROR_PALETTE_NOT_ALLOWED_FOR_PNG_TYPE;
 	if (pr->ihdr.color_type == 4 && pr->palette != NULL)
-		return -1; // no palette allowed
+		return -LIB_PNG_ERROR_PALETTE_NOT_ALLOWED_FOR_PNG_TYPE;
 
 	// allocate scanline
 	pr->scanline = (uint8_t *) malloc(pr->scanline_width * 2);
 	if (pr->scanline == NULL)
-		return -1; // out of memory
+		return -LIB_PNG_ERROR_OUT_OF_MEMORY;
 
 	// start parsing IDAT
 	uint8_t rfc1950_hdr[2];
@@ -574,20 +574,20 @@ lib_png_load_image(struct lib_png_reader *pr, uint8_t *dst, uint32_t dst_min_x, 
 	if (res < 0)
 		return res;
 	if (res < 2)
-		return -1;
+		return -LIB_PNG_ERROR_UNEXPECTED_END_OF_CHUNK;
 
 	if ((rfc1950_hdr[0] & 0x0f) != 0x08) // should be deflate algorithm
-		return -1;
+		return -LIB_PNG_ERROR_INVALID_DEFLATE_HEADER;
 	if (rfc1950_hdr[0] > 0x78) // max window size is 32 KB
-		return -1;
+		return -LIB_PNG_ERROR_INVALID_DEFLATE_HEADER;
 	if (rfc1950_hdr[1] & 0x20) // preset dictionary not allowed
-		return -1;
+		return -LIB_PNG_ERROR_INVALID_DEFLATE_HEADER;
 	if (((rfc1950_hdr[0] << 8) + rfc1950_hdr[1]) % 31 != 0) // check checksum
-		return -1;
+		return -LIB_PNG_ERROR_INVALID_DEFLATE_HEADER;
 
 	pr->dr = lib_deflate_new((lib_reader_read_t) &lib_png_chunk_read_idat, pr);
 	if (pr->dr == NULL)
-		return -1; // out of memory
+		return -LIB_PNG_ERROR_OUT_OF_MEMORY;
 
 	pr->adler = LIB_ADLER32_INIT;
 
@@ -608,6 +608,12 @@ lib_png_load_image(struct lib_png_reader *pr, uint8_t *dst, uint32_t dst_min_x, 
 		uint32_t d_height = ( dst_height + 7 ) >> 3;
 
 		uint32_t bits_per_pixel = pr->ihdr.bit_depth;
+		if (pr->ihdr.color_type == 2)
+			bits_per_pixel *= 3; // r, g, b
+		if (pr->ihdr.color_type == 4)
+			bits_per_pixel *= 2; // grey, alpha
+		if (pr->ihdr.color_type == 6)
+			bits_per_pixel *= 4; // r, g, b, alpha
 
 		if (width && height)
 		{
@@ -721,7 +727,7 @@ lib_png_load_image(struct lib_png_reader *pr, uint8_t *dst, uint32_t dst_min_x, 
 		if (res < 0)
 			return res;
 		if (res != 0)
-			return -1;
+			return -LIB_PNG_ERROR_CHUNK_TOO_LARGE;
 	}
 
 	// verify adler
@@ -730,13 +736,13 @@ lib_png_load_image(struct lib_png_reader *pr, uint8_t *dst, uint32_t dst_min_x, 
 	if (res < 0)
 		return res;
 	if (res < 4)
-		return -1;
+		return -LIB_PNG_ERROR_UNEXPECTED_END_OF_CHUNK;
 
 #if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
 	adler_chk = __builtin_bswap32(adler_chk);
 #endif
 	if (pr->adler != adler_chk)
-		return -1; // deflate checksum failed
+		return -LIB_PNG_ERROR_ADLER32_CHECKSUM_MISMATCH;
 
 	// verify IEND
 
@@ -750,7 +756,7 @@ lib_png_load_image(struct lib_png_reader *pr, uint8_t *dst, uint32_t dst_min_x, 
 			break;
 
 		if ((pr->chunk.type & TYPE_ANCILLARY) == 0)
-			return -1; // unknown critical chunk
+			return -LIB_PNG_ERROR_UNKNOWN_CRITICAL_CHUNK;
 
 		// skip chunk
 		while (pr->chunk.in_chunk)
@@ -763,7 +769,7 @@ lib_png_load_image(struct lib_png_reader *pr, uint8_t *dst, uint32_t dst_min_x, 
 	}
 
 	if (pr->chunk.len != 0)
-		return -1; // should be 0
+		return -LIB_PNG_ERROR_CHUNK_TOO_LARGE;
 
 	res = lib_png_chunk_read_data(pr, NULL, 1);
 	if (res < 0)
