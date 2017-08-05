@@ -3,5 +3,6 @@
 
 void bpp_mount_ropart();
 void bpp_init(void);
+void bpp_shutdown();
 
 #endif
