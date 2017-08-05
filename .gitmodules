@@ -12,7 +12,7 @@
 	branch = master
 [submodule "micropython-lib"]
 	path = micropython-lib
-	url = https://github.com/micropython/micropython-lib.git
+	url = https://github.com/SHA2017-badge/micropython-lib.git
 	branch = master
 [submodule "examples"]
 	path = examples
