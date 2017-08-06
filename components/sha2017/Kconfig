@@ -1,0 +1,15 @@
+menu "SHA2017 Badge OTA"
+
+config OTA_SERVER_NAME
+    string "OTA server name"
+    default "badge.sha2017.org"
+    help
+        Hostname of the OTA server
+
+config OTA_SERVER_PATH
+    string "OTA server path"
+    default "/firmware"
+    help
+        The path on the OTA server
+
+endmenu
