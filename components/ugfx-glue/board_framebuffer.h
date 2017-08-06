@@ -16,6 +16,7 @@
 
 #include <esp_system.h>
 
+#include <badge_nvs.h>
 #include <badge_eink.h>
 #include <badge_eink_fb.h>
 
@@ -34,7 +35,9 @@ uint8_t target_lut;
 #ifdef GDISP_DRIVER_VMT
 
 	static void board_init(GDisplay *g, fbInfo *fbi) {
-		esp_err_t err = badge_eink_init(BADGE_EINK_DEFAULT);
+		uint8_t eink_type = BADGE_EINK_DEFAULT;
+		badge_nvs_get_u8("badge", "eink.dev.type", &eink_type);
+		esp_err_t err = badge_eink_init(eink_type);
 		assert( err == ESP_OK );
 
 		err = badge_eink_fb_init();
