@@ -8,6 +8,7 @@
 #include <esp_log.h>
 
 #include "badge_input.h"
+#include "badge_vibrator.h"
 
 static const char *TAG = "badge_input";
 
@@ -76,6 +77,7 @@ badge_input_add_event(uint32_t button_id, bool pressed, bool in_isr)
 				ets_printf("badge_input: input queue full.\n");
 			}
 		}
+		badge_vibrator_buzz(70000);
 	}
 	else
 	{

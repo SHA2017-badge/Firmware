@@ -56,6 +56,14 @@ badge_vibrator_activate(uint32_t pattern)
 	badge_vibrator_off();
 }
 
+void
+badge_vibrator_buzz(uint32_t length)
+{
+	badge_vibrator_on();
+	ets_delay_us(length);
+	badge_vibrator_off();
+}
+
 esp_err_t
 badge_vibrator_init(void)
 {

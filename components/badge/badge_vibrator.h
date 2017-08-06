@@ -24,6 +24,16 @@ extern esp_err_t badge_vibrator_init(void);
  */
 extern void badge_vibrator_activate(uint32_t pattern);
 
+/**
+ * Activate the vibrator for the specified number of microseconds.
+ *
+ * Code example:
+ *
+ *   badge_vibrator_activate(200000);
+ *   // vibrator will be on for 200ms.
+ */
+extern void badge_vibrator_buzz(uint32_t length);
+
 __END_DECLS
 
 #endif // BADGE_VIBRATOR_H
