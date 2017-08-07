@@ -53,21 +53,27 @@ uint8_t target_lut;
 	}
 
 	#if GDISP_HARDWARE_FLUSH
+		bool ugfx_screen_flipped = false;
 		static void board_flush(GDisplay *g) {
 			(void) g;
+
+			badge_eink_flags_t flags = DISPLAY_FLAG_8BITPIXEL;
+			if (ugfx_screen_flipped) {
+				flags |= DISPLAY_FLAG_ROTATE_180;
+			}
 
 			if (target_lut >= 0xf0)
 			{
 				// 0xf0 was used in some examples. support it for now..
-				badge_eink_display_greyscale(badge_eink_fb, DISPLAY_FLAG_8BITPIXEL, target_lut > 0xf0 ? target_lut - 0xf0 : BADGE_EINK_MAX_LAYERS);
+				badge_eink_display_greyscale(badge_eink_fb, flags, target_lut > 0xf0 ? target_lut - 0xf0 : BADGE_EINK_MAX_LAYERS);
 			}
 			else if (target_lut > BADGE_EINK_LUT_MAX)
 			{
-				badge_eink_display(badge_eink_fb, DISPLAY_FLAG_8BITPIXEL);
+				badge_eink_display(badge_eink_fb, flags);
 			}
 			else
 			{
-				badge_eink_display(badge_eink_fb, DISPLAY_FLAG_LUT(target_lut) | DISPLAY_FLAG_8BITPIXEL);
+				badge_eink_display(badge_eink_fb, flags | DISPLAY_FLAG_LUT(target_lut));
 			}
 		}
 	#endif
