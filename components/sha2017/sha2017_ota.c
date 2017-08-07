@@ -33,6 +33,7 @@
 #include "mbedtls/ssl.h"
 
 #include "badge.h"
+#include "badge_eink_dev.h"
 #include "badge_nvs.h"
 #include "wildcard_sha2017_org.h"
 #include "sha2017_ota_graphics.h"
@@ -418,7 +419,7 @@ static void sha2017_ota_task(void *pvParameter) {
       binary_file_length += len;
 
       uint8_t newperc = (uint8_t)round(((float)binary_file_length*100)/content_length);
-      if (newperc != percentage) {
+      if (newperc != percentage && !badge_eink_dev_is_busy()) {
         percentage = newperc;
         show_percentage("Updating", percentage, true);
       }
