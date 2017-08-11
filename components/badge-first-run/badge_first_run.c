@@ -568,7 +568,7 @@ badge_first_run(void)
 	int pwr_vusb = badge_usb_volt_sense();
 	sprintf(line, "Vusb = %u.%03u V", pwr_vusb/1000, pwr_vusb % 1000);
 	disp_line(line, 0);
-	if (pwr_vusb < 4500 || pwr_vusb > 5700) {
+	if (pwr_vusb < 4200 || pwr_vusb > 5700) {
 		disp_line("Error: Vusb should be approx. 5 volt.",FONT_MONOSPACE);
 		return;
 	}
