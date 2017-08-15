@@ -380,6 +380,9 @@ sha2017_ota_task(void *pvParameter)
 	/* read until we have received the status line */
 	ESP_LOGI(TAG, "Reading HTTP response status line.");
 	uint8_t *crlf;
+	/* while the buffer doesn't contain "\r\n": continue reading.
+	 * when the buffer contains "\r\n", store pointer to it in
+	 * crlf and exit loop */
 	while ((crlf = index_crlf(buffer, buffer_len)) == NULL) {
 		if (sizeof(buffer) == buffer_len) {
 			ESP_LOGE(TAG, "received too long status line.");
@@ -396,8 +399,8 @@ sha2017_ota_task(void *pvParameter)
 	}
 	*crlf = 0;
 
-	// parse status line in buffer[]; it's zero-terminated.
-	// (line is truncated if server responded with null-characters)
+	/* parse status line in buffer[]; it's zero-terminated.
+	 * (line is truncated if server responded with null-characters) */
 	{
 		if (strncmp((const char *) buffer, "HTTP/1.", 7) != 0) {
 			ESP_LOGE(TAG, "not an HTTP response.");
@@ -411,7 +414,8 @@ sha2017_ota_task(void *pvParameter)
 		ESP_LOGW(TAG, "Status '%s', OK", (const char *) buffer);
 	}
 
-	// move left-over data
+	/* move left-over data so that buffer[0] points to the
+	 * first character of the next line */
 	intptr_t line_len = (intptr_t) crlf + 2 - (intptr_t) buffer;
 	memmove(buffer, &buffer[line_len], buffer_len - line_len);
 	buffer_len -= line_len;
@@ -419,7 +423,11 @@ sha2017_ota_task(void *pvParameter)
 	/* read until we have received all headers */
 	ESP_LOGI(TAG, "Reading HTTP response headers.");
 	ssize_t content_length = -1;
+	/* loop while we haven't received an empty line */
 	while (buffer != crlf) {
+		/* while the buffer doesn't contain "\r\n": continue reading.
+		 * when the buffer contains "\r\n", store pointer to it in
+		 * crlf and exit loop */
 		while ((crlf = index_crlf(buffer, buffer_len)) == NULL) {
 			if (sizeof(buffer) == buffer_len) {
 				ESP_LOGE(TAG, "received too long header line.");
@@ -436,22 +444,21 @@ sha2017_ota_task(void *pvParameter)
 		}
 		*crlf = 0;
 
-		// parse header line in buffer[]; it's zero-terminated.
-		// (line is truncated if server responded with null-characters)
-		{
-			if (strncasecmp((const char *) buffer, "Content-Length:", 15) == 0) {
-				const char *len_str = (const char *) &buffer[15];
-				while (*len_str == ' ') { len_str++; }
-				content_length = atoi(len_str);
-				if (content_length < 0) {
-					ESP_LOGE(TAG, "received invalid length.");
-					task_fatal_error();
-				}
-				ESP_LOGW(TAG, "Content-Length: %d", content_length);
+		/* parse header line in buffer[]; it's zero-terminated.
+		 * (line is truncated if server responded with null-characters) */
+		if (strncasecmp((const char *) buffer, "Content-Length:", 15) == 0) {
+			const char *len_str = (const char *) &buffer[15];
+			while (*len_str == ' ') { len_str++; }
+			content_length = atoi(len_str);
+			if (content_length < 0) {
+				ESP_LOGE(TAG, "received invalid length.");
+				task_fatal_error();
 			}
+			ESP_LOGW(TAG, "Content-Length: %d", content_length);
 		}
 
-		// move left-over data
+		/* move left-over data so that buffer[0] points to the
+		 * first character of the next line */
 		intptr_t line_len = (intptr_t) crlf + 2 - (intptr_t) buffer;
 		memmove(buffer, &buffer[line_len], buffer_len - line_len);
 		buffer_len -= line_len;
