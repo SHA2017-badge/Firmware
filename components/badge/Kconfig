@@ -8,6 +8,7 @@ choice SHA_BADGE_REV
 
         - Rev1.0.0 Dev: Release candidate
           (may 2017)
+        - Rev1.0.0 Dev without the MPR121 chip.
         - Rev0.1.0 Dev: Improved badge.
           (february 2017)
         - Rev0.0.1 Dev: The original development badge.
@@ -16,6 +17,8 @@ choice SHA_BADGE_REV
 
 config SHA_BADGE_V3
     bool "Rev1.0.*"
+config SHA_BADGE_V3_LITE
+    bool "Rev1.0.* (without mpr121)"
 config SHA_BADGE_V2
     bool "Rev0.1.0 Dev"
 config SHA_BADGE_V1
@@ -27,7 +30,7 @@ endchoice
 choice SHA_BADGE_EINK_DEFAULT_TYPE
     prompt "SHA Badge e-ink default display type"
     default SHA_BADGE_EINK_DEF_DEPG0290B1
-    depends on SHA_BADGE_V1 || SHA_BADGE_V2 || SHA_BADGE_V3
+    depends on SHA_BADGE_V1 || SHA_BADGE_V2 || SHA_BADGE_V3 || SHA_BADGE_V3_LITE
     help
         The DEPG0290B1 is the cheaper alternative.
         The GDEH029A1 was the original e-ink display.
@@ -40,7 +43,7 @@ endchoice
 
 config SHA_BADGE_LEDS_WS2812
     bool "Using WS2812 LEDS instead of SK6812"
-    depends on SHA_BADGE_V2 || SHA_BADGE_V3
+    depends on SHA_BADGE_V2 || SHA_BADGE_V3 || SHA_BADGE_V3_LITE
     default n
     help
         On earlier developer boards, WS2812 leds were used
@@ -85,21 +88,21 @@ config SHA_BADGE_MPR121_HARDCODE_BASELINE
 
 config SHA_BADGE_EINK_DEBUG
     bool "Enable eink debug messages"
-    depends on SHA_BADGE_V1 || SHA_BADGE_V2 || SHA_BADGE_V3
+    depends on SHA_BADGE_V1 || SHA_BADGE_V2 || SHA_BADGE_V3 || SHA_BADGE_V3_LITE
     default n
     help
         Debugging
 
 config SHA_BADGE_EINK_LUT_DEBUG
     bool "Enable eink lookup-table debug messages"
-    depends on SHA_BADGE_V1 || SHA_BADGE_V2 || SHA_BADGE_V3
+    depends on SHA_BADGE_V1 || SHA_BADGE_V2 || SHA_BADGE_V3 || SHA_BADGE_V3_LITE
     default n
     help
         Debugging
 
 config SHA_BADGE_POWER_DEBUG
     bool "Enable power/charging debug messages"
-    depends on SHA_BADGE_V1 || SHA_BADGE_V2 || SHA_BADGE_V3
+    depends on SHA_BADGE_V1 || SHA_BADGE_V2 || SHA_BADGE_V3 || SHA_BADGE_V3_LITE
     default n
     help
         Debugging
