@@ -237,13 +237,14 @@ sha2017_ota_task(void *pvParameter)
 
 	/* determine partitions */
 	const esp_partition_t *part_running = esp_ota_get_running_partition();
+	assert(part_running != NULL);
 	ESP_LOGI(TAG, "Running from partition type %d subtype %d (offset 0x%08x)",
 			part_running->type, part_running->subtype, part_running->address);
 
 	const esp_partition_t *part_update = esp_ota_get_next_update_partition(NULL);
+	assert(part_update != NULL);
 	ESP_LOGI(TAG, "Writing to partition type %d subtype %d (offset 0x%08x)",
 			part_update->type, part_update->subtype, part_update->address);
-	assert(part_update != NULL);
 
 	target_lut = BADGE_EINK_LUT_FASTER;
 
