@@ -2,6 +2,93 @@
 
 ## [Unreleased](https://github.com/SHA2017-badge/Firmware/tree/HEAD)
 
+[Full Changelog](https://github.com/SHA2017-badge/Firmware/compare/sha2...HEAD)
+
+**Closed issues:**
+
+- vusb test in initial boot loader is too low [\#203](https://github.com/SHA2017-badge/Firmware/issues/203)
+- sha2017\_ota.c: strncpy misuse \(potential buffer overflow\) [\#201](https://github.com/SHA2017-badge/Firmware/issues/201)
+- sha2017\_ota.c: out-of-bounds read in sha2017\_read\_past\_http\_header [\#200](https://github.com/SHA2017-badge/Firmware/issues/200)
+- SDCard Support [\#196](https://github.com/SHA2017-badge/Firmware/issues/196)
+- Prevent sleeping when connected to power [\#193](https://github.com/SHA2017-badge/Firmware/issues/193)
+- building on OSX [\#184](https://github.com/SHA2017-badge/Firmware/issues/184)
+- Requested: test-app for vibration motor [\#182](https://github.com/SHA2017-badge/Firmware/issues/182)
+- Leaving badge in launcher or installer accidentally drains battery fast [\#166](https://github.com/SHA2017-badge/Firmware/issues/166)
+- Check if every badge\_\*.c component handles pre-init keypresses well. [\#146](https://github.com/SHA2017-badge/Firmware/issues/146)
+- Freeing the HSPI bus breaks the VSPI config. [\#70](https://github.com/SHA2017-badge/Firmware/issues/70)
+
+**Merged pull requests:**
+
+- Update badge\_eink\_fb.c [\#209](https://github.com/SHA2017-badge/Firmware/pull/209) ([klondi](https://github.com/klondi))
+- Add support for the decapitated final badge. [\#206](https://github.com/SHA2017-badge/Firmware/pull/206) ([basvs](https://github.com/basvs))
+- Rewrite OTA update code [\#205](https://github.com/SHA2017-badge/Firmware/pull/205) ([basvs](https://github.com/basvs))
+- Increase Vusb max from 5.5 to 5.7 volt. [\#204](https://github.com/SHA2017-badge/Firmware/pull/204) ([basvs](https://github.com/basvs))
+- Notes on how to build the badge firmware on OSX [\#202](https://github.com/SHA2017-badge/Firmware/pull/202) ([nlitsme](https://github.com/nlitsme))
+- add ugfx\_screen\_flipped bool to flip the screen. [\#195](https://github.com/SHA2017-badge/Firmware/pull/195) ([basvs](https://github.com/basvs))
+- only update ota download percentage when screen is not busy [\#194](https://github.com/SHA2017-badge/Firmware/pull/194) ([basvs](https://github.com/basvs))
+- Make OTA server and path configurable [\#191](https://github.com/SHA2017-badge/Firmware/pull/191) ([basvs](https://github.com/basvs))
+- let ugfx.init\(\) use the nvs eink-type [\#189](https://github.com/SHA2017-badge/Firmware/pull/189) ([basvs](https://github.com/basvs))
+- Update to newest micropython for installer fixes [\#188](https://github.com/SHA2017-badge/Firmware/pull/188) ([gavanfantom](https://github.com/gavanfantom))
+- Update micropython to prevent 'too many open files' [\#187](https://github.com/SHA2017-badge/Firmware/pull/187) ([raboof](https://github.com/raboof))
+- Update micropython-lib to get the urequests.py timeout feature [\#186](https://github.com/SHA2017-badge/Firmware/pull/186) ([gavanfantom](https://github.com/gavanfantom))
+- bugfix in png parser \(bits per pixel\); added error-codes [\#185](https://github.com/SHA2017-badge/Firmware/pull/185) ([basvs](https://github.com/basvs))
+- setup handlers before initializing. \(badge rev 0.1.0\) [\#181](https://github.com/SHA2017-badge/Firmware/pull/181) ([basvs](https://github.com/basvs))
+- suppress compiler warning. [\#180](https://github.com/SHA2017-badge/Firmware/pull/180) ([basvs](https://github.com/basvs))
+- remove unused variables. [\#178](https://github.com/SHA2017-badge/Firmware/pull/178) ([basvs](https://github.com/basvs))
+- Enable assertions. [\#177](https://github.com/SHA2017-badge/Firmware/pull/177) ([basvs](https://github.com/basvs))
+- add missing \_\_BEGIN\_DECLS / \_\_END\_DECLS [\#176](https://github.com/SHA2017-badge/Firmware/pull/176) ([basvs](https://github.com/basvs))
+- add more doxygen updates [\#175](https://github.com/SHA2017-badge/Firmware/pull/175) ([basvs](https://github.com/basvs))
+- misc minor updates. no changes in compiled code. [\#174](https://github.com/SHA2017-badge/Firmware/pull/174) ([basvs](https://github.com/basvs))
+- Allow C++ compilers to include the badge headers. [\#172](https://github.com/SHA2017-badge/Firmware/pull/172) ([osresearch](https://github.com/osresearch))
+- Add contributing guide [\#171](https://github.com/SHA2017-badge/Firmware/pull/171) ([raboof](https://github.com/raboof))
+- Refactoring badge\_eink greyscale implementation [\#170](https://github.com/SHA2017-badge/Firmware/pull/170) ([basvs](https://github.com/basvs))
+- workaround for the leds-disable. [\#169](https://github.com/SHA2017-badge/Firmware/pull/169) ([basvs](https://github.com/basvs))
+- Reset the zsh hash after setting the PATH [\#168](https://github.com/SHA2017-badge/Firmware/pull/168) ([raboof](https://github.com/raboof))
+- Clean and update sdkconfig.default and update IDF + micropython [\#165](https://github.com/SHA2017-badge/Firmware/pull/165) ([Roosted7](https://github.com/Roosted7))
+- Support both eink types. [\#164](https://github.com/SHA2017-badge/Firmware/pull/164) ([basvs](https://github.com/basvs))
+- BADGE\_EINK\_LUT\_FULL shouldn't do a partial update. [\#163](https://github.com/SHA2017-badge/Firmware/pull/163) ([basvs](https://github.com/basvs))
+- Let micropython use the bpp powerdown manager [\#162](https://github.com/SHA2017-badge/Firmware/pull/162) ([Spritetm](https://github.com/Spritetm))
+- split png header and data parser. [\#161](https://github.com/SHA2017-badge/Firmware/pull/161) ([basvs](https://github.com/basvs))
+- Add raw screen buffer to badge\_eink\_update\(\) call. [\#160](https://github.com/SHA2017-badge/Firmware/pull/160) ([basvs](https://github.com/basvs))
+- Makefile improvements [\#159](https://github.com/SHA2017-badge/Firmware/pull/159) ([basvs](https://github.com/basvs))
+- Removing struct badge\_eink\_update eink\_upd\_default. [\#158](https://github.com/SHA2017-badge/Firmware/pull/158) ([basvs](https://github.com/basvs))
+- move eink lut data from static buffer to caller-stack [\#157](https://github.com/SHA2017-badge/Firmware/pull/157) ([basvs](https://github.com/basvs))
+- Remove unused old files; Remove unused symlinks [\#156](https://github.com/SHA2017-badge/Firmware/pull/156) ([basvs](https://github.com/basvs))
+- code cleanup; rename portexp to fxl6408 [\#153](https://github.com/SHA2017-badge/Firmware/pull/153) ([basvs](https://github.com/basvs))
+- rename badge\_touch to badge\_cpt112s [\#152](https://github.com/SHA2017-badge/Firmware/pull/152) ([basvs](https://github.com/basvs))
+- bugfix in emulator: uos.urandom\(\) [\#151](https://github.com/SHA2017-badge/Firmware/pull/151) ([basvs](https://github.com/basvs))
+- Added bindings to ESP-IDF native filesystem library for ugfx via USERFS [\#150](https://github.com/SHA2017-badge/Firmware/pull/150) ([aczid](https://github.com/aczid))
+- Fixups and cleanups rev0.1.0 badge [\#149](https://github.com/SHA2017-badge/Firmware/pull/149) ([basvs](https://github.com/basvs))
+- Add support for removal of NVS page [\#148](https://github.com/SHA2017-badge/Firmware/pull/148) ([Roosted7](https://github.com/Roosted7))
+
+## [sha2](https://github.com/SHA2017-badge/Firmware/tree/sha2) (2017-07-26)
+[Full Changelog](https://github.com/SHA2017-badge/Firmware/compare/sha1...sha2)
+
+**Closed issues:**
+
+- emulator build fails with current instructions [\#140](https://github.com/SHA2017-badge/Firmware/issues/140)
+- Lower fatfs memory footprint by dynamic allocation of file handles [\#138](https://github.com/SHA2017-badge/Firmware/issues/138)
+- draw png-images on negative offsets [\#136](https://github.com/SHA2017-badge/Firmware/issues/136)
+- BPP sleep [\#135](https://github.com/SHA2017-badge/Firmware/issues/135)
+
+**Merged pull requests:**
+
+- Add test for charging pin. [\#147](https://github.com/SHA2017-badge/Firmware/pull/147) ([basvs](https://github.com/basvs))
+- better handling of early key-presses. [\#145](https://github.com/SHA2017-badge/Firmware/pull/145) ([basvs](https://github.com/basvs))
+- support negative offsets in displaying pngs [\#144](https://github.com/SHA2017-badge/Firmware/pull/144) ([basvs](https://github.com/basvs))
+- updated xtensa toolchain [\#143](https://github.com/SHA2017-badge/Firmware/pull/143) ([annejan](https://github.com/annejan))
+- Fix first-run logo; now built from 3 different pngs. [\#142](https://github.com/SHA2017-badge/Firmware/pull/142) ([basvs](https://github.com/basvs))
+- Update submodules [\#141](https://github.com/SHA2017-badge/Firmware/pull/141) ([Roosted7](https://github.com/Roosted7))
+- use ESP\_LOGx\(\) where possible. [\#134](https://github.com/SHA2017-badge/Firmware/pull/134) ([basvs](https://github.com/basvs))
+- use the crc32 implementation from the crc32 rom. [\#133](https://github.com/SHA2017-badge/Firmware/pull/133) ([basvs](https://github.com/basvs))
+- remove firmware/ code. It is now integrated in the main code. [\#132](https://github.com/SHA2017-badge/Firmware/pull/132) ([basvs](https://github.com/basvs))
+- remove deprecated unused method badge\_leds\_set\_state\(\) [\#131](https://github.com/SHA2017-badge/Firmware/pull/131) ([basvs](https://github.com/basvs))
+- erase key before setting key. [\#129](https://github.com/SHA2017-badge/Firmware/pull/129) ([basvs](https://github.com/basvs))
+- Multi core travis compilation [\#128](https://github.com/SHA2017-badge/Firmware/pull/128) ([Roosted7](https://github.com/Roosted7))
+- Remove bootlogo and flush on init\(\) [\#127](https://github.com/SHA2017-badge/Firmware/pull/127) ([Roosted7](https://github.com/Roosted7))
+- move badge\_eink\_{tmp,old}buf to iram and save 9.2 KB of main memory. [\#126](https://github.com/SHA2017-badge/Firmware/pull/126) ([basvs](https://github.com/basvs))
+
+## [sha1](https://github.com/SHA2017-badge/Firmware/tree/sha1) (2017-07-22)
 **Implemented enhancements:**
 
 - Merge tsd's changes . . [\#2](https://github.com/SHA2017-badge/Firmware/pull/2) ([annejan](https://github.com/annejan))
@@ -28,6 +115,9 @@
 
 **Merged pull requests:**
 
+- Basvs ugfx greyscale [\#125](https://github.com/SHA2017-badge/Firmware/pull/125) ([annejan](https://github.com/annejan))
+- Make vbat on firstrun a warning [\#124](https://github.com/SHA2017-badge/Firmware/pull/124) ([Roosted7](https://github.com/Roosted7))
+- In first-run, check if there's a .zip file waiting for us. [\#122](https://github.com/SHA2017-badge/Firmware/pull/122) ([basvs](https://github.com/basvs))
 - Fix recv implementation [\#121](https://github.com/SHA2017-badge/Firmware/pull/121) ([Spritetm](https://github.com/Spritetm))
 - use dynamically allocated badge\_eink\_fb buffer. [\#120](https://github.com/SHA2017-badge/Firmware/pull/120) ([basvs](https://github.com/basvs))
 - size optimizations in badge-first-run code. [\#118](https://github.com/SHA2017-badge/Firmware/pull/118) ([basvs](https://github.com/basvs))
