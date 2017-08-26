@@ -270,6 +270,8 @@ badge_eink_display_greyscale(const uint8_t *img, badge_eink_flags_t flags, int l
 
 	int p_ini = (badge_eink_dev_type == BADGE_EINK_DEPG0290B1) ? 4 : 16;
 
+	badge_eink_have_oldbuf = false;
+
 	int layer;
 	for (layer = 0; layer < layers; layer++) {
 		int bit = 128 >> layer;
@@ -284,6 +286,12 @@ badge_eink_display_greyscale(const uint8_t *img, badge_eink_flags_t flags, int l
 			p >>= 1;
 		}
 
+		if (badge_eink_dev_type == BADGE_EINK_DEPG0290B1 && badge_eink_have_oldbuf == false && p == 1 && t > 1 && layer+1 < layers) {
+			badge_eink_create_bitplane(img, badge_eink_oldbuf, bit, flags);
+			badge_eink_have_oldbuf = true;
+			continue;
+		}
+
 		int j;
 		for (j = 0; j < p; j++) {
 			int y_start = 0 + j * (DISP_SIZE_Y / p);
@@ -296,15 +304,32 @@ badge_eink_display_greyscale(const uint8_t *img, badge_eink_flags_t flags, int l
 			memset_u32(buf, 0, y_start * DISP_SIZE_X_B/4);
 			memset_u32(&buf[(y_end+1) * DISP_SIZE_X_B/4], 0, (DISP_SIZE_Y-y_end-1) * DISP_SIZE_X_B/4);
 
-			// LUT:
-			//   Ignore old state;
-			//   Do nothing when bit is not set;
-			//   Make pixel whiter when bit is set;
-			//   Duration is <t> cycles.
-			struct badge_eink_lut_entry lut[] = {
-				{ .length = t, .voltages = 0x88, },
-				{ .length = 0 }
-			};
+			struct badge_eink_lut_entry lut[4];
+
+			if (badge_eink_have_oldbuf) {
+				// LUT:
+				//   Use old state as previous layer;
+				//   Do nothing when bits are not set;
+				//   Make pixel whiter when bit is set;
+				//   Duration is <t> cycles.
+				lut[0].length = t;
+				lut[0].voltages = 0x80;
+				lut[1].length = t;
+				lut[1].voltages = 0xa0;
+				lut[2].length = t;
+				lut[2].voltages = 0xa8;
+				lut[3].length = 0;
+
+			} else {
+				// LUT:
+				//   Ignore old state;
+				//   Do nothing when bit is not set;
+				//   Make pixel whiter when bit is set;
+				//   Duration is <t> cycles.
+				lut[0].length = t;
+				lut[0].voltages = 0x88;
+				lut[1].length = 0;
+			}
 
 			/* update display */
 			struct badge_eink_update eink_upd = {
@@ -316,10 +341,9 @@ badge_eink_display_greyscale(const uint8_t *img, badge_eink_flags_t flags, int l
 				.y_end      = y_end + 1,
 			};
 			badge_eink_update(buf, &eink_upd);
+			badge_eink_have_oldbuf = false;
 		}
 	}
-
-	badge_eink_have_oldbuf = false;
 }
 
 void
