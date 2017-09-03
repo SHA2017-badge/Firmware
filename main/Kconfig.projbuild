@@ -2,7 +2,6 @@ menu "Connectivity"
 
 config WIFI_USE
     bool "Use WiFi on badge"
-    depends on WIFI_ENABLED
     default y
     help
         Let the badge use wifi
