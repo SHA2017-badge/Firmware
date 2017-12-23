@@ -24,7 +24,7 @@ int
 badge_battery_volt_sense(void)
 {
 #ifdef ADC1_CHAN_VBAT_SENSE
-	int val = adc1_get_voltage(ADC1_CHAN_VBAT_SENSE);
+	int val = adc1_get_raw(ADC1_CHAN_VBAT_SENSE);
 	if (val == -1)
 		return -1;
 
@@ -38,7 +38,7 @@ int
 badge_usb_volt_sense(void)
 {
 #ifdef ADC1_CHAN_VUSB_SENSE
-	int val = adc1_get_voltage(ADC1_CHAN_VUSB_SENSE);
+	int val = adc1_get_raw(ADC1_CHAN_VUSB_SENSE);
 	if (val == -1)
 		return -1;
 

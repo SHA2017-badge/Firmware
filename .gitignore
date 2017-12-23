@@ -4,3 +4,8 @@ makeenv
 custom_env.sh
 doxygen/
 .DS_Store
+
+# Eclipse configuration
+.settings
+.project
+.cproject

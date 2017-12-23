@@ -38,7 +38,7 @@ demoTestAdc(void) {
 			char text[TEXTLEN];
 			int val;
 			if (adc_mask & (1 << channel))
-				val = adc1_get_voltage(channel);
+				val = adc1_get_raw(channel);
 			else
 				val = -1;
 			snprintf(text, TEXTLEN, "ADC channel %d: %d", channel, val);

@@ -18,12 +18,11 @@
 #include <esp_err.h>
 #include <esp_log.h>
 #include <driver/gpio.h>
+#include "driver/spi_master.h"
 
 #include "badge_pins.h"
 #include "badge_base.h"
 #include "badge_eink_dev.h"
-
-#define SPI_NUM 0x3
 
 #ifndef LOW
 #define LOW 0
@@ -36,6 +35,8 @@
 // use old define
 #define VSPICLK_OUT_IDX VSPICLK_OUT_MUX_IDX
 #endif
+
+spi_device_handle_t spi_bus;
 
 static const char *TAG = "badge_eink_dev";
 
@@ -81,9 +82,8 @@ badge_eink_dev_busy_wait(void)
 void
 badge_eink_dev_intr_handler(void *arg)
 { /* in interrupt handler */
-	int gpio_state = gpio_get_level(PIN_NUM_EPD_BUSY);
-
 #ifdef CONFIG_SHA_BADGE_EINK_DEBUG
+    int gpio_state = gpio_get_level(PIN_NUM_EPD_BUSY);
 	static int gpio_last_state = -1;
 	if (gpio_state != -1 && gpio_last_state != gpio_state)
 	{
@@ -103,33 +103,56 @@ badge_eink_dev_intr_handler(void *arg)
 //	}
 }
 
+
+/* This function is called (in irq context!) just before a transmission starts.
+ * It will set the D/C line to the value indicated in the user field
+ */
+static
+void badge_spi_pre_transfer_callback(spi_transaction_t *t)
+{
+    uint8_t dc_level = *((uint8_t *) t->user);
+    gpio_set_level(PIN_NUM_EPD_DATA, (int) dc_level);
+}
+
+
+void
+badge_spi_send(const uint8_t *data, int len, const uint8_t dc_level)
+{
+    esp_err_t ret;
+    if (len == 0) {
+        return;
+    }
+    spi_transaction_t t = {
+        .length = len * 8,  // transaction length is in bits
+        .tx_buffer = data,
+        .user = (void *) &dc_level,
+    };
+    ret = spi_device_transmit(spi_bus, &t);
+    assert(ret == ESP_OK);
+}
+
 void
 badge_eink_dev_write_command(uint8_t command)
 {
 	badge_eink_dev_busy_wait();
-
-	gpio_set_level(PIN_NUM_EPD_CS, HIGH);
-	gpio_set_level(PIN_NUM_EPD_CS, LOW);
-	badge_eink_dev_write_byte(command);
-	gpio_set_level(PIN_NUM_EPD_CS, HIGH);
+    badge_spi_send(&command, 1, LOW);
 }
 
 void
-badge_eink_dev_write_command_init(uint8_t command)
+badge_eink_dev_write_byte(uint8_t data)
 {
-	badge_eink_dev_busy_wait();
-
-	gpio_set_level(PIN_NUM_EPD_CS, HIGH);
-	gpio_set_level(PIN_NUM_EPD_CS, LOW);
-	badge_eink_dev_write_byte(command);
-	gpio_set_level(PIN_NUM_EPD_DATA, HIGH);
+    badge_eink_dev_busy_wait();
+    badge_spi_send(&data, 1, HIGH);
 }
 
 void
-badge_eink_dev_write_command_end(void)
+badge_eink_dev_write_command_stream(uint8_t command, const uint8_t *data,
+                                         unsigned int datalen)
 {
-	gpio_set_level(PIN_NUM_EPD_CS, HIGH);
-	gpio_set_level(PIN_NUM_EPD_DATA, LOW);
+    ESP_LOGI(TAG, "Sending SPI stream...");
+    badge_eink_dev_write_command(command);
+    badge_spi_send(data, datalen, HIGH);
+    ESP_LOGI(TAG, "Done sending SPI stream of %d bytes", datalen);
 }
 
 esp_err_t
@@ -190,42 +213,31 @@ badge_eink_dev_init(enum badge_eink_dev_t dev_type)
 	if (res != ESP_OK)
 		return res;
 
-	gpio_matrix_out(PIN_NUM_EPD_MOSI, VSPID_OUT_IDX, 0, 0);
-	gpio_matrix_out(PIN_NUM_EPD_CLK, VSPICLK_OUT_IDX, 0, 0);
-	gpio_matrix_out(PIN_NUM_EPD_CS, VSPICS0_OUT_IDX, 0, 0);
-	CLEAR_PERI_REG_MASK(SPI_SLAVE_REG(SPI_NUM), SPI_TRANS_DONE << 5);
-	SET_PERI_REG_MASK(SPI_USER_REG(SPI_NUM), SPI_CS_SETUP);
-	CLEAR_PERI_REG_MASK(SPI_PIN_REG(SPI_NUM), SPI_CK_IDLE_EDGE);
-	CLEAR_PERI_REG_MASK(SPI_USER_REG(SPI_NUM), SPI_CK_OUT_EDGE);
-	CLEAR_PERI_REG_MASK(SPI_CTRL_REG(SPI_NUM), SPI_WR_BIT_ORDER);
-	CLEAR_PERI_REG_MASK(SPI_CTRL_REG(SPI_NUM), SPI_RD_BIT_ORDER);
-	CLEAR_PERI_REG_MASK(SPI_USER_REG(SPI_NUM), SPI_DOUTDIN);
-	WRITE_PERI_REG(SPI_USER1_REG(SPI_NUM), 0);
-	SET_PERI_REG_BITS(SPI_CTRL2_REG(SPI_NUM), SPI_MISO_DELAY_MODE, 0,
-			SPI_MISO_DELAY_MODE_S);
-	CLEAR_PERI_REG_MASK(SPI_SLAVE_REG(SPI_NUM), SPI_SLAVE_MODE);
-
-	WRITE_PERI_REG(SPI_CLOCK_REG(SPI_NUM),
-			(1 << SPI_CLKCNT_N_S) | (1 << SPI_CLKCNT_L_S)); // 40 MHz
-//	WRITE_PERI_REG(SPI_CLOCK_REG(SPI_NUM), SPI_CLK_EQU_SYSCLK); // 80Mhz
-
-	SET_PERI_REG_MASK(SPI_USER_REG(SPI_NUM),
-			SPI_CS_SETUP | SPI_CS_HOLD | SPI_USR_MOSI);
-	SET_PERI_REG_MASK(SPI_CTRL2_REG(SPI_NUM),
-			((0x4 & SPI_MISO_DELAY_NUM) << SPI_MISO_DELAY_NUM_S));
-	CLEAR_PERI_REG_MASK(SPI_USER_REG(SPI_NUM), SPI_USR_COMMAND);
-	SET_PERI_REG_BITS(SPI_USER2_REG(SPI_NUM), SPI_USR_COMMAND_BITLEN, 0,
-			SPI_USR_COMMAND_BITLEN_S);
-	CLEAR_PERI_REG_MASK(SPI_USER_REG(SPI_NUM), SPI_USR_ADDR);
-	SET_PERI_REG_BITS(SPI_USER1_REG(SPI_NUM), SPI_USR_ADDR_BITLEN, 0,
-			SPI_USR_ADDR_BITLEN_S);
-	CLEAR_PERI_REG_MASK(SPI_USER_REG(SPI_NUM), SPI_USR_MISO);
-	SET_PERI_REG_MASK(SPI_USER_REG(SPI_NUM), SPI_USR_MOSI);
-
-	char i;
-	for (i = 0; i < 16; i++) {
-		WRITE_PERI_REG((SPI_W0_REG(SPI_NUM) + (i << 2)), 0);
-	}
+	spi_bus_config_t buscfg = {
+        .miso_io_num = -1,  // MISO not used, we are transferring to the slave only
+        .mosi_io_num = PIN_NUM_EPD_MOSI,
+        .sclk_io_num = PIN_NUM_EPD_CLK,
+        .quadwp_io_num = -1,
+        .quadhd_io_num = -1,
+        // The maximum size sent below covers the case
+        // when the whole frame buffer is transferred to the slave
+        .max_transfer_sz = DISP_SIZE_X_B * DISP_SIZE_Y,
+    };
+    spi_device_interface_config_t devcfg = {
+        .clock_speed_hz = 20 * 1000 * 1000,
+        .mode = 0,  // SPI mode 0
+        .spics_io_num = PIN_NUM_EPD_CS,
+        // To Do: clarify what does it mean
+        .queue_size = 10,
+        // We are sending only in one direction (to the ePaper slave)
+        .flags = (SPI_DEVICE_HALFDUPLEX | SPI_DEVICE_3WIRE),
+        //Specify pre-transfer callback to handle D/C line
+        .pre_cb = badge_spi_pre_transfer_callback,
+    };
+    res = spi_bus_initialize(HSPI_HOST, &buscfg, 1);
+    assert(res == ESP_OK);
+    res = spi_bus_add_device(HSPI_HOST, &devcfg, &spi_bus);
+    assert(res == ESP_OK);
 
 	badge_eink_dev_init_done = true;
 
@@ -234,17 +246,6 @@ badge_eink_dev_init(enum badge_eink_dev_t dev_type)
 	return ESP_OK;
 }
 
-void
-badge_eink_dev_write_byte(uint8_t data)
-{
-	SET_PERI_REG_BITS(SPI_MOSI_DLEN_REG(SPI_NUM), SPI_USR_MOSI_DBITLEN, 0x7,
-			SPI_USR_MOSI_DBITLEN_S);
-	WRITE_PERI_REG((SPI_W0_REG(SPI_NUM)), data);
-	SET_PERI_REG_MASK(SPI_CMD_REG(SPI_NUM), SPI_USR);
-
-	// wait until ready?
-	while (READ_PERI_REG(SPI_CMD_REG(SPI_NUM)) & SPI_USR);
-}
 
 #else
 
@@ -270,15 +271,6 @@ badge_eink_dev_write_command(uint8_t command)
 {
 }
 
-void
-badge_eink_dev_write_command_init(uint8_t command)
-{
-}
-
-void
-badge_eink_dev_write_command_end(void)
-{
-}
 
 esp_err_t
 badge_eink_dev_init(enum badge_eink_dev_t dev_type)
