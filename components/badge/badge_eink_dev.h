@@ -57,89 +57,51 @@ extern void badge_eink_dev_write_byte(uint8_t data);
  */
 extern void badge_eink_dev_write_command(uint8_t command);
 
-/** write an spi command byte to the display
- * @param command the byte to write
- * @note send data-bytes wit badge_eink_dev_write_byte() and close the
- *   command with badge_eink_dev_write_command_end()
- */
-extern void badge_eink_dev_write_command_init(uint8_t command);
-
-/** close spi command
- */
-extern void badge_eink_dev_write_command_end(void);
-
 /** helper method: write command with 1 parameter */
 static inline void badge_eink_dev_write_command_p1(uint8_t command, uint8_t para1)
 {
-	badge_eink_dev_write_command_init(command);
+	badge_eink_dev_write_command(command);
 	badge_eink_dev_write_byte(para1);
-	badge_eink_dev_write_command_end();
 }
 
 /** helper method: write command with 2 parameters */
 static inline void badge_eink_dev_write_command_p2(uint8_t command, uint8_t para1,
-                                      uint8_t para2)
+									  uint8_t para2)
 {
-	badge_eink_dev_write_command_init(command);
+	badge_eink_dev_write_command(command);
 	badge_eink_dev_write_byte(para1);
 	badge_eink_dev_write_byte(para2);
-	badge_eink_dev_write_command_end();
 }
 
 /** helper method: write command with 3 parameters */
 static inline void badge_eink_dev_write_command_p3(uint8_t command, uint8_t para1,
-                                      uint8_t para2, uint8_t para3)
+									  uint8_t para2, uint8_t para3)
 {
-	badge_eink_dev_write_command_init(command);
+	badge_eink_dev_write_command(command);
 	badge_eink_dev_write_byte(para1);
 	badge_eink_dev_write_byte(para2);
 	badge_eink_dev_write_byte(para3);
-	badge_eink_dev_write_command_end();
 }
 
 /** helper method: write command with 4 parameters */
 static inline void badge_eink_dev_write_command_p4(uint8_t command, uint8_t para1,
-                                      uint8_t para2, uint8_t para3,
-                                      uint8_t para4)
+									  uint8_t para2, uint8_t para3,
+									  uint8_t para4)
 {
-	badge_eink_dev_write_command_init(command);
+	badge_eink_dev_write_command(command);
 	badge_eink_dev_write_byte(para1);
 	badge_eink_dev_write_byte(para2);
 	badge_eink_dev_write_byte(para3);
 	badge_eink_dev_write_byte(para4);
-	badge_eink_dev_write_command_end();
 }
 
-/** helper method: write command with `datalen` data bytes */
-static inline void badge_eink_dev_write_command_stream(uint8_t command, const uint8_t *data,
-                                         unsigned int datalen)
-{
-	badge_eink_dev_write_command_init(command);
-	while (datalen-- > 0) {
-		badge_eink_dev_write_byte(*(data++));
-	}
-	badge_eink_dev_write_command_end();
-}
+/** write command with `datalen` data bytes */
+void badge_eink_dev_write_command_stream(uint8_t command, const uint8_t *data,
+										 unsigned int datalen);
 
-/** helper method: write 4 data bytes */
-static inline void badge_eink_dev_write_byte_u32(uint32_t data)
-{
-	badge_eink_dev_write_byte(data >> 24);
-	badge_eink_dev_write_byte(data >> 16);
-	badge_eink_dev_write_byte(data >> 8);
-	badge_eink_dev_write_byte(data);
-}
-
-/** helper method: write command with `datalen` data dwords */
-static inline void badge_eink_dev_write_command_stream_u32(uint8_t command, const uint32_t *data,
-                                         unsigned int datalen)
-{
-	badge_eink_dev_write_command_init(command);
-	while (datalen-- > 0) {
-		badge_eink_dev_write_byte_u32(*(data++));
-	}
-	badge_eink_dev_write_command_end();
-}
+/** write command with `datalen` data dwords */
+void badge_eink_dev_write_command_stream_u32(uint8_t command, const uint32_t *data,
+										 unsigned int datalen);
 
 __END_DECLS
 
