@@ -335,4 +335,16 @@ badge_eink_dev_write_byte(uint8_t data)
 {
 }
 
+void
+badge_eink_dev_write_command_stream(uint8_t command, const uint8_t *data,
+										 unsigned int datalen)
+{
+}
+
+void
+badge_eink_dev_write_command_stream_u32(uint8_t command, const uint32_t *data,
+										 unsigned int datalen)
+{
+}
+
 #endif // PIN_NUM_EPD_RESET
