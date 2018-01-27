@@ -594,9 +594,6 @@ badge_first_run(void)
 	cfg.nvs_enable = 0;
 	int res = esp_wifi_init(&cfg);
 	if (res == ESP_OK) {
-		res = esp_wifi_set_country(WIFI_COUNTRY_EU);
-	}
-	if (res == ESP_OK) {
 		res = esp_wifi_set_mode(WIFI_MODE_STA);
 	}
 	if (res == ESP_OK) {
