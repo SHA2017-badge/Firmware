@@ -87,7 +87,9 @@ badge_eink_dev_busy_wait(void)
 void
 badge_eink_dev_intr_handler(void *arg)
 { /* in interrupt handler */
+#if defined(CONFIG_SHA_BADGE_EINK_DEBUG) || defined(PIN_NUM_LED)
 	int gpio_state = gpio_get_level(PIN_NUM_EPD_BUSY);
+#endif
 
 #ifdef CONFIG_SHA_BADGE_EINK_DEBUG
 	static int gpio_last_state = -1;
