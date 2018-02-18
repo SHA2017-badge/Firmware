@@ -36,6 +36,7 @@ badge_input_init(void)
 	return ESP_OK;
 }
 
+#ifdef CONFIG_SHA_BADGE_INPUT_DEBUG
 static const char *badge_input_button_name[11] = {
 	"(null)",
 	"UP",
@@ -49,6 +50,7 @@ static const char *badge_input_button_name[11] = {
 	"START",
 	"FLASH",
 };
+#endif // CONFIG_SHA_BADGE_INPUT_DEBUG
 
 void
 badge_input_add_event(uint32_t button_id, bool pressed, bool in_isr)
