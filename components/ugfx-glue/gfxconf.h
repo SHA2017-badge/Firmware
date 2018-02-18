@@ -79,7 +79,7 @@
 //#define GDISP_NEED_ARCSECTORS                        FALSE
 #define GDISP_NEED_CONVEX_POLYGON                    TRUE
 //#define GDISP_NEED_SCROLL                            FALSE
-//#define GDISP_NEED_PIXELREAD                         FALSE
+#define GDISP_NEED_PIXELREAD                         TRUE
 #define GDISP_NEED_CONTROL                           TRUE
 //#define GDISP_NEED_QUERY                             FALSE
 #define GDISP_NEED_MULTITHREAD                       TRUE
@@ -88,7 +88,7 @@
 #define GDISP_NEED_TEXT_WORDWRAP                     TRUE
 //    #define GDISP_NEED_TEXT_BOXPADLR                 1
 //    #define GDISP_NEED_TEXT_BOXPADTB                 1
-//    #define GDISP_NEED_ANTIALIAS                     FALSE
+#define GDISP_NEED_ANTIALIAS                         TRUE
 #define GDISP_NEED_UTF8                              TRUE
 //    #define GDISP_NEED_TEXT_KERNING                  FALSE
 //    #define GDISP_INCLUDE_FONT_UI1                   FALSE
