@@ -34,7 +34,7 @@ void show_percentage(char *name, uint8_t percentage, bool show_percentage) {
   }
 
   gdispDrawString(show_percentage ? 150 : 60, 25, "STILL", robotoBlackItalic, front);
-  gdispDrawString(show_percentage ? 130 : 40, 50, name, permanentMarker, front);
+  gdispDrawString(show_percentage ? 130 : 40, 46, name, permanentMarker, front);
   // underline:
   gdispDrawLine(show_percentage ? 130 : 40, 72,
                 (show_percentage ? 130 : 40) + gdispGetStringWidth(name, permanentMarker) + 14, 72,
