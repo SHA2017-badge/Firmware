@@ -174,6 +174,43 @@
 #define ADC1_CHAN_VUSB_SENSE  6
 #define ADC1_CHAN_VBAT_SENSE  7
 
+#elif defined(CONFIG_SHA_BADGE_V3_CUSTOM_1)
+
+// Badge revision 1.0.x, but hacked into a custom prototype
+//define PIN_NUM_LEDS         32
+
+#define PIN_NUM_BUTTON_FLASH  0
+
+//define PIN_NUM_EPD_CLK      18
+//define PIN_NUM_EPD_MOSI      5
+//define PIN_NUM_EPD_CS       19
+//define PIN_NUM_EPD_DATA     21
+//define PIN_NUM_EPD_RESET    23
+//define PIN_NUM_EPD_BUSY     22
+//define EPD_ROTATED_180
+
+//define PIN_NUM_I2C_CLK      27
+//define PIN_NUM_I2C_DATA     26
+
+//define PIN_NUM_EXT_IO_0     33
+//define PIN_NUM_EXT_IO_1     16
+//define PIN_NUM_EXT_IO_2     17
+//define PIN_NUM_EXT_IO_3      4
+//define PIN_NUM_EXT_IO_4     12
+
+//define PIN_NUM_SD_CLK       14
+//define PIN_NUM_SD_CMD       15
+//define PIN_NUM_SD_DATA_0     2
+//define PIN_NUM_SD_DATA_3    13
+
+//define PIN_NUM_VUSB_SENSE   34
+//define PIN_NUM_VBAT_SENSE   35
+//define ADC1_CHAN_VUSB_SENSE  6
+//define ADC1_CHAN_VBAT_SENSE  7
+
+#define TOUCH_BUTTON_A         5
+#define TOUCH_BUTTON_B         6
+
 #endif
 
 #endif // BADGE_PINS_H

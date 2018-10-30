@@ -19,6 +19,7 @@
 #include "badge_eink_dev.h"
 #include "badge_eink.h"
 #include "badge_nvs.h"
+#include "badge_touch.h"
 
 static const char *TAG = "badge";
 
@@ -106,6 +107,10 @@ badge_init(void)
 	{
 		ESP_LOGE(TAG, "badge_input_init failed: %d", err);
 	}
+
+#ifdef TOUCH_BUTTON_A
+	badge_touch_init();
+#endif // TOUCH_BUTTON_A
 
 	// configure buttons directly connected to gpio pins
 #ifdef PIN_NUM_BUTTON_A
