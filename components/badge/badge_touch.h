@@ -7,6 +7,7 @@
 
 __BEGIN_DECLS
 
+extern void badge_touch_poll(void);
 extern void badge_touch_init(void);
 
 __END_DECLS
