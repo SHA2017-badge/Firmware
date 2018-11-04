@@ -108,9 +108,38 @@ badge_init(void)
 		ESP_LOGE(TAG, "badge_input_init failed: %d", err);
 	}
 
-#ifdef TOUCH_BUTTON_A
-	badge_touch_init();
-#endif // TOUCH_BUTTON_A
+#if defined(TOUCH_BUTTON_UP) || defined(TOUCH_BUTTON_DOWN) || defined(TOUCH_BUTTON_LEFT) || defined(TOUCH_BUTTON_RIGHT) || defined(TOUCH_BUTTON_A) || defined(TOUCH_BUTTON_B) || defined(TOUCH_BUTTON_SELECT) || defined(TOUCH_BUTTON_START) || defined(TOUCH_BUTTON_FLASH)
+	static const uint32_t badge_touch_button_ids[TOUCH_PAD_MAX] = {
+# ifdef TOUCH_BUTTON_UP
+		[ TOUCH_BUTTON_UP     ] = BADGE_BUTTON_UP,
+# endif // TOUCH_BUTTON_UP
+# ifdef TOUCH_BUTTON_DOWN
+		[ TOUCH_BUTTON_DOWN   ] = BADGE_BUTTON_DOWN,
+# endif // TOUCH_BUTTON_DOWN
+# ifdef TOUCH_BUTTON_LEFT
+		[ TOUCH_BUTTON_LEFT   ] = BADGE_BUTTON_LEFT,
+# endif // TOUCH_BUTTON_LEFT
+# ifdef TOUCH_BUTTON_RIGHT
+		[ TOUCH_BUTTON_RIGHT  ] = BADGE_BUTTON_RIGHT,
+# endif // TOUCH_BUTTON_RIGHT
+# ifdef TOUCH_BUTTON_A
+		[ TOUCH_BUTTON_A      ] = BADGE_BUTTON_A,
+# endif // TOUCH_BUTTON_A
+# ifdef TOUCH_BUTTON_B
+		[ TOUCH_BUTTON_B      ] = BADGE_BUTTON_B,
+# endif // TOUCH_BUTTON_B
+# ifdef TOUCH_BUTTON_SELECT
+		[ TOUCH_BUTTON_SELECT ] = BADGE_BUTTON_SELECT,
+# endif // TOUCH_BUTTON_SELECT
+# ifdef TOUCH_BUTTON_START
+		[ TOUCH_BUTTON_START  ] = BADGE_BUTTON_START,
+# endif // TOUCH_BUTTON_START
+# ifdef TOUCH_BUTTON_FLASH
+		[ TOUCH_BUTTON_FLASH  ] = BADGE_BUTTON_FLASH,
+# endif // TOUCH_BUTTON_FLASH
+	};
+	badge_touch_init(badge_touch_button_ids);
+#endif // TOUCH_BUTTON_*
 
 	// configure buttons directly connected to gpio pins
 #ifdef PIN_NUM_BUTTON_A
