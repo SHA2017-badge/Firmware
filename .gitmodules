@@ -24,3 +24,7 @@
 [submodule "xtensa-esp32-elf"]
 	path = xtensa-esp32-elf
 	url = https://github.com/SHA2017-badge/xtensa-esp32-elf.git
+[submodule "esp-adf"]
+	path = esp-adf
+	url = https://github.com/espressif/esp-adf.git
+	branch = master
