@@ -174,9 +174,9 @@ display_picture(int picture_id, int selected_lut)
 	badge_eink_display(badge_eink_fb, DISPLAY_FLAG_LUT(selected_lut));
 }
 
-#define IIS_SCLK 33
-#define IIS_LCLK 12
-#define IIS_DSIN 4
+#define IIS_SCLK 13
+#define IIS_LCLK 15
+#define IIS_DSIN 2
 #define IIS_DOUT -1
 
 #include "esp_log.h"
@@ -190,19 +190,21 @@ display_picture(int picture_id, int selected_lut)
 #include "esp_peripherals.h"
 #include "periph_wifi.h"
 #include "badge_power.h"
+#include "equalizer.h"
+
 static const char *TAG = "HTTP_MP3_EXAMPLE";
 void
 do_audio(void) {
     tcpip_adapter_init();
 
     audio_pipeline_handle_t pipeline;
-    audio_element_handle_t http_stream_reader, i2s_stream_writer, mp3_decoder;
+    audio_element_handle_t http_stream_reader, i2s_stream_writer, mp3_decoder, equalizer;
 
-//    esp_log_level_set("*", ESP_LOG_WARN);
-//    esp_log_level_set(TAG, ESP_LOG_DEBUG);
+    esp_log_level_set("*", ESP_LOG_WARN);
+    esp_log_level_set(TAG, ESP_LOG_DEBUG);
 
-    ESP_LOGI(TAG, "[ 1 ] Start audio codec chip");
-	badge_power_sdcard_enable();
+//    ESP_LOGI(TAG, "[ 1 ] Start audio codec chip");
+//	badge_power_sdcard_enable();
 //    audio_hal_codec_config_t audio_hal_codec_cfg =  AUDIO_HAL_ES8388_DEFAULT();
 //    audio_hal_handle_t hal = audio_hal_init(&audio_hal_codec_cfg, 0);
 //    audio_hal_ctrl_codec(hal, AUDIO_HAL_CODEC_MODE_DECODE, AUDIO_HAL_CTRL_START);
@@ -225,16 +227,23 @@ do_audio(void) {
     mp3_decoder_cfg_t mp3_cfg = DEFAULT_MP3_DECODER_CONFIG();
     mp3_decoder = mp3_decoder_init(&mp3_cfg);
 
+ equalizer_cfg_t eq_cfg = DEFAULT_EQUALIZER_CONFIG();
+    int set_gain[] = { -13, -13, -13, -13, -13, -13, -13, -13, -13, -13, -13, -13, -13, -13, -13, -13, -13, -13, -13, -13};
+    eq_cfg.set_gain =
+        set_gain; // The size of gain array should be the multiplication of NUMBER_BAND and number channels of audio stream data. The minimum of gain is -13 dB.
+    equalizer = equalizer_init(&eq_cfg);
+
     ESP_LOGI(TAG, "[2.4] Register all elements to audio pipeline");
     audio_pipeline_register(pipeline, http_stream_reader, "http");
     audio_pipeline_register(pipeline, mp3_decoder,        "mp3");
+    audio_pipeline_register(pipeline, equalizer, 	  "equalizer");
     audio_pipeline_register(pipeline, i2s_stream_writer,  "i2s");
 
     ESP_LOGI(TAG, "[2.5] Link it together http_stream-->mp3_decoder-->i2s_stream-->[codec_chip]");
-    audio_pipeline_link(pipeline, (const char *[]) {"http", "mp3", "i2s"}, 3);
+    audio_pipeline_link(pipeline, (const char *[]) {"http", "mp3", "equalizer", "i2s"}, 4);
 
     ESP_LOGI(TAG, "[2.6] Setup uri (http as http_stream, mp3 as mp3 decoder, and default output is i2s)");
-    audio_element_set_uri(http_stream_reader, "https://dl.espressif.com/dl/audio/ff-16b-2c-44100hz.mp3");
+    audio_element_set_uri(http_stream_reader, "https://annejan.com/media/Paniq_-_Nonstop_Copyright_Infringement.mp3");
 
     ESP_LOGI(TAG, "[ 3 ] Start and wait for Wi-Fi network");
     esp_periph_config_t periph_cfg = { 0 };
