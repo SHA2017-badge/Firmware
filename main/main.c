@@ -191,6 +191,11 @@ display_picture(int picture_id, int selected_lut)
 #include "periph_wifi.h"
 #include "badge_power.h"
 #include "equalizer.h"
+#include "downmix.h"
+
+#define FAILLING_END_GAIN       1
+#define RISING_START_GAIN       2
+#define MUSIC_GAIN_DB          -40
 
 static const char *TAG = "HTTP_MP3_EXAMPLE";
 void
@@ -200,8 +205,8 @@ do_audio(void) {
     audio_pipeline_handle_t pipeline;
     audio_element_handle_t http_stream_reader, i2s_stream_writer, mp3_decoder, equalizer;
 
-    esp_log_level_set("*", ESP_LOG_WARN);
-    esp_log_level_set(TAG, ESP_LOG_DEBUG);
+//    esp_log_level_set("*", ESP_LOG_WARN);
+//    esp_log_level_set(TAG, ESP_LOG_DEBUG);
 
 //    ESP_LOGI(TAG, "[ 1 ] Start audio codec chip");
 //	badge_power_sdcard_enable();
@@ -233,14 +238,23 @@ do_audio(void) {
         set_gain; // The size of gain array should be the multiplication of NUMBER_BAND and number channels of audio stream data. The minimum of gain is -13 dB.
     equalizer = equalizer_init(&eq_cfg);
 
+
+    ESP_LOGI(TAG, "[2.3] Create downmixer");
+    downmix_cfg_t downmix_cfg = DEFAULT_DOWNMIX_CONFIG();
+    downmix_cfg.downmix_info.gain[FAILLING_END_GAIN] = MUSIC_GAIN_DB;
+    downmix_cfg.downmix_info.gain[RISING_START_GAIN] = MUSIC_GAIN_DB;
+    audio_element_handle_t downmixer = downmix_init(&downmix_cfg);
+
+
     ESP_LOGI(TAG, "[2.4] Register all elements to audio pipeline");
     audio_pipeline_register(pipeline, http_stream_reader, "http");
     audio_pipeline_register(pipeline, mp3_decoder,        "mp3");
     audio_pipeline_register(pipeline, equalizer, 	  "equalizer");
+    audio_pipeline_register(pipeline, downmixer,          "mixer");
     audio_pipeline_register(pipeline, i2s_stream_writer,  "i2s");
 
     ESP_LOGI(TAG, "[2.5] Link it together http_stream-->mp3_decoder-->i2s_stream-->[codec_chip]");
-    audio_pipeline_link(pipeline, (const char *[]) {"http", "mp3", "equalizer", "i2s"}, 4);
+    audio_pipeline_link(pipeline, (const char *[]) {"http", "mp3", "equalizer", "mixer", "i2s"}, 5);
 
     ESP_LOGI(TAG, "[2.6] Setup uri (http as http_stream, mp3 as mp3 decoder, and default output is i2s)");
     audio_element_set_uri(http_stream_reader, "https://annejan.com/media/Paniq_-_Nonstop_Copyright_Infringement.mp3");
@@ -255,6 +269,10 @@ do_audio(void) {
     esp_periph_handle_t wifi_handle = periph_wifi_init(&wifi_cfg);
     esp_periph_start(wifi_handle);
     periph_wifi_wait_for_connected(wifi_handle, portMAX_DELAY);
+
+//    ESP_LOGI(TAG, "[3.7] Connect input ringbuffer of pipeline_tone to downmixer multi input");
+//    ringbuf_handle_t rb = audio_element_get_input_ringbuf(el_raw_write);
+//    downmix_set_second_input_rb(downmixer, rb);
 
     ESP_LOGI(TAG, "[ 4 ] Setup event listener");
     audio_event_iface_cfg_t evt_cfg = AUDIO_EVENT_IFACE_DEFAULT_CFG();
