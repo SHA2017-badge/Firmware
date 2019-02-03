@@ -1,0 +1,57 @@
+diff --git a/components/audio_stream/i2s_stream.c b/components/audio_stream/i2s_stream.c
+index b545c33..dd5d36b 100644
+--- a/components/audio_stream/i2s_stream.c
++++ b/components/audio_stream/i2s_stream.c
+@@ -73,6 +73,44 @@ static esp_err_t i2s_mono_fix(int bits, uint8_t *sbuff, uint32_t len)
+     return ESP_OK;
+ }
+ 
++// hacker hotel badge quick&dirty volume hack.
++unsigned int i2s_stream_volume = 128;
++static esp_err_t i2s_volume_fix(int bits, uint8_t *sbuff, uint32_t len)
++{
++    if (i2s_stream_volume == 0) {
++        // no sound
++        memset(sbuff, 0, len);
++        return ESP_OK;
++    }
++
++    if (i2s_stream_volume >= 128) {
++        // max sound
++        return ESP_OK;
++    }
++
++    if (bits == 16) {
++        int16_t *temp_buf = (int16_t *)sbuff;
++        for (int i = 0; i < len / 2; i++) {
++            int32_t temp_box = temp_buf[i];
++            temp_box = (temp_box * (int32_t) i2s_stream_volume) >> 7;
++            temp_buf[i] = temp_box;
++        }
++    } else if (bits == 32) {
++        int32_t *temp_buf = (int32_t *)sbuff;
++        for (int i = 0; i < len / 4; i++) {
++            // drop the lower 7 bits.
++            int32_t temp_box = temp_buf[i] >> 7;
++            temp_box = temp_box * (int32_t) i2s_stream_volume;
++            temp_buf[i] = temp_box;
++        }
++    } else {
++        ESP_LOGE(TAG, "%s %dbits is not supported", __func__, bits);
++        return ESP_FAIL;
++    }
++
++    return ESP_OK;
++}
++
+ /**
+  * @brief Scale data to 16bit/32bit for I2S DMA output.
+  *        DAC can only output 8bit data value.
+@@ -187,6 +225,7 @@ static int _i2s_write(audio_element_handle_t self, char *buffer, int len, TickTy
+     if (info.channels == 1) {
+         i2s_mono_fix(info.bits, (uint8_t *)buffer, len);
+     }
++    i2s_volume_fix(info.bits, (uint8_t *)buffer, len);
+     if ((i2s->config.i2s_config.mode & I2S_MODE_DAC_BUILT_IN) != 0) {
+         i2s_dac_data_scale(info.bits, (uint8_t *)buffer, len);
+     }
